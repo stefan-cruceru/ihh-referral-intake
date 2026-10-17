@@ -389,8 +389,7 @@ class Handler(BaseHTTPRequestHandler):
                                    "overnight_clock": TRACK.overnight_clock, "auto_hospital_messages": hospital.auto(),
                                    "db": str(store.db_path())})
             if p == "/api/queue":
-                for c in TRACK.tick():
-                    _on_land(c)
+                land()
                 q_ = TRACK.queue(owner=q.get("owner", [""])[0] or None)
                 for v in q_:
                     r = REVIEWS.get(v["id"])
@@ -696,6 +695,17 @@ class Handler(BaseHTTPRequestHandler):
         return self._json({"error": "not found"}, 404)
 
 
+_LAND = threading.Lock()
+
+
+def land() -> None:
+    """Referrals whose arrival time has come join the board. Called by the board and by the alert
+    loop, so alerts for new arrivals are drafted even when nobody has the board open."""
+    with _LAND:
+        for c in TRACK.tick():
+            _on_land(c)
+
+
 def notify_loop(interval: float = 10.0) -> None:
     """Draft staff alerts as the clock runs, even when nobody has the outbox open."""
     from . import notify
@@ -703,6 +713,7 @@ def notify_loop(interval: float = 10.0) -> None:
     def loop():
         while True:
             try:
+                land()
                 notify.sync(TRACK)
                 hospital.sync(TRACK)
             except Exception:

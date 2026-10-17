@@ -1758,5 +1758,9 @@
  "tab_access": {
   "en": "Access and roles",
   "es": "Acceso y roles"
+ },
+ "only_clinical_deny": {
+  "en": "Only the clinical line can say no.",
+  "es": "Solo la línea clínica puede decir que no."
  }
 }

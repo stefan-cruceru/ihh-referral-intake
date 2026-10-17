@@ -1036,3 +1036,38 @@ function openFromHash() {
   const start = () => (Object.keys(S).length ? (loadPeople().catch(() => {}), tick(), openFromHash()) : setTimeout(start, 200));
   start();
 })();
+
+// ---------------------------------------------------------------- what this person's role may do
+// The server checks every action (auth.PERMISSIONS); this only spares people buttons that would be
+// refused. "Say no" stays visible as a note, because who may deny is the point.
+let CAN = null; // null: unknown (not signed in yet), so nothing is hidden
+
+async function loadCan() {
+  try {
+    CAN = new Set((await api("/api/me")).can || []);
+  } catch (e) {
+    CAN = null;
+  }
+  applyRoleView();
+}
+
+function applyRoleView() {
+  if (!CAN) return;
+  $$("[data-act]").forEach((b) => {
+    if (CAN.has("act:" + b.dataset.act)) return;
+    if (b.dataset.act === "denied") {
+      const row = b.closest(".row") || b;
+      row.outerHTML = `<p class="muted small" data-role-note>${esc(t("only_clinical_deny"))}</p>`;
+    } else {
+      b.classList.add("hidden");
+    }
+  });
+  $("#people-settings")?.classList.toggle("hidden", !CAN.has("people_edit"));
+}
+
+(function bootRoles() {
+  const body = $("#detail-body");
+  if (body) new MutationObserver(() => applyRoleView()).observe(body, { childList: true });
+  $("#open-settings")?.addEventListener("click", applyRoleView);
+  loadCan();
+})();

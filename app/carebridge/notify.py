@@ -71,9 +71,22 @@ NO_ADDRESS = {"en": "unknown: add this person's address under People",
 
 # ---- who gets what ----------------------------------------------------------------------------
 def default_people(staff: list[dict]) -> list[dict]:
-    """The tracker's staff plus the clinical line. Addresses start empty: we never guess them."""
-    people = [{"name": s["name"], "role": s["role"], "email": "", "teams": "", "channel": "both", "lang": "en"}
-              for s in staff]
+    """Everyone on the board's staff list and on the sign-in staff list (auth.staff()), one entry per
+    name. Email and Teams come from the sign-in list: that address is the person's Microsoft work
+    account, which is also their Teams sign-in. Someone only on the board starts with no address:
+    we never guess one."""
+    from . import auth
+
+    accounts = {a["name"].lower(): a for a in auth.staff()}
+    people = []
+    for s in staff:
+        a = accounts.pop(s["name"].lower(), {})
+        people.append({"name": s["name"], "role": s["role"], "email": a.get("email", ""), "teams": a.get("email", ""),
+                       "channel": "both", "lang": "en"})
+    for a in accounts.values():  # on the sign-in list but not on today's board, e.g. the clinical reviewer
+        if a.get("role") in ROLES:
+            people.append({"name": a["name"], "role": a["role"], "email": a.get("email", ""), "teams": a.get("email", ""),
+                           "channel": "both", "lang": "en"})
     if not any(p["role"] == "clinical" for p in people):
         people.append({"name": "Clinical line", "role": "clinical", "email": "", "teams": "", "channel": "both", "lang": "en"})
     return people
@@ -226,8 +239,8 @@ def sync(track, app_url: str | None = None) -> int:
         for al in v["alerts"]:
             if al["code"] in EVENTS:
                 todo.append((cid, al["code"], None))
-        if v["color"] == "red":
-            todo.append((cid, "clock_30", None))
+        if v["color"] == "red" and not any(al["code"] == "more_time" for al in v["alerts"]):
+            todo.append((cid, "clock_30", None))  # at 15 min the "more time" alert says it already
     added = 0
     for cid, ev, a in todo:
         card = track.view(cid)

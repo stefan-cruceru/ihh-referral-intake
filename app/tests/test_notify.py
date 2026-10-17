@@ -91,3 +91,24 @@ def test_waiting_draft_follows_a_newly_saved_address_and_language():
     after = notify.get(before["id"])
     assert after["ready"] and after["to"] == "clin@example.org" and after["lang"] == "es"
     assert email.message_from_bytes(notify.eml(after))["To"] == "clin@example.org"
+
+
+def test_addresses_come_from_the_sign_in_staff_list():
+    from carebridge import auth
+
+    t = _setup()
+    t.staff = [{"name": "Bea", "role": "coordinator", "on_shift": True}, {"name": "Nobody Listed", "role": "coordinator", "on_shift": True}]
+    everyone = {p["name"]: p for p in notify.people(t.staff)}
+    bea = next(a for a in auth.staff() if a["name"] == "Bea")
+    assert everyone["Bea"]["email"] == everyone["Bea"]["teams"] == bea["email"]
+    assert everyone["Nobody Listed"]["email"] == ""  # not on the sign-in list: no guessed address
+    reviewer = next(a for a in auth.staff() if a["role"] == "clinical")  # not on the board, still alerted
+    assert everyone[reviewer["name"]]["email"] == reviewer["email"]
+
+
+def test_fifteen_minute_alert_replaces_the_thirty_minute_one():
+    t = _setup()
+    t.add({"case_no": "T-8", "owner": "Coordinator 2"}, arrived_at=t.clock.now() - 110 * 60)  # 10 min left
+    notify.sync(t)
+    events = {r["event"] for r in notify.outbox(person="Coordinator 2")}
+    assert "more_time" in events and "clock_30" not in events
