@@ -227,8 +227,8 @@ function statusChip(st) {
 function renderQueue(q) {
   if (!q) return;
   $("#clock-time").textContent = fmtClock(q.now);
-  $("#speed").value = q.speed >= 30 ? "60" : "1";
-  $("#speed").classList.toggle("hidden", !(q.speed >= 30 || q.cards.some((c) => c.sample)));
+  // The practice demo runs the clock fast. Once no practice referrals are left, put it back to real time.
+  if (q.speed >= 30 && !q.cards.some((c) => c.sample)) post("/api/clock", { speed: 1 });
   const rep = q.report;
   const wd = Object.values(q.withdraw_reasons || {}).reduce((a, b) => a + b, 0);
   $("#stats").innerHTML = rep.total
@@ -305,7 +305,6 @@ async function poll() {
   setTimeout(poll, 1500);
 }
 
-$("#speed").addEventListener("change", (e) => post("/api/clock", { speed: Number(e.target.value) }));
 
 let LAST_SIM = null; // the practice run's before/after chart, redrawn when the language changes
 function renderSim(sim) {
