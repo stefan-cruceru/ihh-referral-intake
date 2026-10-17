@@ -1,0 +1,29 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.4/schema.json",
+  "version": "v1.4",
+  "name": "IHH Care Bridge",
+  "description": "Checks a hospital referral against IHH's recuperative care admission rules. Shows the two big checks first, cites rule IDs, says when it can't tell, and drafts messages for a person to send. A person decides. Only a clinician can deny.",
+  "instructions": "$[file('instructions.txt')]",
+  "conversation_starters": [
+    {
+      "title": "Check a referral",
+      "text": "Check the referral packet I attached against IHH's admission rules. Start with the two big checks."
+    },
+    {
+      "title": "What is missing?",
+      "text": "Which of the 10 documents (DOC-1 to DOC-10) are missing from this referral? Draft one message to the case manager."
+    },
+    {
+      "title": "Explain a rule",
+      "text": "Explain rule MOB-4 in plain words. Where do I look for it in a packet?"
+    },
+    {
+      "title": "Revisar un referido",
+      "text": "Revise el paquete de referido adjunto con las reglas de admisión de IHH. Empiece con las dos revisiones principales."
+    },
+    {
+      "title": "¿Qué falta?",
+      "text": "¿Qué documentos (DOC-1 a DOC-10) faltan en este referido? Escriba un borrador de mensaje para el administrador de casos."
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+"""One local store for the outcome log and the audit trail (docs/closed-loop.md section 3).
+
+A SQLite file on IHH's own machine. It holds case numbers, times, owners, routes, decisions,
+outcomes and reasons. It never holds packet pages, quotes or anything else from the chart.
+"""
+
+import os
+import sqlite3
+import threading
+import time
+from pathlib import Path
+
+from .paths import user_dir
+
+_lock = threading.Lock()
+_conn: sqlite3.Connection | None = None
+
+FIELDS = ["case_no", "channel", "arrived_at", "owner", "suggested_route", "status", "decision", "decided_by",
+          "decided_at", "minutes", "withdraw_reason", "patient_arrived", "override", "override_reason",
+          "review_usd", "practice"]
+
+
+def db_path() -> Path:
+    return Path(os.environ.get("CAREBRIDGE_DB") or user_dir() / "outcomes.db")
+
+
+def conn() -> sqlite3.Connection:
+    global _conn
+    if _conn is None:
+        _conn = sqlite3.connect(db_path(), check_same_thread=False)
+        _conn.execute(f"CREATE TABLE IF NOT EXISTS outcomes ({', '.join(f + ' PRIMARY KEY' if f == 'case_no' else f for f in FIELDS)})")
+        _conn.execute("CREATE TABLE IF NOT EXISTS events (t REAL, case_no TEXT, who TEXT, what TEXT, detail TEXT, practice INTEGER)")
+        _conn.commit()
+    return _conn
+
+
+def save_card(card: dict) -> None:
+    row = {f: card.get(f) for f in FIELDS}
+    row["practice"] = 1 if card.get("practice") else 0
+    with _lock:
+        c = conn()
+        c.execute(f"INSERT OR REPLACE INTO outcomes ({', '.join(FIELDS)}) VALUES ({', '.join('?' * len(FIELDS))})",
+                  [row[f] for f in FIELDS])
+        c.commit()
+
+
+def log_event(case_no: str | None, who: str, what: str, detail: str, practice: bool) -> None:
+    with _lock:
+        c = conn()
+        c.execute("INSERT INTO events VALUES (?,?,?,?,?,?)", (time.time(), case_no, who, what, detail, 1 if practice else 0))
+        c.commit()
+
+
+def weekly_report(days: int = 7, include_practice: bool = False) -> dict:
+    """Share answered within 2 hours, withdrawals and why, overrides, cost: what IHH asked to see."""
+    since = time.time() - days * 86400
+    with _lock:
+        c = conn()
+        c.row_factory = sqlite3.Row
+        rows = [dict(r) for r in c.execute(
+            "SELECT * FROM outcomes WHERE arrived_at >= ? AND (practice = 0 OR ?)", (since, 1 if include_practice else 0))]
+        c.row_factory = None
+    decided = [r for r in rows if r["decision"] in ("accepted", "denied")]
+    withdrawn = [r for r in rows if r["status"] == "withdrawn"]
+    reasons: dict[str, int] = {}
+    for r in withdrawn:
+        reasons[r["withdraw_reason"] or "unknown"] = reasons.get(r["withdraw_reason"] or "unknown", 0) + 1
+    accepted = [r for r in rows if r["decision"] == "accepted"]
+    return {
+        "days": days, "referrals": len(rows), "decided": len(decided),
+        "within_2h": sum(1 for r in decided if (r["minutes"] or 0) <= 120),
+        "withdrawn": len(withdrawn), "withdraw_reasons": reasons,
+        "accepted": len(accepted), "arrived": sum(1 for r in accepted if r["patient_arrived"] == 1),
+        "overrides": [{"case_no": r["case_no"], "route": r["suggested_route"], "decision": r["decision"],
+                       "reason": r["override_reason"]} for r in rows if r["override"]],
+        "review_usd": round(sum(r["review_usd"] or 0 for r in rows), 2),
+    }

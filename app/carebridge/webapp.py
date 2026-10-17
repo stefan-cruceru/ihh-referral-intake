@@ -1,0 +1,415 @@
+"""The local app: a small web server on 127.0.0.1 that only this computer can reach.
+
+Packet pages and reviews stay in memory and are gone when the app closes. Nothing is written to
+disk except settings, and nothing is sent anywhere except the Claude API calls a review makes.
+"""
+
+import json
+import mimetypes
+import os
+import sys
+import threading
+import time
+import traceback
+from datetime import datetime, timedelta
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+
+from . import APP_NAME, __version__, config, drafts, intake, llm, mcp, phi, resources, rules, staff, store, tracker
+from .pages import load_packet
+from .paths import BUNDLE, DEMO_DIR, FROZEN, load_json, packets_dir, user_dir
+
+if not FROZEN:
+    sys.path.insert(0, str(BUNDLE.parent))  # app/, so `demo` imports in a source checkout
+
+TRACK = tracker.Tracker()
+PACKETS: dict[str, tuple[bytes, str]] = {}  # card id -> (file bytes, filename), in memory only
+REVIEWS: dict[str, intake.Review] = {}  # card id -> running or finished review
+SAMPLES: dict[str, dict] = {}
+LOCK = threading.Lock()
+
+
+def _demo_samples() -> dict:
+    if not SAMPLES:
+        try:
+            from demo import samples
+
+            SAMPLES.update(samples.sample_reports())
+        except Exception:
+            traceback.print_exc()
+    return SAMPLES
+
+
+def _demo_packet(pid: str) -> tuple[bytes, str] | None:
+    """Invented demo packets (D01...), or a de-identified event packet (R01...) read by path."""
+    if pid.startswith("R"):
+        d = packets_dir()
+        p = d / f"{pid}.pdf" if d else None
+        return (p.read_bytes(), p.name) if p and p.is_file() else None
+    p = DEMO_DIR / f"{pid}.pdf"
+    if not p.is_file():
+        cache = user_dir() / "demo-packets"  # invented content only
+        p = cache / f"{pid}.pdf"
+        if not p.is_file():
+            from demo import packets
+
+            packets.build(cache)
+    return (p.read_bytes(), p.name) if p.is_file() else None
+
+
+def load_demo(start_hour: int = 16, speed: float = 60.0) -> dict:
+    """The Monday 4:00 PM burst (docs/workflow-and-timing.md section 6), on a fast-forward clock."""
+    inbox = load_json(DEMO_DIR / "inbox.json")
+    TRACK.reset()
+    REVIEWS.clear()
+    PACKETS.clear()
+    today = datetime.now()
+    monday = (today - timedelta(days=today.weekday())).replace(hour=start_hour, minute=0, second=0, microsecond=0)
+    t0 = monday.timestamp()
+    TRACK.clock.set(sim_time=t0 - 30, speed=speed)
+    def on_shift(s):
+        a, b = (s.get("shift") or "00:00-24:00").split("-")
+        mins = lambda x: int(x[:2]) * 60 + int(x[3:])
+        return mins(a) <= start_hour * 60 < mins(b)
+
+    if inbox.get("staff"):
+        TRACK.staff = [{"name": s["name"], "role": s.get("role", "coordinator"), "on_shift": on_shift(s)}
+                       for s in inbox["staff"] if s.get("role") != "clinical_line"]
+    contacts = {c["hospital"]: c for c in inbox.get("contacts", [])}
+    for i, r in enumerate(inbox["referrals"]):
+        c = contacts.get(r["hospital"], {})
+        card = {"id": r["case_no"], "case_no": r["case_no"], "channel": r.get("channel"), "hospital": r["hospital"],
+                "subject": r.get("subject"), "body": r.get("body"), "packet_id": r.get("packet"),
+                "fallback_packet": r.get("fallback_packet"), "case_manager": c.get("case_manager"),
+                "cm_email": c.get("cm_email"), "cm_phone": c.get("cm_phone"), "supervisor": c.get("supervisor"),
+                "sup_email": c.get("sup_email"), "sup_phone": c.get("sup_phone"), "site": r.get("site", "Orange County"),
+                "practice": True}
+        TRACK.schedule(card, t0 + r["arrives_min"] * 60)
+    arrivals = [r["arrives_min"] for r in inbox["referrals"]]
+    walk = [r.get("withdraw_after_silence_min") for r in inbox["referrals"]]
+    people = 1
+    return {"manual": tracker.simulate(arrivals, 40, people, walk), "tool": tracker.simulate(arrivals, 10, people, walk),
+            "minutes_manual": 40, "minutes_tool": 10, "people": people, "placeholder": True}
+
+
+def _on_land(card: dict):
+    """When a card lands: attach its packet and, for invented demo packets, the sample review."""
+    pid = card.get("packet_id")
+    if not pid or card["id"] in PACKETS:
+        return
+    got = _demo_packet(pid) or (_demo_packet(card["fallback_packet"]) if card.get("fallback_packet") else None)
+    if got:
+        PACKETS[card["id"]] = got
+    used = pid if pid.startswith("D") or not card.get("fallback_packet") or (got and got[1].startswith(pid)) else card["fallback_packet"]
+    card["packet_used"] = used
+    sample = _demo_samples().get(used)
+    if sample:
+        TRACK.cards[card["id"]]["sample"] = True
+        TRACK.attach_review(card["id"], sample)
+        REVIEWS[card["id"]] = None  # sample, not a live run
+
+
+def start_review(cid: str) -> None:
+    data, name = PACKETS[cid]
+    review = intake.Review(load_packet(data, name), name, TRACK.cards[cid]["arrived_at"])
+    REVIEWS[cid] = review
+    TRACK.cards[cid]["sample"] = False
+    TRACK.cards[cid]["review_state"] = "running"
+    TRACK.log(cid, "system", "review started", f"{len(review.pages)} pages")
+
+    def work():
+        try:
+            rep = intake.run(review)
+            TRACK.attach_review(cid, rep)
+        except Exception as e:
+            review.error = str(e)
+            review.stage = "error"
+            TRACK.cards[cid]["review_state"] = "error"
+            TRACK.log(cid, "system", "review failed", str(e))
+            if not isinstance(e, llm.LLMError):
+                traceback.print_exc()
+
+    threading.Thread(target=work, daemon=True).start()
+
+
+def watch_inbox(interval: float = 5.0) -> None:
+    """Step 1 of the closed loop: a referral saved into the inbox folder (fax PDF or email
+    attachment) becomes a card. The clock starts from the file's arrival time, not when it is opened."""
+    seen: set[str] = set()
+
+    def loop():
+        while True:
+            folder = config.inbox_dir()
+            if folder and Path(folder).is_dir():
+                for f in sorted(Path(folder).iterdir()):
+                    if f.suffix.lower() not in (".pdf", ".tif", ".tiff") or str(f) in seen:
+                        continue
+                    seen.add(str(f))
+                    try:
+                        data = f.read_bytes()
+                    except OSError:
+                        seen.discard(str(f))  # still being written; try again next pass
+                        continue
+                    case = f"REF-{len(TRACK.cards) + 1:03d}"
+                    card = TRACK.add({"id": case, "case_no": case, "channel": "fax" if "fax" in f.name.lower() else "email",
+                                      "hospital": "unknown", "packet_used": f.name}, arrived_at=f.stat().st_mtime)
+                    PACKETS[card["id"]] = (data, f.name)
+                    if config.get_api_key():
+                        start_review(card["id"])
+            time.sleep(interval)
+
+    threading.Thread(target=loop, daemon=True).start()
+
+
+def card_report(cid: str) -> dict | None:
+    r = REVIEWS.get(cid)
+    if r is None:
+        if TRACK.cards[cid].get("sample"):
+            return _demo_samples().get(TRACK.cards[cid].get("packet_used"))
+        return None
+    return r.report
+
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = f"CareBridge/{__version__}"
+
+    def log_message(self, fmt, *args):  # quiet console; no request paths that could carry text
+        pass
+
+    # ---- helpers ---------------------------------------------------------------------------
+    def _send(self, code: int, body: bytes, ctype: str, extra: dict | None = None):
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        for k, v in (extra or {}).items():
+            self.send_header(k, v)
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _json(self, obj, code: int = 200):
+        self._send(code, json.dumps(obj, ensure_ascii=False, default=str).encode("utf-8"), "application/json; charset=utf-8")
+
+    def _body(self) -> bytes:
+        n = int(self.headers.get("Content-Length") or 0)
+        return self.rfile.read(n) if n else b""
+
+    def _jbody(self) -> dict:
+        try:
+            return json.loads(self._body() or b"{}")
+        except ValueError:
+            return {}
+
+    def _local_only(self) -> bool:
+        # Refuse requests a web page on another site could forge against this local server.
+        origin = self.headers.get("Origin")
+        host = self.headers.get("Host", "")
+        if origin and urlparse(origin).netloc != host:
+            self._json({"error": "forbidden"}, 403)
+            return False
+        if not host.startswith(("127.0.0.1", "localhost")):
+            self._json({"error": "forbidden"}, 403)
+            return False
+        return True
+
+    # ---- routes ----------------------------------------------------------------------------
+    def do_GET(self):
+        if not self._local_only():
+            return
+        u = urlparse(self.path)
+        q = parse_qs(u.query)
+        p = u.path
+        try:
+            if p in ("/", "/index.html"):
+                return self._static("index.html")
+            if p.startswith("/static/"):
+                return self._static(p[len("/static/"):])
+            if p == "/api/state":
+                s = config.load_settings()
+                real = sorted(x.stem for x in (packets_dir() or Path("/nonexistent")).glob("R*.pdf")) if packets_dir() else []
+                return self._json({"app": APP_NAME, "version": __version__, "has_key": bool(config.get_api_key()),
+                                   "model": config.model(), "fast_model": config.fast_model(),
+                                   "lang": s.get("lang", "en"), "real_packets": real, "provider": config.provider(),
+                                   "foundry_resource": config.foundry_resource(), "inbox_dir": config.inbox_dir(),
+                                   "db": str(store.db_path())})
+            if p == "/api/queue":
+                for c in TRACK.tick():
+                    _on_land(c)
+                q_ = TRACK.queue()
+                for v in q_:
+                    r = REVIEWS.get(v["id"])
+                    v["review_stage"] = r.stage if r else ("sample" if v.get("sample") else None)
+                    v["review_progress"] = r.progress[-1] if r and r.progress else None
+                    v["has_packet"] = v["id"] in PACKETS
+                    v.pop("body", None)
+                return self._json({"now": TRACK.clock.now(), "speed": TRACK.clock.speed, "cards": q_,
+                                   "pending": len(TRACK.pending), "peak": TRACK.peak_warning(),
+                                   "report": TRACK.report(), "withdraw_reasons": TRACK.report_withdrawals(),
+                                   "staff": TRACK.staff})
+            parts = p.strip("/").split("/")
+            if parts[:2] == ["api", "cards"] and len(parts) >= 3:
+                cid = parts[2]
+                if cid not in TRACK.cards:
+                    return self._json({"error": "not found"}, 404)
+                if len(parts) == 3:
+                    r = REVIEWS.get(cid)
+                    return self._json({"card": TRACK.view(cid), "report": card_report(cid),
+                                       "progress": r.progress if r else [], "error": r.error if r else None,
+                                       "audit": [a for a in TRACK.audit if a["card"] == cid]})
+                if parts[3] == "pages" and len(parts) == 5:
+                    return self._page(cid, int(parts[4].split(".")[0]))
+                if parts[3] == "drafts":
+                    return self._json(self._drafts(cid, q.get("lang", ["en"])[0]))
+            if p == "/api/rules":
+                return self._json({"rules": list(rules.all_rules().values()), "gaps": rules.GAPS, "gates": rules.GATES})
+            if p == "/api/scenarios":
+                return self._json({"scenarios": resources.scenarios(), "examples": staff.EXAMPLES})
+            if p == "/api/report":
+                return self._json(store.weekly_report(int(q.get("days", ["7"])[0]), q.get("practice", ["0"])[0] == "1"))
+            if p == "/api/audit":
+                return self._json(TRACK.audit[-300:])
+            return self._json({"error": "not found"}, 404)
+        except Exception as e:
+            traceback.print_exc()
+            return self._json({"error": str(e)}, 500)
+
+    def do_POST(self):
+        if not self._local_only():
+            return
+        p = urlparse(self.path).path
+        try:
+            if p == "/mcp":
+                resp = mcp.handle(self._jbody())
+                return self._json(resp) if resp else self._send(202, b"", "text/plain")
+            if p == "/api/key":
+                key = self._jbody().get("key", "").strip()
+                if not key.startswith("sk-ant-"):
+                    return self._json({"error": "That doesn't look like a Claude API key (it starts with sk-ant-)."}, 400)
+                config.set_api_key(key)
+                return self._json({"ok": True})
+            if p == "/api/key/clear":
+                config.clear_api_key()
+                return self._json({"ok": True})
+            if p == "/api/settings":
+                b = self._jbody()
+                keys = ("lang", "model", "fast_model", "provider", "foundry_resource", "inbox_dir")
+                return self._json(config.save_settings({k: v for k, v in b.items() if k in keys}))
+            if p == "/api/demo":
+                b = self._jbody()
+                return self._json(load_demo(speed=float(b.get("speed", 60))))
+            if p == "/api/clock":
+                b = self._jbody()
+                TRACK.clock.set(speed=float(b.get("speed", 1)))
+                return self._json({"speed": TRACK.clock.speed})
+            if p == "/api/upload":
+                data = self._body()
+                name = self.headers.get("X-Filename", "packet.pdf")
+                if not data:
+                    return self._json({"error": "empty file"}, 400)
+                case = self.headers.get("X-Case") or f"REF-{len(TRACK.cards) + 1:03d}"
+                card = TRACK.add({"id": case, "case_no": case, "channel": "upload",
+                                  "hospital": self.headers.get("X-Hospital") or "unknown", "packet_used": name})
+                PACKETS[card["id"]] = (data, name)
+                if config.get_api_key():
+                    start_review(card["id"])
+                return self._json({"card": TRACK.view(card["id"])})
+            parts = p.strip("/").split("/")
+            if parts[:2] == ["api", "cards"] and len(parts) == 4:
+                cid, what = parts[2], parts[3]
+                if cid not in TRACK.cards:
+                    return self._json({"error": "not found"}, 404)
+                if what == "review":
+                    if cid not in PACKETS:
+                        return self._json({"error": "No packet file for this referral."}, 400)
+                    if not config.get_api_key():
+                        return self._json({"error": "no_key"}, 400)
+                    start_review(cid)
+                    return self._json({"ok": True})
+                if what == "act":
+                    b = self._jbody()
+                    try:
+                        c = TRACK.act(cid, b["action"], b.get("who", ""), b.get("reason", ""))
+                    except ValueError as e:
+                        return self._json({"error": str(e)}, 400)
+                    return self._json({"card": TRACK.view(c["id"])})
+            if p == "/api/resources":
+                b = self._jbody()
+                return self._json(resources.find(b.get("situation", ""), b.get("lang", "en"), b.get("needs") or None,
+                                                 use_ai=bool(b.get("use_ai", True)) and bool(config.get_api_key())))
+            if p == "/api/phi-check":
+                return self._json(phi.check(self._jbody().get("text", "")))
+            if p == "/api/staff/note":
+                b = self._jbody()
+                return self._json(staff.note_draft(b.get("jottings", ""), b.get("lang", "en")))
+            if p == "/api/staff/explain":
+                b = self._jbody()
+                return self._json(staff.explain_rule(b.get("rule_id", ""), b.get("lang", "en")))
+            return self._json({"error": "not found"}, 404)
+        except llm.LLMError as e:
+            return self._json({"error": str(e)}, 502)
+        except Exception as e:
+            traceback.print_exc()
+            return self._json({"error": str(e)}, 500)
+
+    def _static(self, rel: str):
+        base = (BUNDLE / "web").resolve()
+        f = (base / rel).resolve()
+        if base not in f.parents and f != base or not f.is_file():
+            return self._json({"error": "not found"}, 404)
+        ctype = mimetypes.guess_type(f.name)[0] or "application/octet-stream"
+        if ctype.startswith("text/") or ctype in ("application/javascript", "application/json"):
+            ctype += "; charset=utf-8"
+        return self._send(200, f.read_bytes(), ctype)
+
+    def _page(self, cid: str, n: int):
+        r = REVIEWS.get(cid)
+        pages = r.pages if r else None
+        if pages is None and cid in PACKETS:
+            data, name = PACKETS[cid]
+            pages = load_packet(data, name)
+            if TRACK.cards[cid].get("sample"):
+                rep = card_report(cid) or {}
+                for pg in pages:
+                    meta = next((m for m in rep.get("pages", []) if m["page"] == pg.number), None)
+                    if meta:
+                        pg.rotation = meta["rotation"]
+        if not pages or not 1 <= n <= len(pages):
+            return self._json({"error": "not found"}, 404)
+        return self._send(200, pages[n - 1].jpeg(upright=True, long_edge=1400), "image/jpeg")
+
+    def _drafts(self, cid: str, lang: str) -> dict:
+        card = TRACK.view(cid)
+        rep = card_report(cid)
+        out = {"more_time": drafts.more_time(card, lang), "chase_nudge": drafts.chase(card, "nudge", lang),
+               "chase_supervisor": drafts.chase(card, "supervisor", lang)}
+        if rep:
+            out["missing_items"] = drafts.missing_items(card, rep, lang)
+            out["clinical"] = drafts.clinical_handoff(card, rep, lang)
+            out["accepted"] = drafts.decision_reply(card, rep, "accepted", "", lang)
+            out["intake_cleared"] = drafts.decision_reply(card, rep, "intake_cleared", "", lang)
+            out["handoffs"] = drafts.handoffs(card, rep, lang)
+            out["markdown"] = mcp.report_markdown(rep, lang)
+        return out
+
+
+def serve(port: int = 0, open_browser: bool = True) -> None:
+    import webbrowser
+
+    # Inside the Docker container the server binds 0.0.0.0 so the port mapping can reach it; the
+    # compose file publishes it on the host's 127.0.0.1 only, and _local_only still checks Host.
+    host = os.environ.get("CAREBRIDGE_HOST") or "127.0.0.1"
+    httpd = ThreadingHTTPServer((host, port), Handler)
+    url = f"http://127.0.0.1:{httpd.server_address[1]}/"
+    print(f"{APP_NAME} {__version__} is running at {url}")
+    print("Only this computer can open it. Close this window to quit; reviews are not saved.")
+    watch_inbox()
+    if open_browser:
+        threading.Timer(0.6, lambda: webbrowser.open(url)).start()
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        httpd.server_close()

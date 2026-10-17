@@ -27,3 +27,12 @@ challenges/1-referral-intake/packets/*
 !challenges/1-referral-intake/packets/README.md
 *.zip
 **/R[0-9][0-9].pdf
+
+# generated Copilot agent package
+copilot/m365/build/
+
+# local eval output (routes and costs only, still kept out of git)
+app/eval-results/
+
+# local Docker inbox (referral PDFs dropped in for the app to pick up)
+inbox/

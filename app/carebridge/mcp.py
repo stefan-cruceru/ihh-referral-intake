@@ -1,0 +1,199 @@
+"""MCP server so Copilot (or any MCP client) can use Care Bridge as a plugin.
+
+Two transports share one handler:
+  - stdio: `ihh-care-bridge.exe mcp`, for GitHub Copilot in VS Code, Claude Desktop and others.
+  - HTTP:  POST /mcp on the local app, for clients that speak MCP over HTTP.
+Rule lookups need no API key. Packet reviews, resource picks and note drafts use Claude.
+"""
+
+import json
+import sys
+from pathlib import Path
+
+from . import __version__, intake, resources, rules, staff
+from .pages import load_packet
+
+PROTOCOL = "2025-06-18"
+
+
+def _schema(props: dict, required: list[str]) -> dict:
+    return {"type": "object", "properties": props, "required": required}
+
+
+LANG = {"type": "string", "enum": ["en", "es"], "description": "Language for text people read. Default en."}
+
+TOOLS = [
+    {"name": "review_referral_packet",
+     "description": "Review a de-identified hospital referral packet (PDF or TIFF on this computer) against IHH's "
+                    "recuperative care admission criteria. Returns the two gates (self-care, behavioral stability), "
+                    "a suggested route (never a decision), each flag with page number and verified quote, missing "
+                    "documents, form-vs-chart conflicts, questions for the hospital and the cost. Takes 1 to 4 minutes.",
+     "inputSchema": _schema({"path": {"type": "string", "description": "Full path to the packet file."}, "language": LANG}, ["path"])},
+    {"name": "lookup_admission_rule",
+     "description": "Get the exact text of one IHH admission rule by ID (e.g. ADL-2, MOB-4, DOC-6, NEU-X1), "
+                    "plus any known gap in the written rules.",
+     "inputSchema": _schema({"rule_id": {"type": "string"}}, ["rule_id"])},
+    {"name": "search_admission_rules",
+     "description": "Search IHH's admission criteria by keyword (e.g. 'wheelchair', 'insulin', 'oxygen', 'C. diff').",
+     "inputSchema": _schema({"query": {"type": "string"}}, ["query"])},
+    {"name": "referral_document_checklist",
+     "description": "The 10 documents a hospital must send with a referral (DOC-1 to DOC-10).",
+     "inputSchema": _schema({}, [])},
+    {"name": "find_client_resources",
+     "description": "Suggest next-step resources in Orange County for an IHH client leaving recuperative care, "
+                    "picked only from a sourced list (shelter, work, microloans, travel home, ID, benefits...). "
+                    "Do not include names, dates of birth or other identifiers.",
+     "inputSchema": _schema({"situation": {"type": "string"}, "language": LANG}, ["situation"])},
+    {"name": "draft_progress_note",
+     "description": "Turn an LVN's or medical assistant's own shift jottings into a progress note draft. Every "
+                    "sentence is checked against the jottings and flagged if unsupported. No identifiers.",
+     "inputSchema": _schema({"jottings": {"type": "string"}, "language": LANG}, ["jottings"])},
+]
+
+
+def report_markdown(rep: dict, lang: str = "en") -> str:
+    es = lang == "es"
+    st = {"met": "met", "not_met": "NOT MET", "cant_tell": "can't tell", "not_applicable": "n/a"}
+    if es:
+        st = {"met": "cumple", "not_met": "NO CUMPLE", "cant_tell": "no se puede determinar", "not_applicable": "no aplica"}
+    route = {"likely_yes": ("Likely yes: confirm open items", "Probable sí: confirme lo pendiente"),
+             "needs_info": ("Needs info from the hospital", "Falta información del hospital"),
+             "clinical_check": ("Clinical check needed", "En revisión clínica"),
+             "likely_no": ("Likely no: sent to the clinical line", "Probable rechazo: enviado a revisión clínica")}
+    rec = rep["recommendation"]
+    facts = {f["id"]: f for f in rep["facts"]}
+    out = [f"## {rep['packet']}", "",
+           f"**{'Ruta sugerida' if es else 'Suggested route'}: {route[rec['code']][1 if es else 0]}** "
+           f"({'una persona decide; solo un clínico puede negar' if es else 'a person decides; only a clinician can deny'})", ""]
+    if rep["flags"].get("phi_pages"):
+        out += [f"> **STOP:** possible unredacted identifier on page(s) {rep['flags']['phi_pages']}. Tell an organizer / privacy officer.", ""]
+    out += [rep["summary_es" if es else "summary"], ""]
+    gname = {"self_care": ("Can care for themselves", "Puede cuidarse por sí mismo/a"),
+             "behavior": ("Behaviorally stable", "Estable en su conducta")}
+    for g, v in rep["gates"].items():
+        out.append(f"- **{gname[g][1 if es else 0]}:** {st[v['status']]}")
+    out.append("")
+    show = [r for r in rep["rules"] if r["status"] == "not_met" or (r["gate"] and r["status"] == "cant_tell" and r["rule_id"] in rules.GATE_CORE[r["gate"]])]
+    if show:
+        out.append("### " + ("Puntos a revisar" if es else "Flags"))
+        for r in show:
+            out.append(f"- **{r['rule_id']}** ({st[r['status']]}): {r['explanation_es' if es else 'explanation']}"
+                       + (" _[date redacted]_" if "date_redacted" in r["notes"] else ""))
+            for fid in r["fact_ids"]:
+                out.append(f"  - p.{facts[fid]['page']}: \"{facts[fid]['quote']}\"")
+    bad = [d for d in rep["diagnoses"] if d["ineligible"]]
+    for d in bad:
+        out.append(f"- **{d['rule_id']}** ({'no elegible' if es else 'ineligible'}{'' if d['verified'] else ', unverified'}): {d['text']}")
+    if rep["conflicts"]:
+        out += ["", "### " + ("Formulario vs. expediente" if es else "Form vs. chart conflicts")]
+        for c in rep["conflicts"]:
+            out.append(f"- {c['description_es' if es else 'description']} ({', '.join(f'p.{facts[i]['page']}' for i in c['fact_ids'])})")
+    miss = [c for c in rep["checklist"] if c["status"] == "missing"]
+    if miss:
+        out += ["", "### " + ("Documentos que faltan" if es else "Missing documents")]
+        out += [f"- {c['doc_id']}: {c['text']}" for c in miss]
+    if rep["questions"]:
+        out += ["", "### " + ("Preguntas para el hospital" if es else "Questions for the hospital")]
+        out += [f"- {q[lang]} ({', '.join(q['rule_ids'])})" for q in rep["questions"]]
+    qc = rep["qc"]
+    out += ["", f"_QC: {qc['verified']} of {qc['facts']} quotes verified on the page, {qc['not_found']} not found and dropped, "
+                f"{len(qc['downgrades'])} statuses downgraded. Cost ${rep.get('cost', {}).get('usd', 0):.2f}._"]
+    return "\n".join(out)
+
+
+def call_tool(name: str, args: dict) -> str:
+    lang = args.get("language", "en")
+    if name == "lookup_admission_rule":
+        r = rules.all_rules().get(str(args["rule_id"]).strip().upper())
+        if not r:
+            return "Unknown rule ID. Try search_admission_rules."
+        gap = [t for rid, t in rules.GAPS if rid == r["id"]]
+        return json.dumps({**r, "known_gap": gap[0] if gap else None}, ensure_ascii=False, indent=1)
+    if name == "search_admission_rules":
+        hits = rules.search(args["query"])
+        return "\n".join(f"{r['id']} [{r['kind']}, {r['section']}]: {r['text']}" for r in hits) or "No matching rules."
+    if name == "referral_document_checklist":
+        return "\n".join(f"{d['id']}: {d['text']}" for d in rules.criteria()["referral_checklist"]["items"])
+    if name == "find_client_resources":
+        res = resources.find(args["situation"], lang)
+        if res["blocked"]:
+            return "Blocked: the text looks like it contains identifiers (" + ", ".join(sorted({h["kind"] for h in res["phi"]["hits"]})) + "). Remove them and try again."
+        lines = []
+        if res["danger"]:
+            lines.append("SAFETY FIRST: if someone is in danger call 911. Bring in staff now.")
+            lines += [f"- {c['name']}: {c['phone']}" for c in res["safety"]]
+        lines.append(res["plan_today"])
+        for c in res["cards"]:
+            lines.append(f"- **{c['name']}** ({c['phone'] or 'phone unknown'}; hours: {c['hours'] or 'unknown'}). {c['why']} "
+                         f"First step: {c['first_step']} {c['watch_out']} [source checked {c['verified_date']}: {c['source_url']}]")
+        if res["ask_staff"]:
+            lines.append("Staff to confirm: " + "; ".join(res["ask_staff"]))
+        lines.append(res["disclaimer"])
+        return "\n".join(lines)
+    if name == "draft_progress_note":
+        res = staff.note_draft(args["jottings"], lang)
+        if res["blocked"]:
+            return "Blocked: the jottings look like they contain identifiers. Remove them and try again."
+        lines = [("" if s["supported"] else "[CHECK: not found in your jottings] ") + s["text"] for s in res["sentences"]]
+        if res["missing"]:
+            lines += ["", "Usually in a note but not in your jottings:"] + [f"- {m}" for m in res["missing"]]
+        return "\n".join(lines + ["", "Draft. You check it before it goes in the record."])
+    if name == "review_referral_packet":
+        p = Path(args["path"])
+        if not p.is_file():
+            return f"File not found: {p}"
+        review = intake.Review(load_packet(p.read_bytes(), p.name), p.name)
+        return report_markdown(intake.run(review), lang)
+    raise KeyError(name)
+
+
+def handle(msg: dict) -> dict | None:
+    """One JSON-RPC message in, one response out (None for notifications)."""
+    mid = msg.get("id")
+    method = msg.get("method")
+    if mid is None:
+        return None
+    try:
+        if method == "initialize":
+            v = (msg.get("params") or {}).get("protocolVersion") or PROTOCOL
+            result = {"protocolVersion": v, "capabilities": {"tools": {}},
+                      "serverInfo": {"name": "ihh-care-bridge", "version": __version__},
+                      "instructions": "IHH recuperative care referral intake, admission rules, client resources and "
+                                      "note drafts. Prototype for de-identified or invented data only. Claude flags; "
+                                      "a person decides, and only a clinician can deny."}
+        elif method == "ping":
+            result = {}
+        elif method == "tools/list":
+            result = {"tools": TOOLS}
+        elif method == "tools/call":
+            p = msg.get("params") or {}
+            try:
+                text, err = call_tool(p.get("name"), p.get("arguments") or {}), False
+            except KeyError:
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32602, "message": f"Unknown tool {p.get('name')}"}}
+            except Exception as e:  # tool errors go back to the model as text
+                text, err = f"Error: {e}", True
+            result = {"content": [{"type": "text", "text": text}], "isError": err}
+        else:
+            return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32601, "message": f"Method not found: {method}"}}
+    except Exception as e:
+        return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": str(e)}}
+    return {"jsonrpc": "2.0", "id": mid, "result": result}
+
+
+def serve_stdio():
+    stdin = sys.stdin.buffer
+    out = sys.stdout.buffer
+    for line in stdin:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            msg = json.loads(line)
+        except ValueError:
+            resp = {"jsonrpc": "2.0", "id": None, "error": {"code": -32700, "message": "Parse error"}}
+        else:
+            resp = handle(msg)
+        if resp is not None:
+            out.write(json.dumps(resp, ensure_ascii=False).encode("utf-8") + b"\n")
+            out.flush()
