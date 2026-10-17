@@ -1,4 +1,4 @@
-"""Build-time staging for the exe: invented demo packets, the icon and the version resource.
+"""Build-time staging for the exe: the icon and the version resource.
 
 Everything goes to app/build/stage (gitignored). Run by build.ps1 before PyInstaller.
 """
@@ -13,7 +13,6 @@ STAGE = APP / "build" / "stage"
 sys.path.insert(0, str(APP))
 
 from carebridge import __version__  # noqa: E402
-from demo import packets  # noqa: E402
 
 
 def icon(path: Path):
@@ -50,9 +49,7 @@ def version_file(path: Path):
 
 
 if __name__ == "__main__":
-    (STAGE / "demo").mkdir(parents=True, exist_ok=True)
-    for p in packets.build(STAGE / "demo"):
-        print("demo packet:", p)
+    STAGE.mkdir(parents=True, exist_ok=True)
     icon(STAGE / "carebridge.ico")
     version_file(STAGE / "version.txt")
     print("staged in", STAGE)

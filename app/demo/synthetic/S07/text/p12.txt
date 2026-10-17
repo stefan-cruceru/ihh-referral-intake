@@ -1,0 +1,26 @@
+09/08/2026 10:48 FROM: ST BRENDAN COMM HOSP CASE MGMT FAX 657-555-0163 TO: IHH RECUP                                       P.12/12
+
+
+
+
+
+KESSLER, BERNARD (MRN: SYN-245571) DOB: 12/14/1967                      58y M             St. Brendan Community Hospital · 2 South
+                                                                                                                           Medical
+
+
+Case Management / Social Work Note
+Miguel Ortega, MSW - 09/08/2026 10:20
+Patient has been unhoused about a year and relies on public restrooms. He needs a place with a bathroom
+to finish treatment. Agreeable to recuperative care.
+
+DISCHARGE PLANNING
+         Item                                        Status
+         Housing                                     Unhoused about 1 year.
+         Disposition                                 Recuperative care referral faxed 09/08/2026.
+         Follow-up                                   Primary care 09/16/2026.
+         Health plan authorization                   Submitted 09/08/2026. Pending.
+
+
+
+
+                                SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

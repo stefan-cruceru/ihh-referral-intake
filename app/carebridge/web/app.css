@@ -50,6 +50,10 @@ details > summary { cursor: pointer; }
 .tabs button svg { width: 22px; height: 22px; flex: none; }
 .tabs button:hover { color: var(--ink); background: var(--gray-soft); }
 .tabs button.on { color: var(--brand); border-bottom-color: var(--lamp); }
+/* A tab that opens its own page (Practice patients) looks like the others. */
+.tabs a.tab-link { padding: .7rem 1.1rem .85rem; color: var(--muted); font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; gap: .5rem; border-bottom: 4px solid transparent; border-radius: 10px 10px 0 0; text-decoration: none; }
+.tabs a.tab-link svg { width: 22px; height: 22px; flex: none; }
+.tabs a.tab-link:hover { color: var(--ink); background: var(--gray-soft); }
 .privacy-bar { display: flex; gap: .55rem; align-items: center; justify-content: center; padding: .55rem 1.5rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg); color: var(--muted); font-size: .9rem; text-align: center; }
 .privacy-bar svg { width: 18px; height: 18px; flex: none; color: var(--brand); }
 

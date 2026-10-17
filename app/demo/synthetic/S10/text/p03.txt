@@ -1,0 +1,38 @@
+09/18/2026 11:35 FROM: LOS OLIVOS REGIONAL CASE MGMT FAX 949-555-0177 TO: IHH RECUP                                                        P.3/14
+
+
+
+
+
+
+ARCENEAUX, PHILLIP (MRN: SYN-339018) DOB: 09/30/1963 62y M                                           Los Olivos Regional Hospital · Medical Unit 4C
+
+
+Patient Face Sheet
+Printed 09/18/2026 11:35 by Dana Whitfield
+
+PATIENT INFORMATION
+       Patient                ARCENEAUX, PHILLIP                                                  Sex                       M
+       DOB                    09/30/1963                                                          Age                       62y
+       Address                NO FIXED ADDRESS                                                    Language                  English
+       Phone                  NONE                                                                Marital Status            Single
+       Emergency Contact None listed                                                              Interpreter               No
+
+INSURANCE INFORMATION
+       Primary                Medi-Cal managed care plan                         Member ID                  SYN-M-574203
+       Secondary              None                                               Financial Class            Medi-Cal Managed Care
+
+ENCOUNTER INFORMATION
+       Admit Date/Time        09/04/2026 13:40                                                Mode of Arrival          Ambulance
+       Patient Class          Inpatient                                                       Unit                     Medical Unit 4C
+       Admitting              Sepsis from pneumonia, resolved; stage 3 pressure               Diagnosis Code           A41.9, J18.9, L89.153,
+       Diagnosis              injury of the sacrum                                                                     Z59.02
+       Attending              Elena Vasquez-Ruiz, DO                                          Expected                 09/19/2026
+                                                                                              Discharge
+
+Los Olivos Regional Hospital, 880 Mission Ridge Road, Orange County, CA. Main 949-555-0120.
+
+
+
+
+                                   SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026
