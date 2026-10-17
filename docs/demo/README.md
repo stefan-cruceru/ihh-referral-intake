@@ -5,7 +5,7 @@ The release includes the 1080p film, 720p copy, cover, English and Spanish subti
 logo exports and a standalone interactive architecture map. These sources recreate its artwork,
 practice-app recording and compositor.
 
-**Recorded application revision:** `be8fd8e5a6f23f62d46ec9d6fa941c79d0d55001`.
+**Recorded application revision:** `a8e52e5db69955a8a15ed3ceed6ac09f96a4fa02`.
 This records the synthetic practice workflow available at that revision. The film follows
 [project rules](../../CLAUDE.md), [bilingual requirements](../bilingual.md), and
 [workflow and timing](../workflow-and-timing.md), with Sam’s Lamplight campaign and Public Sans.
@@ -42,6 +42,9 @@ browser download, stock clips, recordings, generated fonts and final encodes in 
 scratchpad outside the repository. In the PowerShell examples, set `$demoScratch` to that existing
 session scratch directory first. Do not use the repository, home directory or a new drive-root
 folder as scratch.
+
+If a later application revision retires the practice patients, run the practice app from the
+recorded revision in a separate checkout, using the recording sources from this release.
 
 ```powershell
 python -m venv "$demoScratch/venv"
@@ -88,7 +91,7 @@ media URL or downloaded narration manifest is required.
 
 ```powershell
 gh release download demo-lamplight-2026-10-17 --repo stefan-cruceru/ihh-referral-intake --pattern "Lamplight-Demo-1080p.mp4" --dir "$demoScratch"
-python docs/demo/render_lamplight.py --raw "$demoScratch/lamplight-raw.webm" --audio "$demoScratch/Lamplight-Demo-1080p.mp4" --timeline docs/demo/lamplight-timeline.json --scratch "$demoScratch" --video-offset 0 --output "$demoScratch/Lamplight - Remade.mp4"
+python docs/demo/render_lamplight.py --raw "$demoScratch/lamplight-raw.webm" --audio "$demoScratch/Lamplight-Demo-1080p.mp4" --timeline docs/demo/lamplight-timeline.json --scratch "$demoScratch" --video-offset 0 --cover-time 3 --output "$demoScratch/Lamplight - Remade.mp4"
 python docs/demo/encode_lamplight_share.py --source "$demoScratch/Lamplight - Remade.mp4" --output "$demoScratch/Lamplight - Remade (720p).mp4"
 ```
 
