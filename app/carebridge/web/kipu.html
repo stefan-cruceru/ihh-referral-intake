@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kipu and Teams</title>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+  body { margin: 0; background: var(--bg); }
+  .k-top { display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: .8rem 1.2rem; background: var(--panel); border-bottom: 1px solid var(--line); }
+  .k-top a { color: var(--brand); font-weight: 600; text-decoration: none; }
+  .k-wrap { max-width: 1080px; margin: 0 auto; padding: 1.2rem; display: grid; gap: 1rem; }
+  .k-box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1rem 1.2rem; }
+  .k-box h2 { margin: 0 0 .5rem; font-size: 1.15rem; }
+  .k-m { color: var(--muted); font-size: .92rem; }
+  .k-row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .5rem 0; }
+  .k-row input, .k-row select { font: inherit; padding: .5rem .6rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: inherit; }
+  .k-btn { font: inherit; font-weight: 600; padding: .55rem .9rem; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; color: inherit; }
+  .k-btn.primary { background: var(--brand); color: var(--brand-ink, #fff); border-color: var(--brand); }
+  .k-pill { display: inline-block; padding: .2rem .6rem; border-radius: 999px; background: var(--gray-soft, #eee); font-size: .85rem; font-weight: 600; margin: .1rem; }
+  .k-warn { background: var(--yellow-soft, #fdf1d8); border-radius: 10px; padding: .6rem .8rem; }
+  table.k-t { width: 100%; border-collapse: collapse; font-size: .93rem; }
+  table.k-t td, table.k-t th { text-align: left; padding: .4rem .3rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  pre.k-pre { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: .7rem; max-height: 320px; overflow: auto; font-size: .82rem; }
+</style>
+</head>
+<body>
+<header class="k-top">
+  <a href="/" id="back"></a>
+  <strong id="title"></strong>
+  <span><span id="me" class="k-m"></span> · <a href="/auth/signout" id="signout"></a> · <button class="k-btn" id="lang"></button></span>
+</header>
+<main class="k-wrap">
+  <section class="k-box">
+    <h2 id="h-conn"></h2>
+    <p class="k-m" id="conn-help"></p>
+    <div class="k-row">
+      <select id="mode"><option value="off"></option><option value="mock"></option><option value="live"></option></select>
+      <label class="k-m"><input type="checkbox" id="write"> <span id="write-l"></span></label>
+      <input id="base" placeholder="https://api.kipuapi.com" size="30">
+      <button class="k-btn" id="save"></button>
+    </div>
+    <div class="k-warn" id="live-warn" hidden></div>
+    <div id="status" class="k-row"></div>
+  </section>
+
+  <section class="k-box">
+    <h2 id="h-in"></h2>
+    <p class="k-m" id="in-help"></p>
+    <div class="k-row"><button class="k-btn primary" id="sync"></button><span id="sync-out" class="k-m"></span></div>
+  </section>
+
+  <section class="k-box">
+    <h2 id="h-find"></h2>
+    <p class="k-m" id="find-help"></p>
+    <div class="k-row"><input id="f-first" data-ph="first"><input id="f-last" data-ph="last"><input id="f-dob" placeholder="MM/DD/YYYY"><button class="k-btn" id="find"></button></div>
+    <div id="find-out" class="k-m"></div>
+  </section>
+
+  <section class="k-box">
+    <h2 id="h-cards"></h2>
+    <p class="k-m" id="cards-help"></p>
+    <table class="k-t"><thead><tr><th id="th-case"></th><th id="th-status"></th><th id="th-kipu"></th><th id="th-steps"></th></tr></thead><tbody id="cards"></tbody></table>
+    <pre class="k-pre" id="teams-out" hidden></pre>
+  </section>
+
+  <section class="k-box">
+    <h2 id="h-writes"></h2>
+    <p class="k-m" id="writes-help"></p>
+    <pre class="k-pre" id="writes"></pre>
+  </section>
+</main>
+<script>
+"use strict";
+// Kipu and Teams: where the referral team's Kipu steps and the Teams sign-in come together.
+const T = {
+  back: ["← Back to the referral board", "← Volver al tablero"], title: ["Kipu and Teams", "Kipu y Teams"],
+  signout: ["Sign out", "Cerrar sesión"], signed: ["Signed in as", "Sesión de"],
+  h_conn: ["Kipu connection", "Conexión con Kipu"],
+  conn_help: ["Kipu is IHH's record system. Practice uses a fake Kipu with made-up patients. Live uses IHH's real Kipu and only a lead can turn it on.",
+              "Kipu es el sistema de expedientes de IHH. Práctica usa un Kipu falso con pacientes inventados. En vivo usa el Kipu real de IHH y solo un líder lo puede activar."],
+  off: ["Off", "Apagado"], mock: ["Practice Kipu (made-up patients)", "Kipu de práctica (pacientes inventados)"], live: ["IHH's live Kipu", "Kipu real de IHH"],
+  write_l: ["Allow writing to Kipu (each write is started by a person)", "Permitir escribir en Kipu (cada escritura la inicia una persona)"],
+  save: ["Save", "Guardar"],
+  live_warn: ["Live Kipu holds real patient records. Turn it on only after IHH IT says yes and a BAA covers this tool. The keys come from Kipu and are set by IT (KIPU_ACCESS_ID, KIPU_SECRET_KEY, KIPU_APP_ID), never typed here.",
+              "El Kipu real tiene expedientes de pacientes reales. Actívelo solo cuando TI de IHH lo apruebe y un BAA cubra esta herramienta. Las claves las da Kipu y las pone TI (KIPU_ACCESS_ID, KIPU_SECRET_KEY, KIPU_APP_ID); nunca se escriben aquí."],
+  in_care: ["in care now", "en cuidado ahora"], pending: ["referrals waiting in Kipu", "referidos esperando en Kipu"], writing: ["writing on", "escritura activada"],
+  h_in: ["Bring referrals in from Kipu", "Traer referidos desde Kipu"],
+  in_help: ["Each referral waiting in Kipu becomes a card on the board, with its timer, an owner and its packet.", "Cada referido que espera en Kipu se vuelve una tarjeta en el tablero, con su reloj, un responsable y su paquete."],
+  sync: ["Pull referrals from Kipu", "Traer referidos de Kipu"], added: ["new on the board", "nuevos en el tablero"],
+  h_find: ["Has this person been with IHH before?", "¿Esta persona ya estuvo con IHH?"],
+  find_help: ["Today a coordinator checks this by hand. Here a person types first name, last name and birth date, and confirms any match. The app never searches on its own.",
+              "Hoy un coordinador lo revisa a mano. Aquí una persona escribe nombre, apellido y fecha de nacimiento, y confirma si coincide. La app nunca busca por su cuenta."],
+  first: ["First name", "Nombre"], last: ["Last name", "Apellido"], find: ["Check Kipu", "Buscar en Kipu"],
+  none: ["No chart found. Create a new one after the review.", "No hay expediente. Cree uno nuevo después de la revisión."],
+  found: ["Possible match. A person must confirm:", "Posible coincidencia. Una persona debe confirmar:"],
+  h_cards: ["Referrals on the board: Kipu steps and Teams", "Referidos en el tablero: pasos en Kipu y Teams"],
+  cards_help: ["The same steps the team does today, one click each: make the chart, file the packet, add the intake note after a decision. The Teams card goes to the clinical reviewer; its buttons only work for that person after they sign in with Teams.",
+               "Los mismos pasos de hoy, un clic cada uno: crear el expediente, archivar el paquete, agregar la nota de admisión después de decidir. La tarjeta de Teams es para quien hace la revisión clínica; sus botones solo funcionan para esa persona después de entrar con Teams."],
+  th_case: ["Referral", "Referido"], th_status: ["Status", "Estado"], th_kipu: ["Kipu chart", "Expediente en Kipu"], th_steps: ["Steps", "Pasos"],
+  create_chart: ["Make chart", "Crear expediente"], file_documents: ["File packet", "Archivar paquete"], intake_note: ["Add intake note", "Agregar nota"],
+  teams_card: ["Teams card for clinical", "Tarjeta de Teams para clínica"],
+  teams_note: ["Draft card. Copy it into the Teams chat with this person. Nothing was sent.", "Tarjeta borrador. Cópiela al chat de Teams con esta persona. No se envió nada."],
+  h_writes: ["What went into Kipu", "Lo que se escribió en Kipu"],
+  writes_help: ["Practice Kipu keeps a list so you can see each write. No patient details are shown here.", "El Kipu de práctica guarda una lista para ver cada escritura. Aquí no se muestran datos del paciente."],
+  off_msg: ["Kipu is off.", "Kipu está apagado."],
+};
+let LANG = "en";
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const t = (k) => (T[k] ? T[k][LANG === "es" ? 1 : 0] : k);
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (r.status === 401) { location.href = "/auth/signin?next=/static/kipu.html"; throw new Error("sign in"); }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+const post = (p, b) => api(p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) });
+
+function words() {
+  document.documentElement.lang = LANG;
+  for (const id of ["back", "title", "signout", "save", "sync", "find"]) $("#" + id).textContent = t(id);
+  for (const id of ["h-conn", "h-in", "h-find", "h-cards", "h-writes", "th-case", "th-status", "th-kipu", "th-steps"]) $("#" + id).textContent = t(id.replace("-", "_"));
+  for (const id of ["conn-help", "in-help", "find-help", "cards-help", "writes-help"]) $("#" + id).textContent = t(id.replace("-", "_"));
+  $("#write-l").textContent = t("write_l"); $("#live-warn").textContent = t("live_warn");
+  $("#f-first").placeholder = t("first"); $("#f-last").placeholder = t("last");
+  $("#lang").textContent = LANG === "es" ? "English" : "Español";
+  [...$("#mode").options].forEach((o) => (o.textContent = t(o.value)));
+}
+
+async function status() {
+  const s = await api("/api/kipu/status");
+  $("#mode").value = s.mode; $("#write").checked = !!s.write; $("#live-warn").hidden = s.mode !== "live";
+  $("#status").innerHTML = s.mode === "off" ? `<span class="k-m">${esc(t("off_msg"))}</span>` :
+    `<span class="k-pill">${s.census.total} ${esc(t("in_care"))}</span>` +
+    Object.entries(s.census.by_site).map(([k, v]) => `<span class="k-pill">${esc(k)}: ${v}</span>`).join("") +
+    `<span class="k-pill">${s.pending} ${esc(t("pending"))}</span>` + (s.write ? `<span class="k-pill">${esc(t("writing"))}</span>` : "");
+}
+
+async function cards() {
+  const q = await api("/api/queue");
+  $("#cards").innerHTML = q.cards.map((c) => `<tr><td><b>${esc(c.case_no)}</b><div class="k-m">${esc(c.hospital || "")}</div></td>
+    <td>${esc(c.status)}</td><td>${esc(c.kipu_id || "-")}</td>
+    <td>${["create_chart", "file_documents", "intake_note"].map((s) => `<button class="k-btn" data-step="${s}" data-id="${esc(c.id)}">${esc(t(s))}</button>`).join(" ")}
+      <button class="k-btn" data-teams="${esc(c.id)}">${esc(t("teams_card"))}</button></td></tr>`).join("");
+  document.querySelectorAll("[data-step]").forEach((b) => b.addEventListener("click", async () => {
+    try { await post(`/api/cards/${encodeURIComponent(b.dataset.id)}/kipu`, { step: b.dataset.step }); cards(); writes(); }
+    catch (e) { alertBox(e.message); }
+  }));
+  document.querySelectorAll("[data-teams]").forEach((b) => b.addEventListener("click", async () => {
+    try {
+      const r = await api(`/api/cards/${encodeURIComponent(b.dataset.teams)}/teams-card?lang=${LANG}`);
+      $("#teams-out").hidden = false;
+      $("#teams-out").textContent = `${t("teams_note")}\n→ ${r.to.name} <${r.to.email}>\n\n` + JSON.stringify(r.card, null, 2);
+    } catch (e) { alertBox(e.message); }
+  }));
+}
+
+async function writes() {
+  const w = await api("/api/kipu/writes");
+  $("#writes").textContent = w.writes.length ? w.writes.map((x) => `${new Date(x.t * 1000).toLocaleTimeString()}  POST ${x.path}  ${x.created ? "→ " + x.created : ""}  [${x.what.join(", ")}]`).join("\n") : (w.note || "—");
+}
+
+function alertBox(msg) { $("#teams-out").hidden = false; $("#teams-out").textContent = msg; }
+
+$("#save").addEventListener("click", async () => {
+  try { await post("/api/kipu/settings", { kipu_mode: $("#mode").value, kipu_write: $("#write").checked, kipu_base_url: $("#base").value.trim() || undefined }); status(); }
+  catch (e) { alertBox(e.message); }
+});
+$("#mode").addEventListener("change", () => ($("#live-warn").hidden = $("#mode").value !== "live"));
+$("#sync").addEventListener("click", async () => {
+  try { const r = await post("/api/kipu/sync"); $("#sync-out").textContent = `${r.added.length} ${t("added")}: ${r.added.join(", ")}`; status(); cards(); }
+  catch (e) { $("#sync-out").textContent = e.message; }
+});
+$("#find").addEventListener("click", async () => {
+  try {
+    const r = await post("/api/kipu/find", { first: $("#f-first").value, last: $("#f-last").value, dob: $("#f-dob").value });
+    $("#find-out").innerHTML = r.matches.length ? `${esc(t("found"))} ${r.matches.map((m) => `<span class="k-pill">${esc(m.id)} · ${esc(m.mr_number || "")} · ${esc(m.location || "")}</span>`).join("")}` : esc(t("none"));
+  } catch (e) { $("#find-out").textContent = e.message; }
+});
+$("#lang").addEventListener("click", () => { LANG = LANG === "es" ? "en" : "es"; words(); cards(); });
+
+(async function boot() {
+  try { const me = await api("/api/me"); $("#me").textContent = me.name ? `${t("signed")} ${me.name} (${me.role})` : ""; } catch (e) {}
+  try { LANG = (await api("/api/state")).lang || "en"; } catch (e) {}
+  words();
+  status().catch((e) => ($("#status").textContent = e.message));
+  cards(); writes();
+})();
+</script>
+</body>
+</html>
