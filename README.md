@@ -115,11 +115,10 @@ python -m carebridge mcp          # MCP server on stdio
 python -m pytest tests            # 10 tests on the safety logic
 ```
 
-**Docker:** copy `.env.example` to `.env` and add the key (or skip it for the demo), then
-`docker compose up --build -d` and open http://localhost:8780. The port is published on
-127.0.0.1 only. Settings and the outcome log live in the `carebridge-data` volume, packets are
-mounted read-only from `challenges/1-referral-intake/packets/`, and a PDF dropped into `inbox/`
-becomes a card. In Docker the key comes from `.env`, not Settings (no Credential Manager there).
+**Docker (one command):** `.\start.ps1` on Windows or `./start.sh` on Mac or Linux. It builds the
+container and opens http://localhost:8780 (this computer only). Add `ANTHROPIC_API_KEY` to `.env`
+to read packets; the demo works without it. Stop with `.\start.ps1 -Stop` or `./start.sh stop`.
+See [docs/run-with-docker.md](docs/run-with-docker.md).
 
 **Packets:** download R01 to R11 into `challenges/1-referral-intake/packets/` (gitignored). The
 demo uses R02 and R07 when they are there, and invented packets when they are not.
