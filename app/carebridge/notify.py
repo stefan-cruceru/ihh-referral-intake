@@ -81,7 +81,8 @@ def default_people(staff: list[dict]) -> list[dict]:
     people = []
     for s in staff:
         a = accounts.pop(s["name"].lower(), {})
-        people.append({"name": s["name"], "role": s["role"], "email": a.get("email", ""), "teams": a.get("email", ""),
+        email = a.get("email") or s.get("email", "")  # the practice board's made-up staff carry their own
+        people.append({"name": s["name"], "role": s["role"], "email": email, "teams": email,
                        "channel": "both", "lang": "en"})
     for a in accounts.values():  # on the sign-in list but not on today's board, e.g. the clinical reviewer
         if a.get("role") in ROLES:
@@ -196,6 +197,12 @@ def eml(row: dict) -> bytes:
 
 # ---- turning tracker state into alerts --------------------------------------------------------
 _cursor = {"audit": 0}
+
+
+def clear_practice() -> None:
+    """A new practice run starts with no practice alerts, and reads the tracker's audit from the top."""
+    store.clear_practice_notifications()
+    _cursor["audit"] = 0
 # The address staff open the app at, for the "Open referral" link. The web app updates it from the
 # browser's own Host header, so it is right inside Docker too.
 APP_URL = "http://127.0.0.1/"

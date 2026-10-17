@@ -98,18 +98,21 @@
    "id": "c1",
    "name": "Bea",
    "role": "coordinator",
+   "email": "bea.coordinator@ihh.example.org",
    "shift": "07:00-15:30"
   },
   {
    "id": "c2",
    "name": "Carlos",
    "role": "coordinator",
+   "email": "carlos.coordinator@ihh.example.org",
    "shift": "12:00-20:30"
   },
   {
    "id": "c3",
    "name": "Dana",
    "role": "coordinator",
+   "email": "dana.coordinator@ihh.example.org",
    "shift": "15:00-23:30"
   },
   {

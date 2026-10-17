@@ -112,3 +112,25 @@ def test_fifteen_minute_alert_replaces_the_thirty_minute_one():
     notify.sync(t)
     events = {r["event"] for r in notify.outbox(person="Coordinator 2")}
     assert "more_time" in events and "clock_30" not in events
+
+
+def test_a_new_practice_run_drops_last_runs_practice_alerts_only():
+    t = _setup()
+    t.add({"id": "REAL-1", "case_no": "REAL-1", "hospital": "Test Hospital", "owner": "Coordinator 1"})
+    t.add({"id": "S01-1", "case_no": "S01-1", "hospital": "Test Hospital", "owner": "Coordinator 1", "practice": True})
+    notify.sync(t)
+    notify.clear_practice()
+    t.reset()
+    subjects = [r["subject"] for r in notify.outbox()]
+    assert any("REAL-1" in s for s in subjects)  # the real alert stays
+    assert not any("S01-1" in s for s in subjects)  # the practice one is gone
+    t.add({"id": "S01-1", "case_no": "S01-1", "hospital": "Test Hospital", "owner": "Coordinator 1", "practice": True})
+    notify.sync(t)
+    assert any("S01-1" in r["subject"] for r in notify.outbox())  # drafted again for the new run
+
+
+def test_practice_board_staff_bring_their_own_address():
+    _setup()
+    staff = [{"name": "Carlos", "role": "coordinator", "on_shift": True, "email": "carlos@example.org"}]
+    carlos = next(p for p in notify.people(staff) if p["name"] == "Carlos")
+    assert carlos["email"] == carlos["teams"] == "carlos@example.org"

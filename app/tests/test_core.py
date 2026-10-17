@@ -120,3 +120,16 @@ def test_mcp_prompts_and_pick_lists():
     assert "Practice review" in rep and "Can care for themselves" in rep and "p.11" in rep
     assert "No practice patient" in mcp.call_tool("review_referral_packet", {"practice_patient": "S99"})
     assert mcp.call_tool("review_referral_packet", {"path": "C:/Windows/win.ini"}).startswith("Blocked")
+
+
+def test_fast_clock_goes_back_to_real_time_at_real_from():
+    import time as _time
+    from carebridge import tracker as _tracker
+
+    c = _tracker.Clock()
+    start = _time.time()
+    c.set(sim_time=start, speed=600, real_from=start + 60)  # 0.1 real seconds of fast-forward
+    _time.sleep(0.3)
+    now = c.now()
+    assert c.speed == 1.0
+    assert start + 60 <= now < start + 61  # stopped fast-forwarding at real_from, not 180 sim seconds on

@@ -213,3 +213,11 @@ def mark_notification(nid: int, status: str, who: str, t: float) -> None:
         c = conn()
         c.execute("UPDATE notifications SET status = ?, done_by = ?, done_at = ? WHERE id = ?", (status, who, t, nid))
         c.commit()
+
+
+def clear_practice_notifications() -> None:
+    """Drop the practice run's alerts. Only practice rows: real alerts are never removed here."""
+    with _lock:
+        c = conn()
+        c.execute("DELETE FROM notifications WHERE practice = 1")
+        c.commit()

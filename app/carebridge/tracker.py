@@ -85,16 +85,24 @@ class Clock:
         self.speed = 1.0
         self._real0 = time.time()
         self._sim0 = self._real0
+        self._real_from = None  # sim time where a fast-forward goes back to real time
 
     def now(self) -> float:
-        return self._sim0 + (time.time() - self._real0) * self.speed
+        t = self._sim0 + (time.time() - self._real0) * self.speed
+        if self._real_from is not None and self.speed > 1 and t >= self._real_from:
+            # Back to real time from the moment the clock passed _real_from, whatever page is open.
+            self._real0 += (self._real_from - self._sim0) / self.speed
+            self._sim0, self.speed, self._real_from = self._real_from, 1.0, None
+            t = self._sim0 + (time.time() - self._real0)
+        return t
 
-    def set(self, sim_time: float | None = None, speed: float | None = None):
+    def set(self, sim_time: float | None = None, speed: float | None = None, real_from: float | None = None):
         now = self.now()
         self._real0 = time.time()
         self._sim0 = sim_time if sim_time is not None else now
         if speed is not None:
             self.speed = speed
+        self._real_from = real_from
 
 
 def is_overnight(ts: float) -> bool:

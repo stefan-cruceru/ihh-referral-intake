@@ -278,8 +278,6 @@ function statusChip(st) {
 function renderQueue(q) {
   if (!q) return;
   $("#clock-time").textContent = fmtClock(q.now);
-  // The practice demo runs the clock fast. Once no practice referrals are left, put it back to real time.
-  if (q.speed >= 30 && !q.cards.some((c) => c.sample)) post("/api/clock", { speed: 1 });
   const rep = q.report;
   const wd = Object.values(q.withdraw_reasons || {}).reduce((a, b) => a + b, 0);
   $("#stats").innerHTML = rep.total

@@ -8,7 +8,7 @@ One command starts the app on your own computer. Nothing else on the network can
 2. From the repo folder:
    - Windows: `.\start.ps1`
    - Mac or Linux: `./start.sh`
-3. The app opens at http://localhost:8780. Click **Try a busy Monday** for the demo. It needs no key.
+3. The app opens at http://localhost:8780. For the demo, click **Practice** at the top right, then **Practice with made-up referrals**. It needs no key.
 
 To read packets, an admin adds the Claude API key in **Settings** (the gear at the top right). In
 Docker it is kept in a file only the app can read, inside the `ihh-care-bridge_carebridge-data`
@@ -48,6 +48,6 @@ docker compose down           # stop
 ## En español
 
 Instale Docker Desktop. En la carpeta del repo, corra `.\start.ps1` (Windows) o `./start.sh`
-(Mac o Linux). La app se abre en http://localhost:8780. Solo esta computadora la puede abrir. La
-demo funciona sin clave. Para leer referidos, un administrador agrega la clave en Ajustes (el
+(Mac o Linux). La app se abre en http://localhost:8780. Solo esta computadora la puede abrir. Para la
+demo, haga clic en **Práctica** arriba a la derecha y luego en **Practique con referidos inventados**. Funciona sin clave. Para leer referidos, un administrador agrega la clave en Ajustes (el
 engranaje arriba a la derecha). Para pararla: `.\start.ps1 -Stop` o `./start.sh stop`.
