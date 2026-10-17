@@ -17,6 +17,7 @@ datas = [
     (str(CHALLENGE2 / "data" / "oc-resources.seed.json"), "data"),
     (str(CHALLENGE2 / "scenarios" / "client-scenarios.json"), "data"),
     (str(APP / "demo" / "inbox.json"), "data/demo"),
+    (str(REPO / "m365" / "status-messages.json"), "data"),
     (str(REPO / "copilot" / "vscode" / "ihh-care-bridge.agent.md"), "data/copilot"),
     (str(REPO / "copilot" / "vscode" / "skills" / "ihh-referral-intake" / "SKILL.md"), "data/copilot/skills/ihh-referral-intake"),
 ]

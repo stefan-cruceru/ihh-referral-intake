@@ -183,6 +183,14 @@ function contactLine(c) {
   return `<div class="meta">${esc(t("sent_by"))}: ${bits.join(" · ")}</div>`;
 }
 
+// Came in after the team left (8:30 PM): the morning shift works it.
+function overnightChip(c) {
+  return c.overnight ? `<span class="chip" title="${esc(t("overnight_tip"))}">${esc(t("overnight_chip"))}</span>` : "";
+}
+function sourceText(c) {
+  return esc(t("channel_" + (c.channel || "upload"))) + (c.source ? ` · ${esc(t("source_" + c.source))}` : "");
+}
+
 function statusChip(st) {
   return `<span class="chip st-${esc(st)}">${esc(t("st_" + st))}</span>`;
 }
@@ -196,7 +204,8 @@ function renderQueue(q) {
   const wd = Object.values(q.withdraw_reasons || {}).reduce((a, b) => a + b, 0);
   $("#stats").innerHTML = rep.total
     ? `<span class="pill">${rep.within_2h}/${rep.decided} ${esc(t("within_2h"))}</span><span class="pill">${wd} ${esc(t("withdrawn_count"))}</span>` +
-      (q.pending ? `<span class="pill">${q.pending} ${esc(t("arriving"))}</span>` : "")
+      (q.pending ? `<span class="pill">${q.pending} ${esc(t("arriving"))}</span>` : "") +
+      (rep.clinical && rep.clinical.median_min != null ? `<span class="pill" title="${esc(t("cr_stat_tip"))}">${esc(t("cr_stat", { n: rep.clinical.median_min, w: rep.clinical.waiting }))}</span>` : "")
     : "";
   const peak = q.peak;
   $("#peak").classList.toggle("hidden", !peak.at_risk.length);
@@ -224,9 +233,9 @@ function renderQueue(q) {
         <div class="timer" style="--pct:${pct}">${timer}</div>
         <div>
           <div class="title">${esc(c.case_no)} · ${esc(c.hospital || t("unknown"))}</div>
-          <div class="meta">${esc(t("channel_" + (c.channel || "upload")))} · ${esc(t("owner"))}: <b>${esc(c.owner)}</b>${c.owner === ME ? ` (${esc(t("you"))})` : ""}</div>
+          <div class="meta">${sourceText(c)} · ${esc(t("owner"))}: <b>${esc(c.owner)}</b>${c.owner === ME ? ` (${esc(t("you"))})` : ""}</div>
           ${contactLine(c)}
-          <div class="chips">${dangerChip(c)}${statusChip(c.status)}${kipuChip(c)}${viewersChip(c)}${handwritingChip(c)}${review}${alerts}${silent}${c.sample ? `<span class="chip">${esc(t("sample_badge"))}</span>` : ""}</div>
+          <div class="chips">${dangerChip(c)}${statusChip(c.status)}${overnightChip(c)}${kipuChip(c)}${viewersChip(c)}${handwritingChip(c)}${review}${alerts}${silent}${c.sample ? `<span class="chip">${esc(t("sample_badge"))}</span>` : ""}</div>
           ${oddsLine(c)}
         </div>
         <div class="side">${fmtClock(c.arrived_at)}</div>
@@ -327,8 +336,8 @@ async function openCard(id, force) {
 async function refreshOpen() {
   const d = await api(`/api/cards/${encodeURIComponent(OPEN)}`).catch(() => null);
   if (!d) return;
-  const changed = JSON.stringify([d.card.status, d.card.review_state, d.progress.length, d.card.alerts, d.card.left_min, !!d.report]) !==
-    JSON.stringify([DETAIL.card.status, DETAIL.card.review_state, DETAIL.progress.length, DETAIL.card.alerts, DETAIL.card.left_min, !!DETAIL.report]);
+  const changed = JSON.stringify([d.card.status, d.card.review_state, d.progress.length, d.card.alerts, d.card.left_min, !!d.report, (d.card.hospital_messages || []).length]) !==
+    JSON.stringify([DETAIL.card.status, DETAIL.card.review_state, DETAIL.progress.length, DETAIL.card.alerts, DETAIL.card.left_min, !!DETAIL.report, (DETAIL.card.hospital_messages || []).length]);
   if (changed) {
     const hadReport = !!DETAIL.report;
     DETAIL = d;
@@ -380,9 +389,11 @@ function renderDetail() {
   const facts = Object.fromEntries((rep?.facts || []).map((f) => [f.id, f]));
   const es = LANG === "es";
   let h = `<div class="d-head"><div><h2>${esc(card.case_no)} · ${esc(card.hospital || t("unknown"))}</h2>
-    <div class="muted">${esc(t("channel_" + (card.channel || "upload")))} · ${fmtClock(card.arrived_at)} · ${esc(t("owner"))}: <b>${esc(card.owner)}</b>
-    · ${card.left_min >= 0 ? `${card.left_min} ${t("min")} ${t("left")}` : `+${-card.left_min} ${t("min")} ${t("over")}`}</div>
-    <div class="chips">${dangerChip(card)}${statusChip(card.status)}${viewersChip(card)}${(card.alerts || []).map((a) => `<span class="chip alert">${esc(t("al_" + a.code))}</span>`).join("")}</div>
+    <div class="muted">${sourceText(card)} · ${fmtClock(card.arrived_at)} · ${esc(t("owner"))}: <b>${esc(card.owner)}</b>
+    · ${card.left_min >= 0 ? `${card.left_min} ${t("min")} ${t("left")}` : `+${-card.left_min} ${t("min")} ${t("over")}`}
+    ${card.clock_start > card.arrived_at + 60 ? `· ${esc(t("clock_from_morning", { time: fmtClock(card.clock_start) }))}` : ""}
+    ${card.more_for ? `· ${esc(t("more_for", { case: card.more_for }))}` : ""}</div>
+    <div class="chips">${dangerChip(card)}${statusChip(card.status)}${overnightChip(card)}${viewersChip(card)}${(card.alerts || []).map((a) => `<span class="chip alert">${esc(t("al_" + a.code))}</span>`).join("")}</div>
     ${ME && card.owner !== ME && !["accepted", "denied", "withdrawn"].includes(card.status) ? `<button class="btn sm" data-act="claim">${esc(t("claim"))}</button>` : ""}</div>
     <button class="btn ghost" id="d-close">${esc(t("close"))}</button></div>`;
 
@@ -416,6 +427,16 @@ function renderDetail() {
     const illegible = rep.flags.illegible_pages || [];
     if (illegible.length) {
       h += `<div class="phi">${esc(t("illegible_panel"))} ${illegible.map((p) => `<button class="btn sm ghost pg" data-page="${p}">${esc(t("page"))} ${p}</button>`).join("")}</div>`;
+    }
+    // Critical values are never silent: found (page and words), on a page nobody checked yet, or not found.
+    const crit = rep.critical || [];
+    if (crit.length) {
+      const cls = { found: "met", on_page: "cant_tell", not_found: "not_met" };
+      h += `<div class="panel"><h3>${esc(t("h_critical"))}</h3><p class="muted small">${esc(t("critical_note"))}</p>${crit
+        .map((c) => `<div class="flag ${cls[c.status]}"><span class="status ${cls[c.status]}">${esc(t("crit_" + c.status))}</span> <b>${esc(c.label[LANG] || c.label.en)}</b>
+          <div class="muted small">${esc(t("crit_because", { w: c.because }))}</div>
+          ${c.page ? `<div class="quote"><button class="btn sm ghost pg" data-page="${c.page}">${esc(t("page"))} ${c.page}</button><q>${esc(c.quote)}</q></div>` : ""}</div>`)
+        .join("")}</div>`;
     }
     h += `<p class="muted">${esc(t("gates_why"))}</p><div class="gates">`;
     for (const g of ["self_care", "behavior"]) {
@@ -474,9 +495,46 @@ function renderDetail() {
       .join("")}</details></div>`;
   }
 
+  // The clinical reviewer works here instead of a shared Excel sheet and Teams pings.
+  if (card.clinical_sent_at || (card.clinical_notes || []).length) {
+    const stamp = (k, ts) => (ts ? `<span class="pill">${esc(t(k))}: ${fmtClock(ts)}</span>` : "");
+    const picked = (card.clinical_notes || [])[0]?.t;
+    h += `<div class="panel"><h3>${esc(t("h_clinical"))}</h3>
+      <div class="chips">${stamp("cr_sent", card.clinical_sent_at)}${stamp("cr_first_note", picked)}${stamp("cr_done", card.clinical_done_at)}
+        ${card.clinical_min != null ? `<span class="pill">${esc(t(card.clinical_done_at ? "cr_took" : "cr_waiting", { n: card.clinical_min }))}</span>` : ""}</div>
+      ${(card.clinical_notes || []).map((n) => `<div class="flag cant_tell"><span class="muted small">${fmtClock(n.t)} · ${esc(n.who)}</span><div>${esc(n.text)}</div></div>`).join("")}
+      ${(card.clinical_asks || []).length ? `<p><b>${esc(t("cr_asks"))}</b></p><ul>${card.clinical_asks.map((a) => `<li>${esc(a.text)}</li>`).join("")}</ul>` : ""}
+      ${["accepted", "denied", "withdrawn"].includes(card.status) ? "" : `<div class="row"><textarea id="cr-note" rows="2" placeholder="${esc(t("cr_note_ph"))}"></textarea></div>
+      <div class="row"><button class="btn" data-cr="clinical_note">${esc(t("cr_add_note"))}</button><button class="btn primary" data-cr="clinical_done">${esc(t("cr_mark_done"))}</button></div>
+      <div class="row"><input id="cr-ask" placeholder="${esc(t("cr_ask_ph"))}"><button class="btn" data-cr="clinical_ask">${esc(t("cr_add_ask"))}</button></div>
+      <p class="muted small">${esc(t("cr_only"))}</p>`}</div>`;
+  }
+
+  // Steps only a person does. The tool never looks anyone up; it keeps who did it and when.
+  const checks = card.staff_checks || {};
+  const checkRow = (k, results) => {
+    const done = checks[k];
+    return `<div class="flag ${done ? (done.result === "look" ? "cant_tell" : "met") : "not_met"}"><b>${esc(t("sc_" + k))}</b>
+      <div class="muted small">${esc(t("sc_" + k + "_how"))}</div>
+      ${done ? `<div>${esc(t("sc_r_" + done.result))} · ${esc(done.who)} · ${fmtClock(done.t)}</div>` : ""}
+      <div class="row">${results.map((r) => `<button class="btn sm" data-sc="${k}:${r}">${esc(t("sc_r_" + r))}</button>`).join("")}</div></div>`;
+  };
+  h += `<div class="panel"><h3>${esc(t("h_staff_checks"))}</h3><p class="muted small">${esc(t("sc_note"))}</p>
+    ${checkRow("returning_client", ["new", "returning"])}${checkRow("background", ["clear", "look"])}</div>`;
+
+  // What the hospital heard: receipt, reminders, "escalated". No decision and no clinical detail in any of them.
+  const msgs = card.hospital_messages || [];
+  if (msgs.length) {
+    h += `<div class="panel"><h3>${esc(t("h_hospital_msgs"))}</h3><p class="muted small">${esc(t("hm_note"))}</p>${msgs
+      .map((m) => `<details><summary>${fmtClock(m.t)} · <b>${esc(t("hm_" + m.kind))}</b> · <span class="muted">${esc(t("hm_mode_" + m.mode))}</span></summary>
+        <div class="muted small">${esc(t("to"))}: ${esc(m.to || t("unknown"))}</div><pre class="draft">${esc(m.subject + "\n\n" + m.body)}</pre>
+        <button class="btn sm" data-copy="${esc(m.subject + "\n\n" + m.body)}">${esc(t("copy"))}</button></details>`)
+      .join("")}</div>`;
+  }
+
   // Drafts
   if (DRAFTS) {
-    const tabs = ["missing_items", "chase_nudge", "chase_supervisor", "clinical", "intake_cleared", "accepted", "more_time", "handoffs"].filter((k) => DRAFTS[k]);
+    const tabs = ["missing_items", "escalated", "chase_nudge", "chase_supervisor", "clinical", "intake_cleared", "accepted", "more_time", "handoffs"].filter((k) => DRAFTS[k]);
     if (!tabs.includes(DRAFT_TAB)) DRAFT_TAB = tabs[0];
     h += `<div class="panel"><h3>${esc(t("h_drafts"))}</h3><div class="drafts-tabs">${tabs.map((k) => `<button data-draft="${k}" class="${k === DRAFT_TAB ? "on" : ""}">${esc(t("d_" + k))}</button>`).join("")}</div>`;
     const d = DRAFTS[DRAFT_TAB];
@@ -534,6 +592,14 @@ function renderDetail() {
   $$("[data-page]", $("#detail-body")).forEach((b) => b.addEventListener("click", () => showPage(b.dataset.page)));
   $$("[data-draft]").forEach((b) => b.addEventListener("click", () => { DRAFT_TAB = b.dataset.draft; renderDetail(); }));
   $$("[data-copy]").forEach((b) => b.addEventListener("click", () => { navigator.clipboard.writeText(b.dataset.copy); toast(t("copied")); }));
+  $$("[data-sc]").forEach((b) => b.addEventListener("click", () => act("staff_check", "", b.dataset.sc)));
+  $$("[data-cr]").forEach((b) => b.addEventListener("click", () => {
+    const a = b.dataset.cr;
+    const text = (a === "clinical_ask" ? $("#cr-ask") : $("#cr-note")).value.trim();
+    if (a !== "clinical_done" && !text) return toast(t("cr_type_first"));
+    // Without sign-in, notes are written as the clinical reviewer, like "Say no" below.
+    act(a, "Clinical reviewer", text);
+  }));
   $$("[data-act]").forEach((b) => b.addEventListener("click", () => {
     const a = b.dataset.act;
     if (a === "denied") return act(a, "Clinical line", $("#deny-reason").value);
@@ -709,7 +775,11 @@ async function loadState() {
   $("#foundry-resource").classList.toggle("hidden", STATE.provider !== "foundry");
   $("#inbox-dir").value = STATE.inbox_dir || "";
   $("#kipu-url").value = STATE.kipu_url || "";
+  $("#overnight-clock").value = STATE.overnight_clock || "arrival";
+  $("#auto-msgs").checked = !!STATE.auto_hospital_messages;
 }
+$("#overnight-clock").addEventListener("change", async (e) => { await post("/api/settings", { overnight_clock: e.target.value }); toast(t("saved")); });
+$("#auto-msgs").addEventListener("change", async (e) => { await post("/api/settings", { auto_hospital_messages: e.target.checked }); toast(t("saved")); });
 $("#kipu-url-save").addEventListener("click", async () => {
   await post("/api/settings", { kipu_url: $("#kipu-url").value.trim() });
   await loadState();

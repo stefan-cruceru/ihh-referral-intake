@@ -12,7 +12,8 @@ from . import auth, config, drafts, kipu, teams
 
 # /mcp is not open: an agent calling it over HTTP signs in with a personal token (/api/me/token).
 # The local stdio MCP server (Copilot in VS Code, Claude Desktop) runs as the Windows user instead.
-OPEN = ("/static/", "/auth/", "/go/", "/api/state")
+# /send is the hospital upload page: no sign-in, it only takes a file and shows its own receipt.
+OPEN = ("/static/", "/auth/", "/go/", "/api/state", "/send")
 
 # Which permission (auth.PERMISSIONS) each changing route needs. Checked here for every request so a
 # route cannot forget it. Any POST under /api/ that is not listed is refused (fail closed).
