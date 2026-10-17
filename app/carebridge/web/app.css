@@ -458,3 +458,7 @@ main:focus { outline: none; }
 .ob-foot { border-top: 1px solid var(--ob-line); padding-top: 1.1rem; display: flex; flex-direction: column; gap: .3rem; }
 .ob-foot p { margin: 0; }
 @media (max-width: 720px) { .ob-roles, .ob-three, .ob-langs { grid-template-columns: 1fr; } .ob-top { padding: .7rem 1rem; } }
+
+/* Client help: room between the made-up clients, the text box and the buttons */
+#tab-resources #scenarios { gap: .55rem; margin: .55rem 0 1.25rem; }
+#tab-resources #situation { display: block; margin-bottom: 1rem; }
