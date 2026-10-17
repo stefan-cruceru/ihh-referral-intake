@@ -35,6 +35,7 @@ ROUTES = [
     ("POST", re.compile(r"^/api/notify/\d+/mark$"), "alert_mark"),
     ("POST", re.compile(r"^/api/(resources|handout|phi-check|staff/note|staff/explain)$"), "staff_tools"),
     ("POST", re.compile(r"^/api/me/token$"), "mcp_token"),
+    ("POST", re.compile(r"^/api/access/people$"), "roles_edit"),
     ("POST", re.compile(r"^/mcp$"), None),  # each tool is checked in mcp.handle
 ]
 
@@ -93,12 +94,55 @@ def _sign_in_page(h, nxt: str, msg: str = ""):
         f'<form method="post" action="/auth/practice"><input type="hidden" name="email" value="{escape(s["email"])}">'
         f'<input type="hidden" name="next" value="{escape(nxt)}"><button>{escape(s["name"])} '
         f'<span class="m">· {escape(s["role"])}</span></button></form>' for s in auth.staff())
+    roles = "".join(f'<option value="{r}">{r}</option>' for r in auth.ROLES)
     _page(h, "Sign in", f"""<h1>Sign in · Iniciar sesión</h1>
-<p class="m">Practice sign-in, made to work like signing in with Teams. These people are made up.<br>
-Inicio de sesión de práctica, como entrar con Teams. Estas personas son inventadas.</p>
+<a class="b teams" href="/auth/microsoft?next={escape(quote(nxt))}">Sign in with Microsoft (Teams work account)<br>
+<span style="font-weight:400">Entrar con Microsoft (cuenta de Teams del trabajo)</span></a>
+<p class="m">At IHH this is the only way in. It isn't connected in this demo: click it to see how it works.<br>
+En IHH esta es la única forma de entrar. No está conectada en esta demo: haga clic para ver cómo funciona.</p>
+<h2 style="font-size:1.1rem;margin:1.4rem 0 .2rem">Practice sign-in · Inicio de práctica</h2>
+<p class="m">These people are made up. Pick one to see the app with that role.<br>Estas personas son inventadas. Escoja una para ver la app con ese rol.</p>
 {f'<p style="color:var(--red)">{escape(msg)}</p>' if msg else ''}
 <div class="who">{people}</div>
-<p class="m">At IHH, this button signs you in with your Teams work account. / En IHH, este botón usa su cuenta de Teams del trabajo.</p>""")
+<details><summary class="m" style="cursor:pointer">Add a practice person · Agregar una persona de práctica</summary>
+<form method="post" action="/auth/practice/add" class="who">
+<input type="hidden" name="next" value="{escape(nxt)}">
+<label class="m">Name · Nombre<input name="name" required maxlength="60"></label>
+<label class="m">Work email · Correo del trabajo<input name="email" type="email" required placeholder="name@ihh.example.org"></label>
+<label class="m">Role · Rol<select name="role">{roles}</select></label>
+<button class="primary">Add and sign in · Agregar y entrar</button>
+<span class="m">Made-up people only. At IHH, accounts and roles come from Microsoft Entra.<br>Solo personas inventadas. En IHH, las cuentas y los roles vienen de Microsoft Entra.</span>
+</form></details>""")
+
+
+def _microsoft_page(h, nxt: str):
+    """How the Microsoft sign-in works at IHH. Shown until IT registers the app; after that the
+    button goes straight to IHH's Microsoft sign-in (teams.sign_in_url)."""
+    roles = "".join(f"<li><code>{escape(k)}</code> → {escape(v)}</li>" for k, v in auth.ENTRA_ROLES.items())
+    _page(h, "Sign in with Microsoft", f"""<h1>Sign in with Microsoft · Entrar con Microsoft</h1>
+<p class="m">Not connected in this demo. This is what happens at IHH once IT registers the app.<br>
+No está conectado en esta demo. Esto pasa en IHH cuando TI registre la app.</p>
+<ol>
+<li>You click <b>Sign in with Microsoft</b>. Care Bridge sends you to IHH's own Microsoft sign-in page
+(<code>login.microsoftonline.com</code>, IHH's tenant). Care Bridge never sees your password.</li>
+<li>You sign in with the same work account you use for Teams, with IHH's usual multi-factor check.</li>
+<li>Microsoft sends you back with a one-time code. Care Bridge trades it with Microsoft, over a secure
+connection, for an ID token with your name, email and your <b>Care Bridge roles</b> (standard OAuth 2.0
+with PKCE and OpenID Connect).</li>
+<li>Care Bridge checks the token was made for this app, for IHH's tenant and for this sign-in, then
+signs you in with those roles. The server checks every action against them.</li>
+</ol>
+<p><b>Roles come from Microsoft Entra.</b> IT assigns these app roles to people or groups:</p>
+<ul>{roles}</ul>
+<p class="m">No role, no entry. Only the clinical role can deny a referral.</p>
+<p><b>What IT does once:</b> register Care Bridge in Microsoft Entra, add the four app roles, assign
+people or groups, then put the tenant ID and client ID in Settings (or <code>CAREBRIDGE_TEAMS_TENANT</code>
+and <code>CAREBRIDGE_TEAMS_CLIENT_ID</code>). From then on this button is the only way in, and practice
+sign-in turns off.</p>
+<p class="m">TI registra Care Bridge en Microsoft Entra, agrega los cuatro roles, los asigna a personas o
+grupos y pone los ID del inquilino y del cliente en Ajustes. Desde entonces este botón es la única
+forma de entrar y el inicio de práctica se apaga.</p>
+<a class="b" href="/auth/signin?next={escape(quote(nxt))}">← Back to sign-in · Volver</a>""")
 
 
 def _redirect(h) -> str:
@@ -116,6 +160,26 @@ def handle(h, method: str) -> bool:
     # ---- sign-in ----
     if p == "/auth/signin":
         _sign_in_page(h, q.get("next", "/"))
+        return True
+    if p == "/auth/microsoft":
+        nxt = q.get("next", "/")
+        if auth.microsoft_configured():
+            try:
+                h._send(302, b"", "text/plain", {"Location": teams.sign_in_url(_redirect(h), nxt)})
+                return True
+            except RuntimeError:
+                pass
+        _microsoft_page(h, nxt)
+        return True
+    if p == "/auth/practice/add" and method == "POST":
+        f = _form(h)
+        try:
+            who = auth.add_practice_person(f.get("name", ""), f.get("email", ""), f.get("role", ""))
+        except (ValueError, PermissionError) as e:
+            _sign_in_page(h, f.get("next", "/"), str(e))
+            return True
+        token = auth.start_session(who, "practice")
+        h._send(302, b"", "text/plain", {"Location": f.get("next") or "/", "Set-Cookie": auth.set_cookie(token)})
         return True
     if p == "/auth/practice" and method == "POST":
         f = _form(h)
@@ -148,6 +212,31 @@ def handle(h, method: str) -> bool:
             # What this person may do, so the screen can hide buttons it would refuse anyway.
             out["can"] = sorted(k for k in auth.PERMISSIONS if auth.can(me, k))
         h._json(out, 200 if me else 401)
+        return True
+    if p == "/api/access":
+        # Everything the Access page shows: roles, what each may do (the same table the server
+        # enforces), the Entra mapping, the people, and whether this person may change roles.
+        me = person(h)
+        h._json({"mode": auth.mode(), "microsoft": auth.microsoft_configured(), "roles": list(auth.ROLES),
+                 "entra": auth.ENTRA_ROLES, "permissions": {k: list(v) for k, v in auth.PERMISSIONS.items()},
+                 "people": [{k: s.get(k) for k in ("email", "name", "role")} for s in auth.staff()],
+                 "me": {k: me.get(k) for k in ("email", "name", "role", "via")} if me else None,
+                 "can_edit": auth.can(me, "roles_edit") and auth.mode() == "practice"})
+        return True
+    if p == "/api/access/people" and method == "POST":
+        b = h._jbody()
+        try:
+            if b.get("add"):
+                who = auth.add_practice_person(b.get("name", ""), b.get("email", ""), b.get("role", ""))
+            else:
+                who = auth.set_role(b.get("email", ""), b.get("role", ""))
+        except PermissionError as e:
+            h._json({"error": str(e)}, 409)
+            return True
+        except ValueError as e:
+            h._json({"error": str(e)}, 400)
+            return True
+        h._json({"ok": True, "person": who})
         return True
     if p == "/api/me/token" and method == "POST":
         # A token for an agent to call /mcp as this person, with this person's roles. Same lifetime

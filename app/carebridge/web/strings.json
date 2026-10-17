@@ -1754,5 +1754,9 @@
  "send_err_security_block": {
   "en": "We can't take this file. Please fax it instead.",
   "es": "No podemos recibir este archivo. Por favor mándelo por fax."
+ },
+ "tab_access": {
+  "en": "Access and roles",
+  "es": "Acceso y roles"
  }
 }
