@@ -159,6 +159,8 @@ def start_review(cid: str) -> None:
     if threat["verdict"] == guard.HOLD and seen != guard.HOLD:
         TRACK.log(cid, "system", "security hold", ", ".join(f["code"] for f in threat["findings"]))
     review = intake.Review(load_packet(data, name), name, TRACK.cards[cid]["arrived_at"], threat)
+    # Every step the AI takes goes in the audit log. The messages are counts and page numbers, never chart text.
+    review.on_log = lambda stage, msg: TRACK.log(cid, "Claude", f"AI step: {stage}", msg, role="ai")
     REVIEWS[cid] = review
     TRACK.cards[cid]["sample"] = False
     TRACK.cards[cid]["review_state"] = "running"
@@ -464,16 +466,21 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if p == "/mcp":
                 me = gateway.person(self)
-                resp = mcp.handle(self._jbody(), allow=lambda tool: auth.can(me, auth.MCP_TOOLS.get(tool, "staff_tools")))
+                body = self._jbody()
+                if isinstance(body, dict) and body.get("method") == "tools/call":
+                    gateway.audit(self, "Copilot tool", str((body.get("params") or {}).get("name", ""))[:60])
+                resp = mcp.handle(body, allow=lambda tool: auth.can(me, auth.MCP_TOOLS.get(tool, "staff_tools")))
                 return self._json(resp) if resp else self._send(202, b"", "text/plain")
             if p == "/api/key":
                 key = self._jbody().get("key", "").strip()
                 if not key.startswith("sk-ant-"):
                     return self._json({"error": "That doesn't look like a Claude API key (it starts with sk-ant-)."}, 400)
                 config.set_api_key(key)
+                gateway.audit(self, "Claude API key set")
                 return self._json({"ok": True})
             if p == "/api/key/clear":
                 config.clear_api_key()
+                gateway.audit(self, "Claude API key removed")
                 return self._json({"ok": True})
             if p == "/send/upload":
                 data = self._body()
@@ -494,9 +501,12 @@ class Handler(BaseHTTPRequestHandler):
                     TRACK.overnight_clock = b["overnight_clock"]
                 if "auto_hospital_messages" in b:
                     b["auto_hospital_messages"] = bool(b["auto_hospital_messages"])
-                return self._json(config.save_settings({k: v for k, v in b.items() if k in keys}))
+                changed = {k: v for k, v in b.items() if k in keys}
+                gateway.audit(self, "settings changed", ", ".join(f"{k}={v}" for k, v in changed.items())[:300])
+                return self._json(config.save_settings(changed))
             if p == "/api/demo":
                 b = self._jbody()
+                gateway.audit(self, "practice demo restarted")
                 return self._json(load_demo(speed=float(b.get("speed", 60))))
             if p == "/api/clock":
                 b = self._jbody()

@@ -53,6 +53,8 @@ PERMISSIONS = {
     "alert_mark": _STAFF + ("admin",), "alert_mark_any": ("lead", "admin"), "people_edit": ("lead", "admin"),
     # settings, and who has which role (practice people only; with Entra, roles are changed in Entra)
     "settings": ("lead", "admin"), "api_key": ("admin",), "roles_edit": ("lead", "admin"),
+    # the sealed audit log: who did what, what was approved, every AI step. Read-only for everyone.
+    "audit_view": ("admin",),
     # a personal token so an agent (Microsoft 365 Copilot) can call /mcp as the person who made it
     "mcp_token": _STAFF + ("admin",),
     # help for clients, practice, rules: anyone signed in

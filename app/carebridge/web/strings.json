@@ -1767,6 +1767,10 @@
   "en": "Access and roles",
   "es": "Acceso y roles"
  },
+ "tab_audit": {
+  "en": "Audit log",
+  "es": "Registro de auditoría"
+ },
  "only_clinical_deny": {
   "en": "Only the clinical line can say no.",
   "es": "Solo la línea clínica puede decir que no."

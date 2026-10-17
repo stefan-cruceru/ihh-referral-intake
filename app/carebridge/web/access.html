@@ -117,6 +117,7 @@ const T = {
   roles_edit: ["Change people's roles", "Cambiar los roles de las personas"],
   settings: ["App settings", "Ajustes de la app"],
   api_key: ["Claude API key", "Clave de la API de Claude"],
+  audit_view: ["See the audit log", "Ver el registro de auditoría"],
   mcp_token: ["Use Care Bridge from Copilot", "Usar Care Bridge desde Copilot"],
   staff_tools: ["Help for clients, practice, the rules", "Ayuda para clientes, práctica, las reglas"],
   h_people: ["People and roles", "Personas y roles"],
@@ -141,7 +142,7 @@ const T = {
 const GROUPS = [
   ["g_ref", ["act:open", "upload", "review", "act:handoff", "act:intake_cleared", "act:accepted", "act:denied", "act:clinical_note", "act:patient_arrived", "act:withdrawn"]],
   ["g_kipu", ["act:kipu_id", "kipu_write", "kipu_settings", "teams_card"]],
-  ["g_admin", ["people_edit", "roles_edit", "settings", "api_key"]],
+  ["g_admin", ["people_edit", "roles_edit", "settings", "api_key", "audit_view"]],
   ["g_copilot", ["mcp_token", "staff_tools"]],
 ];
 let LANG = window.cbLang?.get() || "en";

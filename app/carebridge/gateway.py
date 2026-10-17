@@ -4,11 +4,13 @@ webapp.Handler calls allowed() first (is this request signed in?) and then handl
 these routes?). Pages here are small and plain, in English or Spanish with a switch at the top.
 """
 
+import csv
+import io
 import re
 from html import escape
 from urllib.parse import parse_qs, quote, urlparse
 
-from . import auth, config, drafts, kipu, kipu_check, teams
+from . import auth, config, drafts, kipu, kipu_check, store, teams
 
 # /mcp is not open: an agent calling it over HTTP signs in with a personal token (/api/me/token).
 # The local stdio MCP server (Copilot in VS Code, Claude Desktop) runs as the Windows user instead.
@@ -37,6 +39,7 @@ ROUTES = [
     ("POST", re.compile(r"^/api/me/token$"), "mcp_token"),
     ("POST", re.compile(r"^/api/access/people$"), "roles_edit"),
     ("POST", re.compile(r"^/mcp$"), None),  # each tool is checked in mcp.handle
+    ("GET", re.compile(r"^/api/audit-log$"), "audit_view"),
 ]
 
 
@@ -50,6 +53,13 @@ def permission(method: str, path: str) -> tuple[bool, str | None]:
 
 def person(h) -> dict | None:
     return auth.session(h.headers.get("Cookie")) or auth.bearer_session(h.headers.get("Authorization"))
+
+
+def audit(h, what: str, detail: str = "", who: dict | None = None) -> None:
+    """One line in the sealed audit log for something done outside a referral: sign-in, roles, settings."""
+    me = who or person(h) or {}
+    store.append_audit(None, me.get("name") or me.get("email") or "unknown", auth.primary_role(sorted(auth.roles_of(me))),
+                       what, detail, practice=auth.mode() == "practice")
 
 
 def allowed(h, path: str) -> bool:
@@ -292,6 +302,8 @@ def handle(h, method: str) -> bool:
         except (ValueError, PermissionError) as e:
             _sign_in_page(h, f.get("next", "/"), str(e))
             return True
+        audit(h, "practice person added", f"{who['email']} as {who['role']}", who=who)
+        audit(h, "signed in", "practice", who=who)
         token = auth.start_session(who, "practice")
         h._send(302, b"", "text/plain", {"Location": _same_site(f.get("next")), "Set-Cookie": auth.set_cookie(token)})
         return True
@@ -301,6 +313,7 @@ def handle(h, method: str) -> bool:
         if not who:
             _sign_in_page(h, f.get("next", "/"), _w(_lang(h), "pick"))
             return True
+        audit(h, "signed in", "practice", who=who)
         token = auth.start_session(who, "practice")
         h._send(302, b"", "text/plain", {"Location": _same_site(f.get("next")), "Set-Cookie": auth.set_cookie(token)})
         return True
@@ -312,10 +325,13 @@ def handle(h, method: str) -> bool:
             _page(h, _w(lg, "problem"), f"<h1>{_w(lg, 'problem')}</h1><p>{escape(str(e))}</p>"
                   f"<a class='b' href='/auth/signin'>{_w(lg, 'try_again')}</a>", 403, lang=lg)
             return True
+        audit(h, "signed in", "Microsoft", who=who)
         token = auth.start_session(who, "teams")
         h._send(302, b"", "text/plain", {"Location": nxt or "/", "Set-Cookie": auth.set_cookie(token)})
         return True
     if p == "/auth/signout":
+        if auth.session(h.headers.get("Cookie")) and auth.mode() != "off":
+            audit(h, "signed out")
         auth.end_session(h.headers.get("Cookie"))
         h._send(302, b"", "text/plain", {"Location": "/auth/signin", "Set-Cookie": auth.clear_cookie()})
         return True
@@ -352,7 +368,21 @@ def handle(h, method: str) -> bool:
         except ValueError as e:
             h._json({"error": str(e)}, 400)
             return True
+        audit(h, "practice person added" if b.get("add") else "role changed", f"{who['email']} to {who['role']}")
         h._json({"ok": True, "person": who})
+        return True
+    if p == "/api/audit-log" and method == "GET":
+        # Admins only (ROUTES). Read-only: there is no route that changes or removes a line.
+        rows = store.read_audit(q.get("case") or None, q.get("practice", "1") == "1", min(int(q.get("limit", "1000")), 5000))
+        if q.get("format") == "csv":
+            out = io.StringIO()
+            w = csv.writer(out)
+            w.writerow(store.AUDIT_FIELDS + ["hash"])
+            w.writerows([r[f] for f in store.AUDIT_FIELDS] + [r["hash"]] for r in rows)
+            h._send(200, out.getvalue().encode("utf-8-sig"), "text/csv; charset=utf-8",
+                    {"Content-Disposition": 'attachment; filename="care-bridge-audit-log.csv"'})
+            return True
+        h._json({"rows": rows, "check": store.verify_audit()})
         return True
     if p == "/api/me/token" and method == "POST":
         # A token for an agent to call /mcp as this person, with this person's roles. Same lifetime
@@ -360,6 +390,7 @@ def handle(h, method: str) -> bool:
         me = person(h)
         who = {k: me.get(k) for k in ("email", "name", "role", "roles")}
         token = auth.start_session(who, "token")
+        audit(h, "Copilot token made", f"{auth.SESSION_HOURS} hours")
         h._json({"token": token, "hours": auth.SESSION_HOURS,
                  "use": "Authorization: Bearer <token> on POST /mcp. Treat it like a password."})
         return True
