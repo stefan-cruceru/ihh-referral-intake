@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lamplight Demo</title>
-<meta name="description" content="Lamplight: referral intake, client help and staff practice for Illumination Health + Home. A working prototype with made-up patients.">
+<meta name="description" content="Lamplight: referral intake, client help and staff practice for Illumination Health + Home. A working prototype with practice sign-in.">
 <link rel="icon" href="campaign/logo/lamplight-logo.svg">
 <style>
   /* Lamplight's own tokens (app/carebridge/web/app.css). Light only, like the app's default. */
@@ -102,15 +102,14 @@
     <p class="sub">This is the real app, not a mock-up. Its Python code runs inside your browser, so there is no server.</p>
     <div class="grid">
       <div class="card"><h3>1. Sign in</h3><p>Pick a made-up staff member. Each has a role. Only the clinical reviewer can say no.</p></div>
-      <div class="card"><h3>2. Send a practice patient</h3><p>Open <b>Practice patients</b> and send S01 to S10 to the board. Each gets an owner and a 2-hour clock.</p></div>
-      <div class="card"><h3>3. Open the card</h3><p>See each rule, the page it came from, what conflicts, and what is still unknown. Switch to Español.</p></div>
-      <div class="card"><h3>4. Print the handout</h3><p>Make the client's next-steps PDF, in color or black and white, in English or Spanish.</p></div>
+      <div class="card"><h3>2. Add a referral</h3><p>Drag a PDF onto the board. It gets an owner and a 2-hour clock. Use only made-up pages. Switch to Español any time.</p></div>
+      <div class="card"><h3>3. Print the handout</h3><p>Make the client's next-steps PDF, in color or black and white, in English or Spanish.</p></div>
     </div>
     <div class="grid" style="margin-top:16px">
       <div class="card"><h3>What is different here</h3>
         <ul>
-          <li>Practice mode only. Every patient is made up.</li>
-          <li>It does not call Claude. Practice reviews come from the organizers' answer key, run through the app's checks.</li>
+          <li>Practice mode only. Use only made-up pages.</li>
+          <li>It does not call Claude, so it does not read the pages. A full review needs the app on IHH's computer with IHH's key.</li>
           <li>Nothing leaves this page. Close the tab and it is gone.</li>
           <li>Kipu and Teams are the practice versions. Live ones need IHH's OK.</li>
         </ul></div>

@@ -11,7 +11,7 @@ The working app on that site is the same Python code as the exe. It runs inside 
 - The app was written to live at `/`. `sw.js` moves its links under `app/` and keeps the practice
   sign-in cookie itself, since a service worker can't set real cookies.
 
-It has no API key, so it shows the practice patients S01 to S10 only, and nothing leaves the browser.
+It has no API key, so it does not read the pages of a referral you add, and nothing leaves the browser.
 State lives in the service worker's memory: if the browser stops the worker, the board starts fresh.
 
 Build and try it locally:
