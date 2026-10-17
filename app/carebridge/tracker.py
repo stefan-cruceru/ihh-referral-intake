@@ -129,14 +129,17 @@ class Tracker:
         self.persist(cid)
 
     # ---- actions -------------------------------------------------------------------------
-    def act(self, cid: str, action: str, who: str = "", reason: str = "", role: str | None = None) -> dict:
-        """role comes from the signed-in staff list (auth.py). Without sign-in, the old name check stands."""
+    def act(self, cid: str, action: str, who: str = "", reason: str = "", role: str | None = None,
+            target: str | None = None) -> dict:
+        """who is the person acting; role comes from the signed-in staff list (auth.py). Without sign-in,
+        the old name check stands. target is the new owner for a hand-off (defaults to who, as before)."""
         c = self.cards[cid]
         now = self.clock.now()
         if action == "open":
             c["opened"] = True
         elif action == "handoff":
-            c["owner"] = who or self.assign()
+            c["owner"] = target or who or self.assign()
+            reason = reason or f"to {c['owner']}"
         elif action == "info_sent":
             c["info_requested_at"], c["status"] = now, "needs_info"
         elif action == "hospital_replied":

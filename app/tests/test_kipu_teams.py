@@ -73,6 +73,14 @@ def test_only_clinical_role_can_deny_when_signed_in():
     assert t.act(c["id"], "denied", "Rene", "ADL-2 p.6", role="clinical")["status"] == "denied"
 
 
+def test_signed_in_handoff_goes_to_the_target_and_logs_the_actor():
+    t = tracker.Tracker()
+    c = t.add({"case_no": "T-10"})
+    t.act(c["id"], "handoff", "Bea", "", role="coordinator", target="Dana")
+    assert t.cards[c["id"]]["owner"] == "Dana"
+    assert t.audit[-1]["who"] == "Bea" and "Dana" in t.audit[-1]["detail"]
+
+
 def test_signed_links_are_tamper_proof_and_one_time():
     tok = auth.make_link_token("C-1", "denied", "rene.clinical@ihh.example.org")
     assert auth.read_link_token(tok)["a"] == "denied"
