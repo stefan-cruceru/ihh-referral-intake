@@ -10,11 +10,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     CAREBRIDGE_PACKETS=/packets \
     CAREBRIDGE_INBOX=/inbox
 
-# Fonts for the invented demo packets (demo/packets.py falls back to DejaVu off Windows).
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends fonts-dejavu-core \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /srv/ihh
 COPY app/requirements.txt app/requirements.txt
 RUN pip install --no-cache-dir -r app/requirements.txt
