@@ -8,6 +8,7 @@
 **Challenge:** All three, as one tool. 1 Referral intake is the core. 2 Finding the right resource
 and 3 Make AI approachable are built in.
 **Built at:** Orange County | Claude Impact Lab, October 17, 2026, with Illumination Health + Home
+**Live demo:** https://stefan-cruceru.github.io/ihh-referral-intake/ (the working app in your browser, practice patients only, plus the video, system map and docs)
 
 Lamplight follows the [In our language / En nuestro idioma](campaign/README.md) identity: a warm desk lamp, Public Sans, and people who make every decision. The executable, settings folder and tool identifiers keep their existing `ihh-care-bridge` names for compatibility.
 
@@ -120,7 +121,7 @@ returning-client and background checks are steps a person ticks, and the tool ne
 the receipt, reminders and "escalated" messages to the hospital carry no decision and no patient
 detail, and stay drafts unless IHH agrees to send them on their own.
 
-**Demo video:** _to add_
+**Demo video:** [watch it on the demo site](https://stefan-cruceru.github.io/ihh-referral-intake/) (2 minutes, English and Spanish subtitles), or [download the MP4](docs/media/demo-720p.mp4). System map: [docs/architecture.html](https://stefan-cruceru.github.io/ihh-referral-intake/architecture.html).
 
 ## How Claude is used
 
