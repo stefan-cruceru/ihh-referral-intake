@@ -84,6 +84,7 @@ let DOCS = [], LAST = null;
 
 function paint() {
   document.documentElement.lang = LANG;
+  document.title = t("send_title");
   document.querySelectorAll("[data-s]").forEach((el) => (el.textContent = t(el.dataset.s)));
   document.querySelectorAll(".langs button").forEach((b) => b.classList.toggle("on", b.dataset.lang === LANG));
   $("#docs").innerHTML = DOCS.map((d) => `<li>${esc(d[LANG] || d.en)}</li>`).join("");

@@ -122,6 +122,9 @@ const T = {
   ck_ok: ["ready", "listos"], ck_wait: ["waiting on a person", "esperan a una persona"], ck_fail: ["to fix", "por arreglar"],
   th_check: ["Kipu check", "Revisión de Kipu"], th_open: ["Still open", "Pendiente"], ago: ["s ago", "s"],
   st_ok: ["Ready", "Listo"], st_wait: ["Waiting", "Espera"], st_fail: ["Fix first", "Arreglar"],
+  load: ["Load from Kipu", "Cargar desde Kipu"],
+  load_help: ["Live Kipu has real patient records. We only read it when you click.", "El Kipu real tiene expedientes de pacientes reales. Solo lo leemos cuando usted hace clic."],
+  writes_live: ["Only practice Kipu keeps a list of writes.", "Solo el Kipu de práctica guarda una lista de lo que se escribe."],
   bg_log: ["Recent results", "Resultados recientes"], bg_none: ["Nothing on the board yet. Pull referrals from Kipu or start a practice run.", "Todavía no hay nada en el tablero. Traiga referidos de Kipu o empiece una práctica."],
 };
 let LANG = "en";
@@ -132,13 +135,14 @@ async function api(path, opts) {
   const r = await fetch(path, opts);
   if (r.status === 401) { location.href = "/auth/signin?next=/static/kipu.html"; throw new Error("sign in"); }
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(j.error || r.statusText);
+  if (!r.ok) throw new Error(window.cbError(j, r.statusText));
   return j;
 }
 const post = (p, b) => api(p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) });
 
 function words() {
   document.documentElement.lang = LANG;
+  document.title = t("title");
   for (const id of ["back", "title", "signout", "save", "sync", "find"]) $("#" + id).textContent = t(id);
   for (const id of ["h-conn", "h-bg", "h-in", "h-find", "h-cards", "h-writes", "th-case", "th-status", "th-kipu", "th-steps"]) $("#" + id).textContent = t(id.replace("-", "_"));
   $("#bg-help").textContent = t("bg_help");
@@ -150,13 +154,22 @@ function words() {
   [...$("#mode").options].forEach((o) => (o.textContent = t(o.value)));
 }
 
-async function status() {
-  const s = await api("/api/kipu/status");
+// Live Kipu is read only when a person clicks "Load from Kipu". Practice Kipu loads on its own.
+let STATUS = null;
+async function status(load) {
+  const s = (STATUS = await api("/api/kipu/status" + (load ? "?load=1" : "")));
+  paintStatus();
+}
+function paintStatus() {
+  const s = STATUS;
+  if (!s) return;
   $("#mode").value = s.mode; $("#write").checked = !!s.write; $("#live-warn").hidden = s.mode !== "live";
   $("#status").innerHTML = s.mode === "off" ? `<span class="k-m">${esc(t("off_msg"))}</span>` :
+    !s.census ? `<button class="k-btn primary" id="load">${esc(t("load"))}</button> <span class="k-m">${esc(t("load_help"))}</span>` :
     `<span class="k-pill">${s.census.total} ${esc(t("in_care"))}</span>` +
     Object.entries(s.census.by_site).map(([k, v]) => `<span class="k-pill">${esc(k)}: ${v}</span>`).join("") +
     `<span class="k-pill">${s.pending} ${esc(t("pending"))}</span>` + (s.write ? `<span class="k-pill">${esc(t("writing"))}</span>` : "");
+  $("#load")?.addEventListener("click", () => status(true).catch((e) => ($("#status").textContent = e.message)));
 }
 
 async function cards() {
@@ -180,7 +193,7 @@ async function cards() {
 
 async function writes() {
   const w = await api("/api/kipu/writes");
-  $("#writes").textContent = w.writes.length ? w.writes.map((x) => `${new Date(x.t * 1000).toLocaleTimeString()}  POST ${x.path}  ${x.created ? "→ " + x.created : ""}  [${x.what.join(", ")}]`).join("\n") : (w.note || "—");
+  $("#writes").textContent = w.writes.length ? w.writes.map((x) => `${new Date(x.t * 1000).toLocaleTimeString()}  POST ${x.path}  ${x.created ? "→ " + x.created : ""}  [${x.what.join(", ")}]`).join("\n") : (w.note ? t("writes_live") : "—");
 }
 
 function alertBox(msg) { $("#teams-out").hidden = false; $("#teams-out").textContent = msg; }
@@ -191,7 +204,7 @@ $("#save").addEventListener("click", async () => {
 });
 $("#mode").addEventListener("change", () => ($("#live-warn").hidden = $("#mode").value !== "live"));
 $("#sync").addEventListener("click", async () => {
-  try { const r = await post("/api/kipu/sync"); $("#sync-out").textContent = `${r.added.length} ${t("added")}: ${r.added.join(", ")}`; status(); cards(); }
+  try { const r = await post("/api/kipu/sync"); $("#sync-out").textContent = `${r.added.length} ${t("added")}: ${r.added.join(", ")}`; status(true); cards(); }
   catch (e) { $("#sync-out").textContent = e.message; }
 });
 $("#find").addEventListener("click", async () => {
@@ -200,7 +213,7 @@ $("#find").addEventListener("click", async () => {
     $("#find-out").innerHTML = r.matches.length ? `${esc(t("found"))} ${r.matches.map((m) => `<span class="k-pill">${esc(m.id)} · ${esc(m.mr_number || "")} · ${esc(m.location || "")}</span>`).join("")}` : esc(t("none"));
   } catch (e) { $("#find-out").textContent = e.message; }
 });
-$("#lang").addEventListener("click", () => { LANG = LANG === "es" ? "en" : "es"; window.cbLang?.set(LANG); words(); cards(); bgChecks(); });
+$("#lang").addEventListener("click", () => { LANG = LANG === "es" ? "en" : "es"; window.cbLang?.set(LANG); words(); paintStatus(); cards(); bgChecks(); });
 
 async function bgChecks() {
   let s;

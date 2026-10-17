@@ -53,7 +53,7 @@
 <header class="pp-top">
   <a href="/" id="back"></a>
   <strong id="title"></strong>
-  <div class="pp-lang" role="group" aria-label="Language"><button data-lang="en">English</button><button data-lang="es">Español</button></div>
+  <div class="pp-lang" role="group" id="lang-group"><button data-lang="en">English</button><button data-lang="es">Español</button></div>
 </header>
 <main class="pp-wrap">
   <div class="pp-note" id="note"></div>
@@ -69,7 +69,7 @@
 // Practice patients: the organizers' invented referral packets, one profile each.
 const T = {
   back: ["← Back to the referral board", "← Volver al tablero de referidos"],
-  title: ["Practice patients", "Pacientes de práctica"],
+  title: ["Practice patients", "Pacientes de práctica"], lang_label: ["Language", "Idioma"],
   note: ["These 10 people are made up. No real patient. Their names, numbers and hospitals are fake, so you can practice safely. Each one has a full faxed packet, like a real referral.",
          "Estas 10 personas son inventadas. Ningún paciente real. Sus nombres, números y hospitales son falsos, para practicar con seguridad. Cada una tiene un paquete de fax completo, como un referido real."],
   years: ["years old", "años"], pages: ["pages", "páginas"],
@@ -111,10 +111,12 @@ let LANG = "en", LIST = [], CUR = null, VIEW = { pid: null, n: 1, max: 1 };
 const $ = (s) => document.querySelector(s);
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const t = (k) => (T[k] ? T[k][LANG === "es" ? 1 : 0] : k);
-const api = async (p, o) => { const r = await fetch(p, o); if (!r.ok) throw new Error(r.statusText); return r.json(); };
+const api = async (p, o) => { const r = await fetch(p, o); if (!r.ok) throw new Error(window.cbError(await r.json().catch(() => ({})), r.statusText)); return r.json(); };
 
 function chrome() {
   document.documentElement.lang = LANG;
+  document.title = t("title");
+  $("#lang-group").setAttribute("aria-label", t("lang_label"));
   $("#back").textContent = t("back"); $("#title").textContent = t("title"); $("#note").textContent = t("note");
   $("#vclose").textContent = t("close");
   document.querySelectorAll(".pp-lang button").forEach((b) => b.classList.toggle("on", b.dataset.lang === LANG));
@@ -155,7 +157,7 @@ function detail() {
     for (const g of ["self_care", "behavior"]) right += `<div><b>${esc(t("gate_" + g))}:</b> ${esc(t(r.gates[g].status))}</div>`;
     const flags = r.rules.filter((x) => x.status === "not_met" || (x.status === "cant_tell" && x.fact_ids.length));
     right += flags.map((x) => `<div class="pp-flag ${esc(x.status)}"><b>${esc(x.rule_id)}</b> · ${esc(t(x.status))}<div>${esc(LANG === "es" ? x.explanation_es : x.explanation)}</div>${x.fact_ids.map(quote).join("")}</div>`).join("");
-    right += r.diagnoses.filter((d) => d.ineligible).map((d) => `<div class="pp-flag not_met"><b>${esc(d.rule_id)}</b> · ${esc(d.text)}${d.fact_ids.map(quote).join("")}</div>`).join("");
+    right += r.diagnoses.filter((d) => d.ineligible).map((d) => `<div class="pp-flag not_met"><b>${esc(d.rule_id)}</b> · ${esc(d.text)}<div>${esc(LANG === "es" ? d.explanation_es : d.explanation)}</div>${d.fact_ids.map(quote).join("")}</div>`).join("");
     const miss = r.checklist.filter((c) => c.status === "missing");
     if (miss.length) right += `<h3>${esc(t("missing"))}</h3><ul>${miss.map((c) => `<li>${esc(c.doc_id)}: ${esc(c.text)}</li>`).join("")}</ul>`;
     if (r.conflicts.length) right += `<h3>${esc(t("conflicts"))}</h3>${r.conflicts.map((c) => `<p>${esc(LANG === "es" ? c.description_es : c.description)}</p>`).join("")}`;

@@ -45,6 +45,15 @@
   // ---- the Display button and its panel ----
   let S = null; // strings.json
   const t = (k) => (S && S[k] && (S[k][root.lang === "es" ? "es" : "en"] || S[k].en)) || "";
+  // Words for a server error, in the page's language. The server sends a stable code ("err_<code>"
+  // in strings.json); its English "error" text is only a fallback.
+  window.cbError = (j, fallback) => {
+    const k = "err_" + ((j && j.code) || "");
+    let s = t(k);
+    if (!s) return (j && j.error) || fallback || "";
+    for (const [a, b] of Object.entries((j && j.vars) || {})) s = s.replaceAll(`{${a}}`, b);
+    return s;
+  };
   const ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="7.2" r="1.3" fill="currentColor"/><path d="M7 10h10M12 10v4M12 14l-2.5 4.5M12 14l2.5 4.5"/></svg>';
   const GROUPS = [
     { key: "theme", label: "disp_theme", opts: [["light", "disp_light"], ["dark", "disp_dark"]] },

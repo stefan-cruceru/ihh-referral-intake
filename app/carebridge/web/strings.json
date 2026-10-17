@@ -2046,5 +2046,153 @@
  "ob_questions": {
   "en": "Questions are welcome. Ask your team’s Lamplight champion or your team lead.",
   "es": "Las preguntas son bienvenidas. Pregunte a la persona referente de Lamplight de su equipo o a su líder de equipo."
+ },
+ "page_title": {
+  "en": "Lamplight · IHH",
+  "es": "Lamplight · IHH"
+ },
+ "aria_lang": {
+  "en": "Language",
+  "es": "Idioma"
+ },
+ "aria_person": {
+  "en": "Person",
+  "es": "Persona"
+ },
+ "err_not_found": {
+  "en": "We could not find that.",
+  "es": "No encontramos eso."
+ },
+ "err_empty_file": {
+  "en": "The file is empty.",
+  "es": "El archivo está vacío."
+ },
+ "err_no_packet": {
+  "en": "This referral has no packet file.",
+  "es": "Este referido no tiene archivo del paquete."
+ },
+ "err_no_review": {
+  "en": "There is no review yet.",
+  "es": "Todavía no hay revisión."
+ },
+ "err_no_clinical": {
+  "en": "No one on the staff list does the clinical review.",
+  "es": "Nadie en la lista del personal hace la revisión clínica."
+ },
+ "err_pick_name": {
+  "en": "Pick your name first.",
+  "es": "Primero escoja su nombre."
+ },
+ "err_only_clinical_notes": {
+  "en": "Only the clinical reviewer writes clinical notes.",
+  "es": "Solo la persona de revisión clínica escribe notas clínicas."
+ },
+ "err_type_note": {
+  "en": "Type the note first.",
+  "es": "Primero escriba la nota."
+ },
+ "err_unknown_check": {
+  "en": "We don't know that check.",
+  "es": "No conocemos esa revisión."
+ },
+ "err_only_clinical_deny": {
+  "en": "Only the clinical line can say no to a referral.",
+  "es": "Solo la línea clínica puede decir que no a un referido."
+ },
+ "err_read_pages": {
+  "en": "A clinical reviewer must read page(s) {pages} before this can be a yes.",
+  "es": "Una persona de revisión clínica debe leer la(s) página(s) {pages} antes de decir que sí."
+ },
+ "err_unknown_action": {
+  "en": "We don't know that step.",
+  "es": "No conocemos ese paso."
+ },
+ "err_person_name": {
+  "en": "A person needs a name.",
+  "es": "La persona necesita un nombre."
+ },
+ "err_unknown_status": {
+  "en": "We don't know that status.",
+  "es": "No conocemos ese estado."
+ },
+ "err_type_name": {
+  "en": "Type a name (up to 60 letters).",
+  "es": "Escriba un nombre (hasta 60 letras)."
+ },
+ "err_type_email": {
+  "en": "Type a work email, like name@ihh.example.org.",
+  "es": "Escriba un correo del trabajo, como nombre@ihh.example.org."
+ },
+ "err_pick_role": {
+  "en": "Pick a role.",
+  "es": "Escoja un rol."
+ },
+ "err_email_taken": {
+  "en": "Someone already uses that email.",
+  "es": "Alguien ya usa ese correo."
+ },
+ "err_no_email": {
+  "en": "No one has that email.",
+  "es": "Nadie tiene ese correo."
+ },
+ "err_accounts_entra": {
+  "en": "Accounts come from IHH's Microsoft sign-in. Add people in Microsoft Entra.",
+  "es": "Las cuentas vienen del inicio de sesión de Microsoft de IHH. Agregue personas en Microsoft Entra."
+ },
+ "err_roles_entra": {
+  "en": "Roles come from IHH's Microsoft Entra. Change them there.",
+  "es": "Los roles vienen de Microsoft Entra de IHH. Cámbielos ahí."
+ },
+ "err_kipu_off": {
+  "en": "Kipu is off. Pick practice or live first.",
+  "es": "Kipu está apagado. Primero escoja práctica o en vivo."
+ },
+ "err_kipu_write_off": {
+  "en": "Writing to Kipu is off.",
+  "es": "La escritura en Kipu está apagada."
+ },
+ "err_kipu_keys": {
+  "en": "Live Kipu needs its keys. IT sets them.",
+  "es": "El Kipu real necesita sus claves. TI las pone."
+ },
+ "err_kipu_unreachable": {
+  "en": "We could not reach Kipu.",
+  "es": "No pudimos conectar con Kipu."
+ },
+ "err_kipu_said": {
+  "en": "Kipu sent back an error. Try again, or ask IT.",
+  "es": "Kipu respondió con un error. Intente otra vez o pregunte a TI."
+ },
+ "err_kipu_has_chart": {
+  "en": "This referral already has a Kipu chart ({id}).",
+  "es": "Este referido ya tiene expediente en Kipu ({id})."
+ },
+ "err_kipu_needs_packet": {
+  "en": "First make the Kipu chart and add the packet.",
+  "es": "Primero cree el expediente en Kipu y agregue el paquete."
+ },
+ "err_kipu_needs_decision": {
+  "en": "First make the Kipu chart, do the review and make a decision.",
+  "es": "Primero cree el expediente en Kipu, haga la revisión y tome una decisión."
+ },
+ "err_unknown_step": {
+  "en": "We don't know that Kipu step.",
+  "es": "No conocemos ese paso de Kipu."
+ },
+ "err_server": {
+  "en": "Something went wrong. Try again.",
+  "es": "Algo salió mal. Intente otra vez."
+ },
+ "err_ai": {
+  "en": "Claude did not answer. Try again.",
+  "es": "Claude no respondió. Intente otra vez."
+ },
+ "err_bad_key": {
+  "en": "That doesn't look like a Claude API key. It starts with sk-ant-.",
+  "es": "Eso no parece una clave de API de Claude. Empieza con sk-ant-."
+ },
+ "err_unknown_rule": {
+  "en": "We don't know that rule.",
+  "es": "No conocemos esa regla."
  }
 }
