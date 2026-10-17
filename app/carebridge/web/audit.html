@@ -57,14 +57,14 @@
 <div id="toast" class="toast hidden"></div>
 <script>
 // The audit log for admins: who did what, what was approved, and every step the AI took.
-// Read-only. The server has no way to change or remove a line, and each line is sealed to the one before.
+// Read-only through the app. Seals verify present entries, not a trusted count of all past entries.
 const T = {
   back: ["← Back to the patients", "← Volver a los pacientes"], title: ["Audit log", "Registro de auditoría"],
-  h_check: ["Is the log whole?", "¿Está completo el registro?"],
-  ok: ["Whole: {n} lines, none changed or removed", "Completo: {n} líneas, ninguna cambiada ni borrada"],
-  bad: ["Broken at line {at}. Someone changed or removed lines. Tell IT.", "Roto en la línea {at}. Alguien cambió o borró líneas. Avise a TI."],
-  why: ["Nobody can change or delete a line here, not even an admin. Each line is sealed to the one before it, so if someone edits the file directly, this check turns red. Packet text and clinical notes are never kept here, only who, what and when.",
-        "Nadie puede cambiar o borrar una línea, ni un admin. Cada línea está sellada a la anterior; si alguien edita el archivo, esta revisión se pone roja. Aquí nunca se guarda el texto del paquete ni las notas clínicas, solo quién, qué y cuándo."],
+  h_check: ["Do the stored entries match?", "¿Coinciden las entradas guardadas?"],
+  ok: ["{n} stored entries checked: seals match", "{n} entradas guardadas revisadas: los sellos coinciden"],
+  bad: ["Seal check failed at line {at}. Ask IT to review the file.", "El sello no coincide en la línea {at}. Pida a TI que revise el archivo."],
+  why: ["The app has no action to edit or delete log entries. This check verifies the seals of entries still present. It cannot detect removal of the newest entries or the whole log. IT must protect and back up the files. Packet text and clinical notes are not kept here.",
+        "La app no permite editar ni borrar entradas del registro. Esta revisión comprueba los sellos de las entradas que siguen guardadas. No detecta si se borraron las entradas más recientes o todo el registro. TI debe proteger los archivos y guardar copias. Aquí no se guarda el texto del paquete ni las notas clínicas."],
   case_ph: ["Case number", "Número de caso"], l_practice: ["Show practice", "Mostrar práctica"],
   go: ["Show", "Mostrar"], csv: ["Download (CSV)", "Descargar (CSV)"],
   k_all: ["Everything", "Todo"], k_decision: ["Decisions only", "Solo decisiones"], k_ai: ["AI steps only", "Solo pasos de la IA"], k_people: ["Sign-in, roles, settings", "Entradas, roles, ajustes"],
