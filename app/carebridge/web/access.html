@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Access and roles</title>
 <link rel="stylesheet" href="/static/app.css">
@@ -143,7 +144,7 @@ const GROUPS = [
   ["g_admin", ["people_edit", "roles_edit", "settings", "api_key"]],
   ["g_copilot", ["mcp_token", "staff_tools"]],
 ];
-let LANG = (() => { try { return localStorage.getItem("cb_lang") || "en"; } catch (e) { return "en"; } })();
+let LANG = window.cbLang?.get() || "en";
 let A = null;
 const $ = (s) => document.querySelector(s);
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -222,7 +223,7 @@ async function load() {
 
 $("#lang").addEventListener("click", () => {
   LANG = LANG === "es" ? "en" : "es";
-  try { localStorage.setItem("cb_lang", LANG); } catch (e) {}
+  window.cbLang?.set(LANG);
   render();
 });
 $("#make-token").addEventListener("click", async () => {
@@ -236,7 +237,7 @@ $("#make-token").addEventListener("click", async () => {
   } catch (e) { toast(e.message); }
 });
 (async () => {
-  try { const s = await (await fetch("/api/state")).json(); if (s.lang && !localStorage.getItem("cb_lang")) LANG = s.lang; } catch (e) {}
+  try { const s = await (await fetch("/api/state")).json(); if (s.lang && !window.cbLang?.get()) LANG = s.lang; } catch (e) {}
   render();
   load().catch((e) => toast(e.message));
 })();

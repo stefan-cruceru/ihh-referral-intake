@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kipu and Teams</title>
 <link rel="stylesheet" href="/static/app.css">
@@ -199,7 +200,7 @@ $("#find").addEventListener("click", async () => {
     $("#find-out").innerHTML = r.matches.length ? `${esc(t("found"))} ${r.matches.map((m) => `<span class="k-pill">${esc(m.id)} · ${esc(m.mr_number || "")} · ${esc(m.location || "")}</span>`).join("")}` : esc(t("none"));
   } catch (e) { $("#find-out").textContent = e.message; }
 });
-$("#lang").addEventListener("click", () => { LANG = LANG === "es" ? "en" : "es"; words(); cards(); bgChecks(); });
+$("#lang").addEventListener("click", () => { LANG = LANG === "es" ? "en" : "es"; window.cbLang?.set(LANG); words(); cards(); bgChecks(); });
 
 async function bgChecks() {
   let s;
@@ -222,8 +223,8 @@ async function bgChecks() {
 }
 
 (async function boot() {
+  try { LANG = window.cbLang?.get() || (await api("/api/state")).lang || "en"; } catch (e) {}
   try { const me = await api("/api/me"); $("#me").textContent = me.name ? `${t("signed")} ${me.name} (${me.role})` : ""; } catch (e) {}
-  try { LANG = (await api("/api/state")).lang || "en"; } catch (e) {}
   words();
   status().catch((e) => ($("#status").textContent = e.message));
   cards(); writes();

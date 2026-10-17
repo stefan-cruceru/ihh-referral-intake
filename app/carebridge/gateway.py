@@ -1,7 +1,7 @@
 """Sign-in, Kipu and Teams routes for the local app, kept out of webapp.py's main handlers.
 
 webapp.Handler calls allowed() first (is this request signed in?) and then handle() (is it one of
-these routes?). Pages here are small and plain, in English and Spanish.
+these routes?). Pages here are small and plain, in English or Spanish with a switch at the top.
 """
 
 import re
@@ -71,15 +71,133 @@ def allowed(h, path: str) -> bool:
     return True
 
 
-def _page(h, title: str, body: str, code: int = 200, extra: dict | None = None):
-    html = f"""<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+# Words on the pages built here. One language at a time; the link at the top switches.
+W = {
+    "lang_other": ("Español", "English"),
+    "sign_in": ("Sign in", "Iniciar sesión"),
+    "ms_button": ("Sign in with Microsoft (Teams work account)", "Entrar con Microsoft (cuenta de Teams del trabajo)"),
+    "ms_only": ("At IHH this is the only way in. It isn't connected in this demo: click it to see how it works.",
+                "En IHH esta es la única forma de entrar. No está conectada en esta demo: haga clic para ver cómo funciona."),
+    "practice_h": ("Practice sign-in", "Inicio de práctica"),
+    "practice_p": ("These people are made up. Pick one to see the app with that role.",
+                   "Estas personas son inventadas. Escoja una para ver la app con ese rol."),
+    "add_h": ("Add a practice person", "Agregar una persona de práctica"),
+    "name": ("Name", "Nombre"),
+    "email": ("Work email", "Correo del trabajo"),
+    "role": ("Role", "Rol"),
+    "add_go": ("Add and sign in", "Agregar y entrar"),
+    "add_note": ("Made-up people only. At IHH, accounts and roles come from Microsoft Entra.",
+                 "Solo personas inventadas. En IHH, las cuentas y los roles vienen de Microsoft Entra."),
+    "ms_h": ("Sign in with Microsoft", "Entrar con Microsoft"),
+    "ms_not": ("Not connected in this demo. This is what happens at IHH once IT registers the app.",
+               "No está conectado en esta demo. Esto pasa en IHH cuando TI registre la app."),
+    "ms_1": ("You click <b>Sign in with Microsoft</b>. Care Bridge sends you to IHH's own Microsoft sign-in page "
+             "(<code>login.microsoftonline.com</code>, IHH's tenant). Care Bridge never sees your password.",
+             "Usted hace clic en <b>Entrar con Microsoft</b>. Care Bridge lo lleva a la página de Microsoft de IHH "
+             "(<code>login.microsoftonline.com</code>, el inquilino de IHH). Care Bridge nunca ve su contraseña."),
+    "ms_2": ("You sign in with the same work account you use for Teams, with IHH's usual multi-factor check.",
+             "Entra con la misma cuenta del trabajo que usa en Teams, con la revisión de varios pasos de siempre en IHH."),
+    "ms_3": ("Microsoft sends you back with a one-time code. Care Bridge trades it with Microsoft, over a secure "
+             "connection, for an ID token with your name, email and your <b>Care Bridge roles</b> (standard OAuth 2.0 "
+             "with PKCE and OpenID Connect).",
+             "Microsoft lo regresa con un código de un solo uso. Care Bridge lo cambia con Microsoft, por una conexión "
+             "segura, por un token de identidad con su nombre, su correo y sus <b>roles de Care Bridge</b> (OAuth 2.0 "
+             "estándar con PKCE y OpenID Connect)."),
+    "ms_4": ("Care Bridge checks the token was made for this app, for IHH's tenant and for this sign-in, then "
+             "signs you in with those roles. The server checks every action against them.",
+             "Care Bridge revisa que el token sea para esta app, para el inquilino de IHH y para este inicio de sesión. "
+             "Luego lo deja entrar con esos roles. El servidor revisa cada acción contra ellos."),
+    "ms_roles": ("<b>Roles come from Microsoft Entra.</b> IT assigns these app roles to people or groups:",
+                 "<b>Los roles vienen de Microsoft Entra.</b> TI asigna estos roles de la app a personas o grupos:"),
+    "ms_norole": ("No role, no entry. Only the clinical role can deny a referral.",
+                  "Sin rol, no hay entrada. Solo el rol clínico puede decir que no a un referido."),
+    "ms_it": ("<b>What IT does once:</b> register Care Bridge in Microsoft Entra, add the four app roles, assign "
+              "people or groups, then put the tenant ID and client ID in Settings (or <code>CAREBRIDGE_TEAMS_TENANT</code> "
+              "and <code>CAREBRIDGE_TEAMS_CLIENT_ID</code>). From then on this button is the only way in, and practice "
+              "sign-in turns off.",
+              "<b>Lo que TI hace una vez:</b> registra Care Bridge en Microsoft Entra, agrega los cuatro roles de la app, "
+              "los asigna a personas o grupos y pone los ID del inquilino y del cliente en Ajustes (o "
+              "<code>CAREBRIDGE_TEAMS_TENANT</code> y <code>CAREBRIDGE_TEAMS_CLIENT_ID</code>). Desde entonces este "
+              "botón es la única forma de entrar y el inicio de práctica se apaga."),
+    "back": ("← Back to sign-in", "← Volver a iniciar sesión"),
+    "problem": ("Sign-in problem", "Problema al entrar"),
+    "try_again": ("Try again", "Intentar otra vez"),
+    "pick": ("Pick someone on the list.", "Escoja a alguien de la lista."),
+    "expired": ("This link has expired.", "Este enlace venció."),
+    "open_cb": ("Open Care Bridge", "Abrir Care Bridge"),
+    "not_yours": ("This link is for someone else", "Este enlace es para otra persona"),
+    "sent_to": ("It was sent to {who}. Sign in as that person, or open the referral from the board.",
+                "Se envió a {who}. Entre como esa persona o abra el referido desde el tablero."),
+    "switch": ("Switch person", "Cambiar de persona"),
+    "not_found": ("That referral is not on the board right now.", "Ese referido no está en el tablero ahora."),
+    "open_board": ("Open the board", "Abrir el tablero"),
+    "signed_as": ("Signed in as {who} ({role}).", "Entró como {who} ({role})."),
+    "why": ("Why?", "¿Por qué?"),
+    "only_clinical": ("Only the clinical reviewer can say no.", "Solo la persona de revisión clínica puede decir que no."),
+    "used": ("This link was already used.", "Este enlace ya se usó."),
+    "done": ("Done: {label}", "Listo: {label}"),
+    "logged": ("Saved in the log under {who}.", "Guardado en el registro a nombre de {who}."),
+    "act_denied": ("Say no (clinical)", "Decir que no (clínico)"),
+    "act_accepted": ("Say yes", "Decir que sí"),
+    "act_clinical_pickup": ("I have it", "Yo lo tomo"),
+    "role_coordinator": ("coordinator", "coordinación"),
+    "role_lead": ("lead", "líder"),
+    "role_clinical": ("clinical", "clínico"),
+    "role_admin": ("admin (IT)", "admin (TI)"),
+}
+# Messages auth.py raises in English, shown back on the sign-in page.
+ERRORS_ES = {
+    "Accounts come from IHH's Microsoft sign-in. Add people in Microsoft Entra.":
+        "Las cuentas vienen del inicio de sesión de Microsoft de IHH. Agregue personas en Microsoft Entra.",
+    "Type a name (up to 60 letters).": "Escriba un nombre (hasta 60 letras).",
+    "Type a work email, like name@ihh.example.org.": "Escriba un correo del trabajo, como nombre@ihh.example.org.",
+    "Pick a role.": "Escoja un rol.",
+    "Someone already uses that email.": "Alguien ya usa ese correo.",
+}
+
+
+def _lang(h) -> str:
+    """?lang= (the switch link) first, then the cb_lang cookie the app pages share, then the app setting."""
+    q = parse_qs(urlparse(h.path).query)
+    if q.get("lang", [""])[0] in ("en", "es"):
+        return q["lang"][0]
+    m = re.search(r"(?:^|;\s*)cb_lang=(en|es)\b", h.headers.get("Cookie") or "")
+    if m:
+        return m.group(1)
+    return "es" if config.load_settings().get("lang") == "es" else "en"
+
+
+def _w(lang: str, key: str, **kw) -> str:
+    text = W[key][1 if lang == "es" else 0]
+    return text.format(**{k: escape(str(v)) for k, v in kw.items()}) if kw else text
+
+
+def _role(lang: str, role: str) -> str:
+    return _w(lang, "role_" + role) if "role_" + role in W else role
+
+
+def _page(h, title: str, body: str, code: int = 200, extra: dict | None = None, lang: str = "en"):
+    # The switch link reloads this page in the other language. After a form post there is no page
+    # to reload, so it goes to sign-in.
+    other = "en" if lang == "es" else "es"
+    u = urlparse(h.path)
+    q = parse_qs(u.query)
+    keep = [f"{k}={quote(v[0])}" for k, v in q.items() if k != "lang"] if h.command == "GET" else []
+    href = (u.path if h.command == "GET" else "/auth/signin") + "?" + "&".join(keep + [f"lang={other}"])
+    extra = dict(extra or {})
+    if q.get("lang"):
+        # Someone switched here: the app pages follow it too.
+        extra.setdefault("Set-Cookie", f"cb_lang={lang}; Path=/; Max-Age=31536000; SameSite=Lax")
+    html = f"""<!doctype html><html lang="{lang}" translate="no"><head><meta charset="utf-8"><meta name="google" content="notranslate"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{escape(title)}</title><link rel="stylesheet" href="/static/app.css"><script src="/static/display.js"></script>
 <style>.gw{{max-width:560px;margin:3rem auto;padding:1.5rem;background:var(--panel);border:1px solid var(--line);border-radius:16px}}
 .gw h1{{font-size:1.5rem;margin:0 0 .6rem}}.gw .who{{display:grid;gap:.5rem;margin:1rem 0}}
 .gw button,.gw a.b{{font:inherit;font-weight:600;padding:.8rem 1rem;border-radius:10px;border:1px solid var(--line);background:var(--panel);cursor:pointer;text-align:left;color:inherit;text-decoration:none;display:block}}
 .gw button.primary{{background:var(--brand);color:var(--brand-ink,#fff);border-color:var(--brand)}}.gw .m{{color:var(--muted);font-size:.92rem}}
-.gw .teams,.gw a.b.teams{{background:#4b53bc;color:#fff;border-color:#4b53bc;text-align:center}}</style></head>
-<body><main class="gw">{body}</main></body></html>"""
+.gw .teams,.gw a.b.teams{{background:#4b53bc;color:#fff;border-color:#4b53bc;text-align:center}}
+.gw .langs{{display:flex;justify-content:flex-end;align-items:center;gap:.5rem;margin:-.4rem 0 .4rem}}
+.gw .langs a{{color:var(--brand);font-weight:600}}</style></head>
+<body><main class="gw"><div class="langs"><a href="{escape(href)}" lang="{other}">{_w(lang, "lang_other")}</a></div>{body}</main></body></html>"""
     h._send(code, html.encode("utf-8"), "text/html; charset=utf-8", extra)
 
 
@@ -90,59 +208,47 @@ def _sign_in_page(h, nxt: str, msg: str = ""):
             return h._send(302, b"", "text/plain", {"Location": teams.sign_in_url(_redirect(h), nxt)})
         except RuntimeError as e:
             msg = str(e)
+    lg = _lang(h)
+    if lg == "es":
+        msg = ERRORS_ES.get(msg, msg)
+    w = lambda k: _w(lg, k)  # noqa: E731
     people = "".join(
         f'<form method="post" action="/auth/practice"><input type="hidden" name="email" value="{escape(s["email"])}">'
         f'<input type="hidden" name="next" value="{escape(nxt)}"><button>{escape(s["name"])} '
-        f'<span class="m">· {escape(s["role"])}</span></button></form>' for s in auth.staff())
-    roles = "".join(f'<option value="{r}">{r}</option>' for r in auth.ROLES)
-    _page(h, "Sign in", f"""<h1>Sign in · Iniciar sesión</h1>
-<a class="b teams" href="/auth/microsoft?next={escape(quote(nxt))}">Sign in with Microsoft (Teams work account)<br>
-<span style="font-weight:400">Entrar con Microsoft (cuenta de Teams del trabajo)</span></a>
-<p class="m">At IHH this is the only way in. It isn't connected in this demo: click it to see how it works.<br>
-En IHH esta es la única forma de entrar. No está conectada en esta demo: haga clic para ver cómo funciona.</p>
-<h2 style="font-size:1.1rem;margin:1.4rem 0 .2rem">Practice sign-in · Inicio de práctica</h2>
-<p class="m">These people are made up. Pick one to see the app with that role.<br>Estas personas son inventadas. Escoja una para ver la app con ese rol.</p>
+        f'<span class="m">· {escape(_role(lg, s["role"]))}</span></button></form>' for s in auth.staff())
+    roles = "".join(f'<option value="{r}">{escape(_role(lg, r))}</option>' for r in auth.ROLES)
+    _page(h, w("sign_in"), f"""<h1>{w("sign_in")}</h1>
+<a class="b teams" href="/auth/microsoft?next={escape(quote(nxt))}">{w("ms_button")}</a>
+<p class="m">{w("ms_only")}</p>
+<h2 style="font-size:1.1rem;margin:1.4rem 0 .2rem">{w("practice_h")}</h2>
+<p class="m">{w("practice_p")}</p>
 {f'<p style="color:var(--red)">{escape(msg)}</p>' if msg else ''}
 <div class="who">{people}</div>
-<details><summary class="m" style="cursor:pointer">Add a practice person · Agregar una persona de práctica</summary>
+<details><summary class="m" style="cursor:pointer">{w("add_h")}</summary>
 <form method="post" action="/auth/practice/add" class="who">
 <input type="hidden" name="next" value="{escape(nxt)}">
-<label class="m">Name · Nombre<input name="name" required maxlength="60"></label>
-<label class="m">Work email · Correo del trabajo<input name="email" type="email" required placeholder="name@ihh.example.org"></label>
-<label class="m">Role · Rol<select name="role">{roles}</select></label>
-<button class="primary">Add and sign in · Agregar y entrar</button>
-<span class="m">Made-up people only. At IHH, accounts and roles come from Microsoft Entra.<br>Solo personas inventadas. En IHH, las cuentas y los roles vienen de Microsoft Entra.</span>
-</form></details>""")
+<label class="m">{w("name")}<input name="name" required maxlength="60"></label>
+<label class="m">{w("email")}<input name="email" type="email" required placeholder="name@ihh.example.org"></label>
+<label class="m">{w("role")}<select name="role">{roles}</select></label>
+<button class="primary">{w("add_go")}</button>
+<span class="m">{w("add_note")}</span>
+</form></details>""", lang=lg)
 
 
 def _microsoft_page(h, nxt: str):
     """How the Microsoft sign-in works at IHH. Shown until IT registers the app; after that the
     button goes straight to IHH's Microsoft sign-in (teams.sign_in_url)."""
-    roles = "".join(f"<li><code>{escape(k)}</code> → {escape(v)}</li>" for k, v in auth.ENTRA_ROLES.items())
-    _page(h, "Sign in with Microsoft", f"""<h1>Sign in with Microsoft · Entrar con Microsoft</h1>
-<p class="m">Not connected in this demo. This is what happens at IHH once IT registers the app.<br>
-No está conectado en esta demo. Esto pasa en IHH cuando TI registre la app.</p>
-<ol>
-<li>You click <b>Sign in with Microsoft</b>. Care Bridge sends you to IHH's own Microsoft sign-in page
-(<code>login.microsoftonline.com</code>, IHH's tenant). Care Bridge never sees your password.</li>
-<li>You sign in with the same work account you use for Teams, with IHH's usual multi-factor check.</li>
-<li>Microsoft sends you back with a one-time code. Care Bridge trades it with Microsoft, over a secure
-connection, for an ID token with your name, email and your <b>Care Bridge roles</b> (standard OAuth 2.0
-with PKCE and OpenID Connect).</li>
-<li>Care Bridge checks the token was made for this app, for IHH's tenant and for this sign-in, then
-signs you in with those roles. The server checks every action against them.</li>
-</ol>
-<p><b>Roles come from Microsoft Entra.</b> IT assigns these app roles to people or groups:</p>
+    lg = _lang(h)
+    w = lambda k: _w(lg, k)  # noqa: E731
+    roles = "".join(f"<li><code>{escape(k)}</code> → {escape(_role(lg, v))}</li>" for k, v in auth.ENTRA_ROLES.items())
+    _page(h, w("ms_h"), f"""<h1>{w("ms_h")}</h1>
+<p class="m">{w("ms_not")}</p>
+<ol><li>{w("ms_1")}</li><li>{w("ms_2")}</li><li>{w("ms_3")}</li><li>{w("ms_4")}</li></ol>
+<p>{w("ms_roles")}</p>
 <ul>{roles}</ul>
-<p class="m">No role, no entry. Only the clinical role can deny a referral.</p>
-<p><b>What IT does once:</b> register Care Bridge in Microsoft Entra, add the four app roles, assign
-people or groups, then put the tenant ID and client ID in Settings (or <code>CAREBRIDGE_TEAMS_TENANT</code>
-and <code>CAREBRIDGE_TEAMS_CLIENT_ID</code>). From then on this button is the only way in, and practice
-sign-in turns off.</p>
-<p class="m">TI registra Care Bridge en Microsoft Entra, agrega los cuatro roles, los asigna a personas o
-grupos y pone los ID del inquilino y del cliente en Ajustes. Desde entonces este botón es la única
-forma de entrar y el inicio de práctica se apaga.</p>
-<a class="b" href="/auth/signin?next={escape(quote(nxt))}">← Back to sign-in · Volver</a>""")
+<p class="m">{w("ms_norole")}</p>
+<p>{w("ms_it")}</p>
+<a class="b" href="/auth/signin?next={escape(quote(nxt))}">{w("back")}</a>""", lang=lg)
 
 
 def _redirect(h) -> str:
@@ -193,7 +299,7 @@ def handle(h, method: str) -> bool:
         f = _form(h)
         who = auth.lookup(f.get("email", "")) if auth.mode() == "practice" else None
         if not who:
-            _sign_in_page(h, f.get("next", "/"), "Pick someone on the list.")
+            _sign_in_page(h, f.get("next", "/"), _w(_lang(h), "pick"))
             return True
         token = auth.start_session(who, "practice")
         h._send(302, b"", "text/plain", {"Location": _same_site(f.get("next")), "Set-Cookie": auth.set_cookie(token)})
@@ -202,7 +308,9 @@ def handle(h, method: str) -> bool:
         try:
             who, nxt = teams.finish_sign_in(q.get("code", ""), q.get("state", ""), _redirect(h))
         except Exception as e:
-            _page(h, "Sign-in problem", f"<h1>Sign-in problem</h1><p>{escape(str(e))}</p><a class='b' href='/auth/signin'>Try again</a>", 403)
+            lg = _lang(h)
+            _page(h, _w(lg, "problem"), f"<h1>{_w(lg, 'problem')}</h1><p>{escape(str(e))}</p>"
+                  f"<a class='b' href='/auth/signin'>{_w(lg, 'try_again')}</a>", 403, lang=lg)
             return True
         token = auth.start_session(who, "teams")
         h._send(302, b"", "text/plain", {"Location": nxt or "/", "Set-Cookie": auth.set_cookie(token)})
@@ -278,34 +386,37 @@ def handle(h, method: str) -> bool:
 def _go(h, method: str, token: str):
     from . import webapp
 
+    lg = _lang(h)
+    w = lambda k, **kw: _w(lg, k, **kw)  # noqa: E731
     data = auth.read_link_token(token)
     if not data:
-        return _page(h, "Link expired", "<h1>This link has expired / Este enlace venció</h1><a class='b' href='/'>Open Care Bridge</a>", 410)
+        return _page(h, w("expired"), f"<h1>{w('expired')}</h1><a class='b' href='/'>{w('open_cb')}</a>", 410, lang=lg)
     me = person(h)
     if not me or (auth.mode() != "off" and me["email"].lower() != data["e"]):
-        return _page(h, "Not your link", f"<h1>This link is for someone else</h1><p class='m'>It was sent to {escape(data['e'])}. "
-                     f"Sign in as that person, or open the referral from the board.</p><a class='b' href='/auth/signout'>Switch person</a>", 403)
+        return _page(h, w("not_yours"), f"<h1>{w('not_yours')}</h1><p class='m'>{w('sent_to', who=data['e'])}</p>"
+                     f"<a class='b' href='/auth/signout'>{w('switch')}</a>", 403, lang=lg)
     card = webapp.TRACK.cards.get(data["c"])
     if not card:
-        return _page(h, "Not found", "<h1>That referral is not on the board right now.</h1><a class='b' href='/'>Open the board</a>", 404)
+        return _page(h, w("not_found"), f"<h1>{w('not_found')}</h1><a class='b' href='/'>{w('open_board')}</a>", 404, lang=lg)
     if data["a"] == "open":
         return h._send(302, b"", "text/plain", {"Location": "/"})
-    label = {"denied": "Say no (clinical)", "accepted": "Say yes", "clinical_pickup": "I have it"}.get(data["a"], data["a"])
+    label = w("act_" + data["a"]) if "act_" + data["a"] in W else data["a"]
     if method == "GET":
-        return _page(h, "Confirm", f"""<h1>{escape(card['case_no'])}: {escape(label)}?</h1>
-<p class="m">Signed in as {escape(me['name'])} ({escape(me['role'])}).</p>
-<form method="post"><label class="m">Why? / ¿Por qué?<input name="reason" style="width:100%" required></label>
-<button class="primary" style="margin-top:.8rem">{escape(label)}</button></form>""")
+        return _page(h, label, f"""<h1>{escape(card['case_no'])}: {escape(label)}?</h1>
+<p class="m">{w('signed_as', who=me['name'], role=_role(lg, me['role']))}</p>
+<form method="post"><label class="m">{w('why')}<input name="reason" style="width:100%" required></label>
+<button class="primary" style="margin-top:.8rem">{escape(label)}</button></form>""", lang=lg)
     if not auth.can(me, data["a"]):
-        return _page(h, "Not allowed", "<h1>Only the clinical reviewer can say no.</h1>", 403)
+        return _page(h, w("only_clinical"), f"<h1>{w('only_clinical')}</h1>", 403, lang=lg)
     if not auth.use_link_token(token):
-        return _page(h, "Already used", "<h1>This link was already used.</h1><a class='b' href='/'>Open the board</a>", 409)
+        return _page(h, w("used"), f"<h1>{w('used')}</h1><a class='b' href='/'>{w('open_board')}</a>", 409, lang=lg)
     reason = _form(h).get("reason", "")
     try:
         webapp.TRACK.act(card["id"], data["a"], me["name"], f"{reason} (from Teams link)", role=auth.act_role(me))
     except ValueError as e:
-        return _page(h, "Not done", f"<h1>{escape(str(e))}</h1>", 400)
-    _page(h, "Done", f"<h1>Done: {escape(label)}</h1><p class='m'>Saved in the log under {escape(me['name'])}.</p><a class='b' href='/'>Open the board</a>")
+        return _page(h, str(e), f"<h1>{escape(str(e))}</h1>", 400, lang=lg)
+    _page(h, w("done", label=label), f"<h1>{w('done', label=label)}</h1><p class='m'>{w('logged', who=me['name'])}</p>"
+          f"<a class='b' href='/'>{w('open_board')}</a>", lang=lg)
 
 
 def _teams_card(h, cid: str, q: dict):
