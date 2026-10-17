@@ -1,0 +1,229 @@
+{
+  "duration": 120,
+  "scenes": [
+    {
+      "start": 0,
+      "end": 15,
+      "title_en": "A two-hour promise",
+      "title_es": "Una promesa de dos horas"
+    },
+    {
+      "start": 15,
+      "end": 30,
+      "title_en": "One queue. A clear owner.",
+      "title_es": "Una lista. Un responsable."
+    },
+    {
+      "start": 30,
+      "end": 46,
+      "title_en": "The chart changes the story",
+      "title_es": "El expediente cambia la historia"
+    },
+    {
+      "start": 46,
+      "end": 60,
+      "title_en": "Evidence, with limits",
+      "title_es": "Evidencia, con límites"
+    },
+    {
+      "start": 60,
+      "end": 76,
+      "title_en": "One draft for the missing pieces",
+      "title_es": "Un borrador con lo que falta"
+    },
+    {
+      "start": 76,
+      "end": 92,
+      "title_en": "The same work, in Spanish",
+      "title_es": "El mismo trabajo, en español"
+    },
+    {
+      "start": 92,
+      "end": 107,
+      "title_en": "A person decides. Handoffs follow.",
+      "title_es": "Una persona decide y entrega."
+    },
+    {
+      "start": 107,
+      "end": 120,
+      "title_en": "It never says yes or no. You do.",
+      "title_es": "Nunca dice sí o no. Usted decide."
+    }
+  ],
+  "cues": [
+    {
+      "start": 0.25,
+      "end": 4.524,
+      "en": "At Illumination Health and Home, every referral starts a two-hour clock.",
+      "es": "En Illumination Health and Home, cada referido inicia un reloj de dos horas."
+    },
+    {
+      "start": 4.524,
+      "end": 10.059,
+      "en": "For the coordinator, that means faxed pages, missing records, and another hospital to call.",
+      "es": "Para quien coordina, hay páginas de fax, expedientes pendientes y otro hospital al que llamar."
+    },
+    {
+      "start": 10.059,
+      "end": 14.228,
+      "en": "Lamplight brings the evidence and the next step into one place.",
+      "es": "Lamplight reúne la evidencia y el próximo paso en un solo lugar."
+    },
+    {
+      "start": 15.25,
+      "end": 20.032,
+      "en": "Here is the working app: an owner and a deadline for every referral.",
+      "es": "Esta es la app: cada referido tiene una persona responsable y un plazo."
+    },
+    {
+      "start": 20.032,
+      "end": 24.229,
+      "en": "These are invented patients. Practice reviews use the organizers' answer key,",
+      "es": "Los pacientes son ficticios. Las revisiones de práctica usan las respuestas de los organizadores,"
+    },
+    {
+      "start": 24.229,
+      "end": 29.321,
+      "en": "passed through the app's checks. This recording does not show live AI extraction.",
+      "es": "pasadas por las comprobaciones de la app. Esta grabación no muestra extracción de IA en vivo."
+    },
+    {
+      "start": 30.25,
+      "end": 33.83,
+      "en": "Open this stroke referral. The form suggests independence.",
+      "es": "Abrimos este referido por un derrame cerebral. El formulario sugiere independencia."
+    },
+    {
+      "start": 33.83,
+      "end": 37.813,
+      "en": "But page eleven says the patient cannot walk, transfer, bathe,",
+      "es": "Pero la página once indica que la paciente necesita ayuda física para caminar, trasladarse, bañarse,"
+    },
+    {
+      "start": 37.813,
+      "end": 40.443,
+      "en": "dress, or toilet without hands-on help.",
+      "es": "vestirse o ir al baño."
+    },
+    {
+      "start": 40.443,
+      "end": 45.631,
+      "en": "The coordinator can open that exact page, instead of trusting the form alone.",
+      "es": "Quien coordina puede abrir esa página exacta y comprobarlo, sin depender solo del formulario."
+    },
+    {
+      "start": 46.25,
+      "end": 49.694,
+      "en": "Each flag links a rule to the original words.",
+      "es": "Cada alerta conecta una regla con las palabras originales."
+    },
+    {
+      "start": 49.694,
+      "end": 52.755,
+      "en": "Conflicts stay visible. Missing evidence stays unknown.",
+      "es": "Las contradicciones quedan visibles. Sin evidencia, la respuesta es desconocida."
+    },
+    {
+      "start": 52.755,
+      "end": 57.243,
+      "en": "Rules that need elapsed hours remain can't tell when dates are removed.",
+      "es": "Las reglas que requieren contar horas quedan sin determinar cuando se eliminan las fechas."
+    },
+    {
+      "start": 57.243,
+      "end": 59.643,
+      "en": "Only the clinical reviewer can deny.",
+      "es": "Solo la persona encargada de la revisión clínica puede denegar."
+    },
+    {
+      "start": 60.25,
+      "end": 62.664,
+      "en": "Now open the referral missing records.",
+      "es": "Ahora abrimos el referido con expedientes pendientes."
+    },
+    {
+      "start": 62.664,
+      "end": 67.528,
+      "en": "The app gathers what the hospital must send or clarify into one draft.",
+      "es": "La app reúne en un borrador lo que el hospital debe enviar o aclarar."
+    },
+    {
+      "start": 67.528,
+      "end": 73.021,
+      "en": "Follow-up reminders are ready too. Staff review and send them. Lamplight sends nothing.",
+      "es": "También prepara recordatorios. El personal los revisa y envía. Lamplight no envía nada."
+    },
+    {
+      "start": 76.25,
+      "end": 80.411,
+      "en": "The same referral card and follow-up draft, in English.",
+      "es": "La misma tarjeta y el mismo borrador de seguimiento, en inglés."
+    },
+    {
+      "start": 80.411,
+      "end": 84.816,
+      "en": "Switch to Español: labels, summaries, questions, and drafts translate.",
+      "es": "Cambiamos a Español: se traducen las etiquetas, los resúmenes, las preguntas y los borradores."
+    },
+    {
+      "start": 84.816,
+      "end": 86.815,
+      "en": "Evidence quotes stay original.",
+      "es": "Las citas conservan el idioma original."
+    },
+    {
+      "start": 86.815,
+      "end": 91.629,
+      "en": "Staff check AI translations. IHH bilingual review is still pending.",
+      "es": "El personal revisa las traducciones de IA. Sigue pendiente la revisión bilingüe de IHH."
+    },
+    {
+      "start": 92.25,
+      "end": 95.833,
+      "en": "After staff resolve open questions, they can record acceptance.",
+      "es": "Después de resolver las dudas, el personal puede registrar la aceptación."
+    },
+    {
+      "start": 95.833,
+      "end": 98.749,
+      "en": "Then the handoff drafts are ready: chart fields,",
+      "es": "Entonces quedan listos los borradores para la entrega: los campos del expediente,"
+    },
+    {
+      "start": 98.749,
+      "end": 101.63,
+      "en": "the census row, and the site email.",
+      "es": "la fila del censo y el correo al centro."
+    },
+    {
+      "start": 101.63,
+      "end": 105.81,
+      "en": "The decision and who made it stay in the local log.",
+      "es": "La decisión y la persona que la tomó quedan en el registro local."
+    },
+    {
+      "start": 107.25,
+      "end": 110.877,
+      "en": "It never says yes or no. You do.",
+      "es": "Nunca dice sí o no. Usted decide."
+    },
+    {
+      "start": 110.877,
+      "end": 114.541,
+      "en": "This local prototype connects to no real IHH systems.",
+      "es": "Este prototipo local no conecta con sistemas reales de IHH."
+    },
+    {
+      "start": 114.541,
+      "end": 117.464,
+      "en": "Staff must validate accuracy before a pilot.",
+      "es": "El personal debe validar la precisión antes de una prueba piloto."
+    },
+    {
+      "start": 117.464,
+      "end": 119.648,
+      "en": "The goal: fewer lost referrals.",
+      "es": "La meta: perder menos referidos."
+    }
+  ]
+}
