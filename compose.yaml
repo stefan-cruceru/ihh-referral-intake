@@ -13,6 +13,7 @@ services:
     ports:
       - "127.0.0.1:${CAREBRIDGE_PORT:-8780}:8765"
     # ANTHROPIC_API_KEY (or the Foundry settings) come from .env, which git ignores.
+    # For IHH's secure setup with real referrals, add CAREBRIDGE_PRODUCTION=1 there (README, Data and privacy).
     env_file:
       - path: .env
         required: false

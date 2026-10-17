@@ -235,6 +235,11 @@ client information. It does not connect to any Illumination Health + Home system
 - The local log keeps case numbers, times, owners, routes, decisions and reasons. Never chart text.
 - Typed text is checked for identifiers before it can reach the model, and blocked if it has any.
 - The page sorter flags any identifier a redaction missed, and the app shows a STOP banner.
+- Production mode (`CAREBRIDGE_PRODUCTION=1`, or `"production": true` in settings) is for IHH's own
+  secure setup with real, named referrals. It turns off the practice patients, the made-up demo board
+  and the fast clock, drops every "blacked out" note and the STOP banner for names on a page, and tells
+  the model that names are expected but must stay out of facts and summaries. Referrals come in only
+  by drag and drop, the watched inbox folder, email and the `/send` page. Typed text is still checked.
 - Packets that try to give the AI orders, or carry active PDF content, are caught, isolated and put
   on a security hold. Executables and fake files are blocked and never opened.
 - The model endpoint is the only outside call. It is one setting, so IHH can use an endpoint

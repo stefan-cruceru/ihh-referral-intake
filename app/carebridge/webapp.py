@@ -378,10 +378,20 @@ class Handler(BaseHTTPRequestHandler):
         return True
 
     # ---- routes ----------------------------------------------------------------------------
+    def _practice_off(self, p: str) -> bool:
+        """In production the practice patients, the demo board and its fast clock do not exist."""
+        if config.production() and (p in ("/api/demo", "/api/clock", "/static/profiles.html")
+                                    or p == "/api/profiles" or p.startswith("/api/profiles/")):
+            self._json({"error": "practice_off"}, 404)
+            return True
+        return False
+
     def do_GET(self):
         if not self._local_only():
             return
         if not gateway.allowed(self, urlparse(self.path).path) or gateway.handle(self, "GET"):
+            return
+        if self._practice_off(urlparse(self.path).path):
             return
         u = urlparse(self.path)
         q = parse_qs(u.query)
@@ -400,13 +410,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._static(p[len("/static/"):])
             if p == "/api/state":
                 s = config.load_settings()
-                real = sorted(x.stem for x in (packets_dir() or Path("/nonexistent")).glob("R*.pdf")) if packets_dir() else []
+                prod = config.production()
+                real = sorted(x.stem for x in packets_dir().glob("R*.pdf")) if packets_dir() and not prod else []
                 return self._json({"app": APP_NAME, "version": __version__, "has_key": bool(config.get_api_key()),
                                    "model": config.model(), "fast_model": config.fast_model(),
                                    "lang": s.get("lang", "en"), "real_packets": real, "provider": config.provider(),
                                    "foundry_resource": config.foundry_resource(), "inbox_dir": config.inbox_dir(), "kipu_url": config.kipu_url(),
                                    "overnight_clock": TRACK.overnight_clock, "auto_hospital_messages": hospital.auto(),
-                                   "db": str(store.db_path())})
+                                   "production": prod, "db": str(store.db_path())})
             if p == "/api/queue":
                 land()
                 q_ = TRACK.queue(owner=q.get("owner", [""])[0] or None)
@@ -441,11 +452,14 @@ class Handler(BaseHTTPRequestHandler):
             if p == "/api/rules":
                 return self._json({"rules": list(rules.all_rules().values()), "gaps": rules.GAPS, "gates": rules.GATES})
             if p == "/api/scenarios":
+                if config.production():  # made-up clients and jottings are practice material
+                    return self._json({"scenarios": [], "examples": {}})
                 return self._json({"scenarios": resources.scenarios(), "examples": staff.EXAMPLES})
             if p == "/api/profiles" or p.startswith("/api/profiles/"):
                 return self._profiles(p.strip("/").split("/")[2:], q.get("lang", ["en"])[0], q.get("style", ["color"])[0])
             if p == "/api/report":
-                return self._json(store.weekly_report(int(q.get("days", ["7"])[0]), q.get("practice", ["0"])[0] == "1"))
+                return self._json(store.weekly_report(int(q.get("days", ["7"])[0]),
+                                                      q.get("practice", ["0"])[0] == "1" and not config.production()))
             if p == "/api/audit":
                 return self._json(TRACK.audit[-300:])
             if p.startswith("/api/notify"):
@@ -459,6 +473,8 @@ class Handler(BaseHTTPRequestHandler):
         if not self._local_only():
             return
         if not gateway.allowed(self, urlparse(self.path).path) or gateway.handle(self, "POST"):
+            return
+        if self._practice_off(urlparse(self.path).path):
             return
         p = urlparse(self.path).path
         try:
