@@ -28,7 +28,16 @@
   const gone = () => { document.getElementById("box").innerHTML =
     '<b>That page isn\'t here.</b><p><a href="' + base + '">Go to the Lamplight demo</a></p>'; };
   if (!location.pathname.startsWith(base + "app/") || !("serviceWorker" in navigator)) gone();
-  else {
+  else if (navigator.serviceWorker.controller) {
+    // A worker controls this page yet GitHub answered: it stopped working. Drop it and start over,
+    // twice at most, so a worker that keeps failing can't loop the tab.
+    let tries = 0;
+    try { tries = +sessionStorage.getItem("lamplight-heal") || 0; sessionStorage.setItem("lamplight-heal", tries + 1); } catch (e) {}
+    if (tries >= 2) document.getElementById("box").innerHTML =
+      '<b>The app did not start.</b><p>Close this tab, then <a href="' + base + '">open the demo again</a>.</p>';
+    else navigator.serviceWorker.getRegistrations()
+      .then((rs) => Promise.all(rs.map((r) => r.unregister()))).then(() => location.reload());
+  } else {
     navigator.serviceWorker.addEventListener("message", (e) => { if (e.data === "ready") location.reload(); else gone(); });
     navigator.serviceWorker.register(base + "sw.js", { scope: base, updateViaCache: "none" })
       .then(() => navigator.serviceWorker.ready).then((r) => r.active.postMessage("warm")).catch(gone);
