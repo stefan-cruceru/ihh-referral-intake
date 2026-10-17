@@ -1,6 +1,6 @@
 ---
 name: ihh-referral-intake
-description: Check a hospital referral packet against Illumination Health + Home (IHH) recuperative care admission rules with the ihh-care-bridge tools. Use when someone asks about an IHH referral, a practice patient S01 to S10, an admission rule ID (like ADL-2, MOB-4, DOC-6), missing referral documents, Orange County next steps for a client, or a progress note draft.
+description: Check a hospital referral packet against Illumination Health + Home (IHH) recuperative care admission rules with the ihh-care-bridge tools. Use when someone asks about an IHH referral, an admission rule ID (like ADL-2, MOB-4, DOC-6), missing referral documents, Orange County next steps for a client, or a progress note draft.
 ---
 # IHH referral intake
 
@@ -9,8 +9,8 @@ A person decides, and only a clinician can deny.
 
 ## Steps
 
-1. If the person has no packet, run `list_practice_patients` and show the table. They are all invented.
-2. Run `review_referral_packet`. Use `practice_patient` for S01 to S10 (instant, no API key). Use
+1. If the person has no packet, ask for the path to one.
+2. Run `review_referral_packet`. Use
    `path` for a PDF or TIFF on this computer, or a referral email saved as .eml (its text and
    attachments become one packet). A live review takes 1 to 4 minutes and needs a Claude API key.
 3. Show the whole answer in the chat, in order: the suggested route, the two big checks

@@ -22,8 +22,8 @@ https://www.pexels.com/video/woman-working-with-computer-8048240/
 Stock footage license:
 https://www.pexels.com/license/
 
-Presentation requirements followed: docs/submission.md, docs/judging.md,
-docs/bilingual.md, docs/ground-rules.md, docs/workflow-and-timing.md and CLAUDE.md.
+Presentation requirements followed: the event's submission and judging rules,
+docs/bilingual.md, docs/workflow-and-timing.md and CLAUDE.md.
 The same referral card and follow-up draft are shown in English and Spanish.
 Some seeded practice summaries still need translation review; the film says so.
 The film identifies limitations and distinguishes practice data from live reading.

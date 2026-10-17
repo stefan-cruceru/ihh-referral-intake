@@ -52,4 +52,4 @@ AI makes mistakes. Build in a way to catch them. How is up to you.
 IHH never wrote down the reasons for its decisions.
 
 No real patient information beyond these de-identified packets. See the
-[ground rules](../../docs/ground-rules.md).
+rules in [CLAUDE.md](../../CLAUDE.md).

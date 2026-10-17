@@ -1,4 +1,4 @@
-# Run Care Bridge with Docker
+# Run Lamplight with Docker
 
 One command starts the app on your own computer. Nothing else on the network can reach it.
 

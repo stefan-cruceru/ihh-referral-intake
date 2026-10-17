@@ -95,7 +95,7 @@ SharePoint site. The case code joins the two.
 6. Build the Copilot Studio agent ([copilot-agent.md](copilot-agent.md)). Pick the model only
    after the BAA question above is answered.
 7. Set retention on the table and attachments to IHH's records policy. Turn on Dataverse auditing.
-8. Test end to end with invented packets only (the organizers' synthetic S01 to S10 work).
+8. Test end to end with invented packets only.
 9. Share the form link with hospital case managers and social workers.
 
 ## Open questions for IHH
