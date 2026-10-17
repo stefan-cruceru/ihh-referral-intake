@@ -24,8 +24,9 @@ import markdown
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 GITHUB = "https://github.com/stefan-cruceru/ihh-referral-intake/blob/main/"
-# What the app reads at run time (app/carebridge/paths.py), and nothing else.
-INCLUDE = ["app/carebridge", "app/demo", "app/pages/bridge.py", "challenges", "m365", "copilot"]
+# The code, plus every data file paths.py names with _data(..., "<repo path>"), so a new one ships too.
+INCLUDE = ["app/carebridge", "app/pages/bridge.py", "challenges", "m365", "copilot"]
+DATA = re.findall(r'_data\(\s*"[^"]*"\s*,\s*"([^"]+)"\s*\)', (REPO / "app/carebridge/paths.py").read_text(encoding="utf-8"))
 SKIP_DIRS = {"__pycache__", "packets"}
 # Rendered docs, in the order the landing page lists them: (repo path, page name).
 DOCS = [("README.md", "readme"), ("docs/closed-loop.md", "closed-loop"), ("docs/workflow-and-timing.md", "workflow-and-timing"),
@@ -72,15 +73,20 @@ PAGE = """<!doctype html>
 
 
 def _zip_app(out: Path) -> None:
+    seen = set()
     with zipfile.ZipFile(out / "carebridge.zip", "w", zipfile.ZIP_DEFLATED) as z:
-        for rel in INCLUDE:
+        for rel in dict.fromkeys(INCLUDE + DATA):
             src = REPO / rel
+            if not src.exists():
+                raise SystemExit(f"paths.py names {rel}, which is not in the repo")
             files = [src] if src.is_file() else [p for p in src.rglob("*") if p.is_file()]
             for p in files:
                 parts = p.relative_to(REPO).parts
-                if SKIP_DIRS & set(parts) or p.suffix == ".pyc":
+                name = "/".join(parts)
+                if SKIP_DIRS & set(parts) or p.suffix == ".pyc" or name in seen:
                     continue
-                z.write(p, "/".join(parts))
+                seen.add(name)
+                z.write(p, name)
 
 
 def _link(href: str, here: str, pages: dict) -> str:
@@ -108,12 +114,43 @@ def _render_docs(out: Path) -> list[dict]:
             continue
         text = (REPO / rel).read_text(encoding="utf-8")
         title = next((ln.lstrip("# ").strip() for ln in text.splitlines() if ln.startswith("# ")), name)
+        title = "Project overview" if rel == "README.md" else title  # its heading is just the app's name
         body = markdown.markdown(text, extensions=["tables", "fenced_code", "toc", "sane_lists"])
         body = re.sub(r'href="([^"]+)"', lambda m: f'href="{html.escape(_link(html.unescape(m.group(1)), rel, pages))}"', body)
         (out / "docs" / f"{name}.html").write_text(
             PAGE.format(title=html.escape(title), body=body, source=GITHUB + rel, path=rel), encoding="utf-8")
         listed.append({"title": title, "href": f"docs/{name}.html", "path": rel})
     return listed
+
+
+# Words the print file names spell in lower case.
+FIX = {"lvns": "LVNs", "ihh": "IHH", "faq": "FAQ:", "someones": "someone's"}
+PHRASES = {"after hours": "after-hours", "in service": "in-service", "kit go first": "kit: go first", "card in their": "card: in their"}
+GROUPS = [("poster", "Posters"), ("letter", "Letters"), ("", "Handouts and cards")]
+TILE = '<a class="kit" href="campaign/print/{href}"><span>{name}</span><small>{size}</small></a>'
+
+
+def _print_kit() -> str:
+    """The campaign's print kit as tiles: the "Print today" bundles first, then posters, letters, the rest."""
+    today, groups = [], {k: [] for k, _ in GROUPS}
+    for p in sorted((REPO / "campaign/print").glob("*.pdf")):
+        href = html.escape(p.name.replace(" ", "%20"))
+        if not re.match(r"\d+-", p.name):  # "Print today - handouts (letter, double-sided).pdf"
+            name, _, size = p.stem.partition(" - ")[2].partition(" (")
+            today.append(TILE.format(href=href, name=html.escape(name.capitalize()), size=html.escape(size.rstrip(")"))))
+            continue
+        stem = re.sub(r"^\d+-", "", p.stem)
+        m = re.search(r"-(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$", stem)
+        size = f"{m.group(1)} × {m.group(2)} in" if m else ""
+        stem = stem[: m.start()] if m else stem
+        kind = next(k for k, _ in GROUPS if not k or stem.startswith(k + "-"))
+        name = " ".join(FIX.get(w, w) for w in (stem[len(kind) + 1:] if kind else stem).split("-"))
+        for a, b in PHRASES.items():
+            name = name.replace(a, b)
+        groups[kind].append(TILE.format(href=href, name=html.escape(name[:1].upper() + name[1:]), size=size))
+    out = ['<h3>Print today</h3><div class="kits today">' + "".join(today) + "</div>"] if today else []
+    out += [f'<h3>{label}</h3><div class="kits">' + "".join(groups[k]) + "</div>" for k, label in GROUPS if groups[k]]
+    return "\n".join(out)
 
 
 def build(out: Path) -> Path:
@@ -129,8 +166,7 @@ def build(out: Path) -> Path:
     docs = _render_docs(out)
     items = "\n".join(f'      <li><a href="{d["href"]}">{html.escape(d["title"])}</a> <span class="path">{d["path"]}</span></li>'
                       for d in docs)
-    prints = "\n".join(f'      <li><a href="campaign/print/{p.name}">{html.escape(p.stem[3:].replace("-", " "))}</a></li>'
-                       for p in sorted((REPO / "campaign/print").glob("*.pdf")))
+    prints = _print_kit()
     page = (HERE / "index.html").read_text(encoding="utf-8")
     (out / "index.html").write_text(page.replace("<!--DOCS-->", items).replace("<!--PRINTS-->", prints), encoding="utf-8")
     return out
