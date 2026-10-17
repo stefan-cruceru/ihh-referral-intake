@@ -352,8 +352,10 @@ class Handler(BaseHTTPRequestHandler):
                     try:
                         # With sign-in on, the person and role come from the session, not the request.
                         me = gateway.person(self) if auth.mode() != "off" else None
+                        # For a hand-off, "who" in the request is the person it goes to, not the actor.
                         c = TRACK.act(cid, b["action"], me["name"] if me else b.get("who", ""), b.get("reason", ""),
-                                      role=me["role"] if me else None)
+                                      role=me["role"] if me else None,
+                                      target=b.get("who") if b["action"] == "handoff" else None)
                     except ValueError as e:
                         return self._json({"error": str(e)}, 400)
                     return self._json({"card": TRACK.view(c["id"])})
