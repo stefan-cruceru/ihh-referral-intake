@@ -894,5 +894,69 @@
  "provider_help": {
   "en": "This is the only thing that leaves this computer. Use one that IHH has a BAA for.",
   "es": "Esto es lo único que sale de esta computadora. Use uno con el que IHH tenga un BAA."
+ },
+ "route_security_hold": {
+  "en": "Security hold. A person must look before this moves.",
+  "es": "Retenido por seguridad. Una persona debe revisarlo antes de seguir."
+ },
+ "security_stop": {
+  "en": "SECURITY HOLD. This packet has text that tries to give orders to the AI, or a file with hidden active parts. Those pages were set aside and not used. Do not open the original file. Tell your IT or privacy lead.",
+  "es": "RETENIDO POR SEGURIDAD. Este paquete tiene texto que intenta dar órdenes a la IA, o un archivo con partes activas ocultas. Esas páginas se apartaron y no se usaron. No abra el archivo original. Avise a su encargado de TI o de privacidad."
+ },
+ "security_isolated": {
+  "en": "Set aside",
+  "es": "Apartadas"
+ },
+ "security_block": {
+  "en": "This file was blocked. It is not a real fax PDF or image, or it is too big. It was not opened and not sent anywhere. Ask the hospital to send it again.",
+  "es": "Se bloqueó este archivo. No es un PDF o imagen de fax real, o es muy grande. No se abrió ni se envió a ningún lado. Pida al hospital que lo mande otra vez."
+ },
+ "sec_hidden_instructions": {
+  "en": "Hidden text in the file gives orders to the AI.",
+  "es": "Texto oculto en el archivo da órdenes a la IA."
+ },
+ "sec_page_instructions": {
+  "en": "Text on a page gives orders to the AI.",
+  "es": "Texto en una página da órdenes a la IA."
+ },
+ "sec_output_instructions": {
+  "en": "What the AI read back had orders in it. Removed.",
+  "es": "Lo que leyó la IA traía órdenes. Se quitó."
+ },
+ "sec_pdf_javascript": {
+  "en": "The PDF has JavaScript (code that runs when opened).",
+  "es": "El PDF tiene JavaScript (código que corre al abrirlo)."
+ },
+ "sec_pdf_launch": {
+  "en": "The PDF tries to start a program.",
+  "es": "El PDF intenta abrir un programa."
+ },
+ "sec_pdf_embedded_file": {
+  "en": "The PDF has another file hidden inside.",
+  "es": "El PDF tiene otro archivo escondido adentro."
+ },
+ "sec_pdf_auto_action": {
+  "en": "The PDF does something by itself when opened.",
+  "es": "El PDF hace algo solo al abrirlo."
+ },
+ "sec_pdf_rich_media": {
+  "en": "The PDF has video, sound or Flash.",
+  "es": "El PDF tiene video, sonido o Flash."
+ },
+ "sec_pdf_form_submit": {
+  "en": "The PDF has a form that can send data out.",
+  "es": "El PDF tiene un formulario que puede enviar datos."
+ },
+ "sec_pdf_external_link": {
+  "en": "The PDF has links that reach outside.",
+  "es": "El PDF tiene enlaces hacia afuera."
+ },
+ "sec_pdf_second_header": {
+  "en": "The file looks like two documents in one.",
+  "es": "El archivo parece ser dos documentos en uno."
+ },
+ "sec_name_does_not_match_content": {
+  "en": "The file name does not match what the file really is.",
+  "es": "El nombre del archivo no coincide con lo que es."
  }
 }

@@ -157,7 +157,7 @@ async function upload(file) {
   if (!file) return;
   const r = await fetch("/api/upload", { method: "POST", headers: { "X-Filename": file.name }, body: file });
   const j = await r.json();
-  if (!r.ok) return toast(j.error || t("error"));
+  if (!r.ok) return toast(j.error ? t(j.error) : t("error"));
   if (!STATE.has_key) toast(t("need_key"));
   openCard(j.card.id);
 }
@@ -237,12 +237,17 @@ function renderDetail() {
     <button class="btn ghost" id="d-close">${esc(t("close"))}</button></div>`;
 
   if (rep?.flags?.phi_pages?.length) h += `<div class="stop">${esc(t("phi_stop"))} (${esc(t("page"))} ${rep.flags.phi_pages.join(", ")})</div>`;
+  const sec = rep?.security;
+  if (sec && sec.verdict !== "ok") {
+    const iso = sec.isolated_pages.length ? ` ${esc(t("security_isolated"))}: ${esc(t("page"))} ${sec.isolated_pages.map(esc).join(", ")}.` : "";
+    h += `<div class="stop">${esc(t("security_stop"))}${iso}<ul>${sec.findings.map((f) => `<li>${esc(t("sec_" + f.code))}</li>`).join("")}</ul></div>`;
+  }
 
   if (!rep) {
     if (card.review_state === "running") {
       h += `<div class="panel"><div class="progress"><div class="spinner"></div><b>${esc(t("reviewing"))}</b></div><ul>${progress.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>`;
     } else {
-      h += `<div class="panel">${error ? `<div class="phi">${esc(error)}</div>` : ""}
+      h += `<div class="panel">${error ? `<div class="phi">${esc(t(error))}</div>` : ""}
         ${card.has_packet !== false ? `<button class="btn primary" id="run-review" ${STATE.has_key ? "" : "disabled"}>${esc(t("run_review"))}</button>` : ""}
         ${STATE.has_key ? "" : `<p class="muted">${esc(t("need_key"))}</p>`}</div>`;
     }
@@ -335,7 +340,7 @@ function renderDetail() {
       <button class="btn" data-act="clinical_pickup">${esc(t("a_clinical_pickup"))}</button>
       <button class="btn" data-act="intake_cleared">${esc(t("a_intake_cleared"))}</button>
       <button class="btn primary" data-act="accepted">${esc(t("a_accepted"))}</button></div>
-      ${["likely_no", "clinical_check"].includes(card.suggested_route) ? `<div class="row"><input id="override-why" placeholder="${esc(t("override_ph"))}"></div>` : ""}
+      ${["likely_no", "clinical_check", "security_hold"].includes(card.suggested_route) ? `<div class="row"><input id="override-why" placeholder="${esc(t("override_ph"))}"></div>` : ""}
       <div class="row"><select id="handoff-to">${(LAST_Q?.staff || []).map((s) => `<option ${s.name === card.owner ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select>
         <button class="btn" data-act="handoff">${esc(t("hand_off"))}</button></div>
       <div class="row"><input id="deny-reason" placeholder="${esc(t("deny_reason_ph"))}"><button class="btn danger" data-act="denied">${esc(t("a_denied"))}</button></div>

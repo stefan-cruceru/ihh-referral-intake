@@ -114,7 +114,7 @@ button.chip:hover { outline: 1px solid var(--brand); }
 .d-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
 .route { border-radius: var(--radius); padding: 1rem 1.2rem; margin: .8rem 0; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .route b { font-size: 1.2rem; }
-.route.likely_no { background: var(--red-soft); } .route.clinical_check, .route.needs_info { background: var(--yellow-soft); } .route.likely_yes { background: var(--green-soft); }
+.route.likely_no, .route.security_hold { background: var(--red-soft); } .route.clinical_check, .route.needs_info { background: var(--yellow-soft); } .route.likely_yes { background: var(--green-soft); }
 .gates { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
 .gate { background: var(--panel); border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow); border-top: 6px solid var(--line); }
 .gate.met { border-top-color: var(--green); } .gate.not_met { border-top-color: var(--red); } .gate.cant_tell { border-top-color: var(--yellow); }
