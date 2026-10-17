@@ -39,8 +39,11 @@ quiet hospital. IHH told us fewer withdrawals is the number that matters most.
 
 One app, one closed loop, running on IHH's own machine:
 
-1. **In.** A referral PDF lands in a watched inbox folder (or is dragged in). The 2-hour clock
-   starts from when it arrived. It gets an owner right away, round-robin across who is on shift.
+1. **In.** A referral PDF lands in a watched inbox folder (fax, email or an Aidin PDF), is dragged
+   in, or comes through the **hospital upload page** at `/send` (IHH's own QR-code plan). The
+   2-hour clock starts from when it arrived, and the sender gets a receipt with a case code. It
+   gets an owner right away, round-robin across who is on shift. A packet that comes in after
+   8:30 PM is marked for the morning shift.
 2. **Read.** Claude sorts the pages (type, sideways or upside down, blank, duplicate), turns them
    upright, reads them, and checks every rule in IHH's criteria by rule ID.
 3. **Two gates first.** IHH has no Title 22 license, so "can take care of themselves" and "calm
@@ -50,9 +53,13 @@ One app, one closed loop, running on IHH's own machine:
    (dates are blacked out), never auto-denies on the sex-offender rule, and records every change.
 5. **Route.** Looks like yes / need more from the hospital / clinical line needs to look / looks
    like no. A likely no goes to the clinical line at the same time the coordinator sees it.
-   **Only the clinical line can say no** (the app enforces it).
-6. **Chase.** One message to the case manager listing everything missing. Reminder at 30 minutes,
-   a note to their boss at 60, "we need more time" at 15 minutes left. All drafts. Nothing is sent.
+   **Only the clinical line can say no** (the app enforces it). The clinical reviewer works in the
+   referral instead of a shared Excel sheet: notes with page numbers, a list of things to ask the
+   hospital, and "my check is done". The board shows how long the clinical check takes.
+6. **Chase.** One message to the case manager listing everything missing, including any
+   **critical value nobody found** (for example, heart failure with no ejection fraction) and what
+   the clinical reviewer asked for. Reminder at 30 minutes, a note to their boss at 60, "we need
+   more time" at 15 minutes left. All drafts. Nothing is sent.
 7. **Hand off.** After a yes: the Kipu fields, the census row (CSV) and the site email, drafted.
 8. **Track and learn.** A local log of outcomes (accepted, denied, withdrawn and why, whether the
    patient arrived, overrides with reasons), a weekly report, and an eval script that scores the
@@ -84,6 +91,12 @@ Plus:
   add the intake note. Each is started by a person. Staff sign in with their Teams account. The
   clinical reviewer gets a Teams card whose buttons only work for them, once, after signing in.
   The demo uses a practice Kipu and a practice sign-in. See [docs/kipu-and-teams.md](docs/kipu-and-teams.md).
+
+**From the intake director's call** ([notes](docs/workflow-and-timing.md)): critical values are
+never silent (found with the page and words, on a page to check, or not found and asked for); the
+returning-client and background checks are steps a person ticks, and the tool never looks anyone up;
+the receipt, reminders and "escalated" messages to the hospital carry no decision and no patient
+detail, and stay drafts unless IHH agrees to send them on their own.
 
 **Demo video:** _to add_
 
@@ -157,6 +170,11 @@ first step never opens `eval/decisions.json`.
 | 2-hour tracker, assignment, escalation alerts, peak warning | Working |
 | Staff alerts by Outlook and Teams, per person, English or Spanish | Working: the Alerts and People tabs. Drafts in a local outbox (an Outlook `.eml`, a Teams chat link), and a person presses send. Nothing connects to Outlook or Teams. See [docs/notifications.md](docs/notifications.md) |
 | Watched inbox folder | Working on a local folder. No real fax or email connection |
+| Hospital upload page (`/send`) | Working as a local page with an instant receipt and status. In a pilot it would be hosted inside IHH's own Microsoft setup; how is open |
+| Receipt, reminders, "escalated" to the hospital | Working, mocked: drafts by default; with the setting on they are marked "would be sent". Same texts as `m365/status-messages.json` |
+| Critical values (EF, glucose, SpO2, wound, swab, dialysis chair) | Working, plain code over the review. The list is the team's starting set, not IHH policy |
+| Clinical reviewer notes and turnaround | Working. Notes stay in memory; the log keeps only that a note was added |
+| Overnight packets | Marked. Whether the 2 hours start on arrival or at the 7 AM shift is a setting until IHH answers |
 | Monday 4 PM demo and practice patients | The organizers' 10 synthetic patients (S01-S10): invented people with realistic faxed packets. Practice reviews come from the organizers' answer key, run through the app's own checks |
 | Per-patient next-steps PDF | Working. Needs come from the patient's story; resources come only from the sourced list (Claude picks them when a key is set, otherwise matched by need) |
 | Manual vs. tool comparison | Placeholder numbers (40 vs 10 minutes per referral) until IHH gives real ones |

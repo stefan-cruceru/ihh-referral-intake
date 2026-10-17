@@ -93,6 +93,10 @@ Then back to step 1. No step depends on a system outside IHH.
 
 ## 4. What the prototype shows today
 
+- From the intake director's call: a hospital upload page (`/send`) with an instant receipt, critical
+  values that are never silent, the clinical reviewer's notes in the app with turnaround, the
+  receipt, reminders and "escalated" as mocked messages, staff-only checks a person ticks, and
+  overnight packets marked with a setting for when their 2 hours start.
 - A mock inbox folder runs the whole loop on R01 to R11 and on one unseen packet: in, read, route,
   chase, decide, hand off, track, learn.
 - The outcome log and the weekly report fill from the demo run.
