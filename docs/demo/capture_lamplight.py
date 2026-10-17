@@ -395,14 +395,28 @@ def record(browser, state, admin_state, args):
     context.add_cookies(admin_cookies)
     page.goto(args.base + "/static/audit.html", wait_until="domcontentloaded")
     page.locator("#rows tr").first.wait_for()
+    if page.locator("html").get_attribute("lang") != "en":
+        page.locator("#lang").click()
+        page.wait_for_function("document.documentElement.lang === 'en'")
     page.locator("#case").fill("DEMO-102")
     page.locator("#kind").select_option("decision")
     with page.expect_response(lambda response: response.url.startswith(args.base + "/api/audit-log?")
                               and "case=DEMO-102" in response.url) as filtered:
         page.locator("#go").click()
     assert filtered.value.ok
-    decision = page.locator("#rows tr").filter(has_text="accepted").filter(has_text="Avery").last
-    decision.wait_for()
+    audit_data = filtered.value.json()
+    assert any(row.get("what") == "accepted" and row.get("case_no") == "DEMO-102" and "Avery" in row.get("who", "")
+               for row in audit_data["rows"])
+    decision = page.locator("#rows tr").filter(has_text="DEMO-102").filter(has_text="Said yes").filter(has_text="Avery").first
+    try:
+        decision.wait_for()
+    except Exception:
+        print(json.dumps({"audit_language": page.locator("html").get_attribute("lang"),
+                          "audit_rows": page.locator("#rows tr").count(),
+                          "case_rows": page.locator("#rows tr").filter(has_text="DEMO-102").count(),
+                          "actor_rows": page.locator("#rows tr").filter(has_text="Avery").count(),
+                          "yes_rows": page.locator("#rows tr").filter(has_text="Said yes").count()}), flush=True)
+        raise
     decision.scroll_into_view_if_needed()
     focus(decision.locator("td").nth(3))
     me = check_response(context.request.get(args.base + "/api/me"), "audit viewer identity")
