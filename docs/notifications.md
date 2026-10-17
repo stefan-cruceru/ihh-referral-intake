@@ -31,9 +31,11 @@ Each alert is drafted once per referral, event, person and channel.
 
 ## 2. What an alert says
 
-Case number, hospital, status, minutes left and a link that opens the referral in the app. **No
+Case number, hospital, status, minutes left and a link that opens the referral in the app.
+Each person's email and Teams address come from the sign-in staff list (their Microsoft work
+account), so there is one list of staff. **No
 chart text, quotes, names or anything else about the patient.** Teams and inboxes are not where the
-chart lives. Addresses start empty and are never guessed. A draft with no address shows "unknown: add
+chart lives. Someone who is not on the sign-in list starts with no address, never a guessed one. A draft with no address shows "unknown: add
 this person's address under People".
 
 ## 3. What a person does with a draft
