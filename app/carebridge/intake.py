@@ -16,7 +16,6 @@ model output is scanned again, and any finding puts the referral on a security h
 Claude never decides. The output is a review a coordinator reads, with a suggested route.
 """
 
-import difflib
 import functools
 import re
 import time
@@ -557,35 +556,32 @@ def _scrub_assessment(assessment: dict) -> list[dict]:
     return hits
 
 
-# A quote counts as on the page when its words appear in the page's typed text, or a run of the text
-# matches it this closely (difflib ratio, 0-1). Leaves room for OCR noise, not for a reworded quote.
-QUOTE_MATCH = 0.85
+# Preserve signed decimals and percentages as whole tokens. Punctuation around words may vary,
+# but a changed number, unit, or negation is not OCR noise that code can safely forgive.
+_QUOTE_TOKEN = re.compile(
+    r"(?:[+-]\s*)?(?:\d+(?:[.,]\d+)*|\.\d+)(?:\s*%)?"
+    r"|[^\W\d_]+(?:'[^\W\d_]+)*"
+    r"|[^\w\s]"
+)
+_QUOTE_PUNCTUATION = frozenset(".,:;!?()[]{}\"'\u201c\u201d\u2026")
 
 
 def _words(s: str) -> list[str]:
-    return re.sub(r"[\W_]+", " ", (s or "").lower()).split()
+    text = (s or "").casefold().replace("\u2212", "-").replace("\u2019", "'")
+    return [re.sub(r"\s+", "", token) for token in _QUOTE_TOKEN.findall(text)
+            if token not in _QUOTE_PUNCTUATION]
 
 
 def quote_in_text(quote: str, transcript: str) -> bool:
-    """Plain code: is this quote really in the page's transcript? Exact words first, then a fuzzy match
-    against every run of the transcript about as long as the quote. A fuzzy match must still carry every
-    number in the quote: "BP 84/50" is not "BP 184/50"."""
+    """Require an exact contiguous token match after case, whitespace, and trivial punctuation cleanup.
+
+    No fuzzy substitutions: "can" is not "cannot", and "0.5 mg" is not "0.05 mg". Even a likely OCR
+    spelling slip fails closed so that an unconfirmed quote cannot support a rule or a gate.
+    """
     q, t = _words(quote), _words(transcript)
     if not q or not t:
         return False
-    qs, ts = " ".join(q), f" {' '.join(t)} "
-    if f" {qs} " in ts:
-        return True
-    want = numbers(qs)
-    sm = difflib.SequenceMatcher(autojunk=False)
-    sm.set_seq2(qs)
-    for n in {max(1, len(q) - 1), len(q), len(q) + 1}:
-        for i in range(max(1, len(t) - n + 1)):
-            window = " ".join(t[i:i + n])
-            sm.set_seq1(window)
-            if sm.real_quick_ratio() >= QUOTE_MATCH and sm.quick_ratio() >= QUOTE_MATCH and sm.ratio() >= QUOTE_MATCH                     and not want - numbers(window):
-                return True
-    return False
+    return any(t[i:i + len(q)] == q for i in range(len(t) - len(q) + 1))
 
 
 def check_quotes(facts: list[dict], page_text: dict) -> None:
