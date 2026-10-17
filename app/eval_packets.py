@@ -22,7 +22,6 @@ DECISIONS = HERE.parent / "challenges/1-referral-intake/eval/decisions.json"
 
 def run(ids: list[str]):
     from carebridge import intake
-    from carebridge.pages import load_packet
     from carebridge.paths import packets_dir
 
     d = packets_dir()
@@ -32,8 +31,8 @@ def run(ids: list[str]):
     files = [d / f"{i}.pdf" for i in ids] if ids else sorted(d.glob("R*.pdf"))
     for f in files:
         t0 = time.time()
-        review = intake.Review(load_packet(f.read_bytes(), f.name), f.name)
         try:
+            review = intake.review_file(f.read_bytes(), f.name)
             rep = intake.run(review)
         except Exception as e:
             print(f"{f.stem}: failed: {e}")
