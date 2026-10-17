@@ -18,7 +18,7 @@ leaders to change or throw out. They are not statements by IHH.
 
 ## Resumen en español
 
-**El problema.** Los hospitales mandan referidos de 14 a 34 páginas por fax. IHH promete responder
+**El problema.** Los hospitales mandan referidos de 14 a 34 páginas por fax. IHH trata de responder
 en 2 horas. Cerca de una cuarta parte de los referidos se pierden porque la respuesta llega tarde o
 el hospital deja de contestar.
 
@@ -46,7 +46,7 @@ hacer solo un prototipo.
 ## The problem
 
 IHH's referral coordinators read 14 to 34 faxed pages per referral, by hand, against six pages of
-rules, and promise hospitals an answer within 2 hours. About half of referrals end up withdrawn,
+rules, and try to answer hospitals within 2 hours. About half of referrals end up withdrawn,
 and about a quarter of all referrals go elsewhere or leave the hospital, mostly while IHH waits on a
 quiet hospital. IHH told us fewer withdrawals is the number that matters most.
 

@@ -80,12 +80,12 @@ saves to `docs_claimed`. The reader checks the pages anyway: the claim is not th
 
 The page shows the case code and says what happens next. No patient details are shown back.
 
-> **Referral received. Your case code is {case_code}.** We start reading it now and answer
-> within 2 hours. We'll email {submitter_email} when it moves. Questions? Reply to that email
+> **Referral received. Your case code is {case_code}.** We start reading it now and try to
+> answer within 2 hours. We'll email {submitter_email} when it moves. Questions? Reply to that email
 > and include the case code.
 >
 > **Recibimos el referido. Su código de caso es {case_code}.** Empezamos a leerlo ahora y
-> respondemos en 2 horas. Le escribiremos a {submitter_email} cuando avance. ¿Preguntas?
+> tratamos de responder en 2 horas. Le escribiremos a {submitter_email} cuando avance. ¿Preguntas?
 > Responda a ese correo e incluya el código de caso.
 
 ## Settings in Power Pages

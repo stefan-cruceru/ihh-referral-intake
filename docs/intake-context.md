@@ -79,7 +79,7 @@ build is open source (MIT) and donated to IHH.
   - The coordinator reads every page by hand against six pages of criteria.
 - **Time pressure:**
   - Hospitals send the same referral to several providers.
-  - IHH promises an approve or deny answer **within 2 hours**, with a brief explanation if denied.
+  - IHH tries to give an approve or deny answer **within 2 hours**, with a brief explanation if denied.
   - A slow answer means the patient may be discharged to the street.
 - **Why it's hard:**
   - The referral form is one person's summary and can be wrong. **The deciding fact is often deep

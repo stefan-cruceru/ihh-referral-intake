@@ -221,6 +221,6 @@
       {"id": "FORM-X6", "text": "Registered sex offender", "superseded_by": "OTH-2"},
       {"id": "FORM-X7", "text": "Aggressive or combative behavior directed at staff or other patients"}
     ],
-    "service_promise": "A decision regarding approval or denial will be communicated to the referring party within two hours of receiving the referral. If denied, a brief explanation will be provided."
+    "response_goal": "A decision regarding approval or denial will be communicated to the referring party within two hours of receiving the referral. If denied, a brief explanation will be provided."
   }
 }

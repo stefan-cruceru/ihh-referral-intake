@@ -71,7 +71,7 @@ def _reason(text: str) -> str:
 def queue_key(v: dict) -> tuple:
     """Open before closed. A red safety flag or a security hold first, whatever the clock says. Then the
     2-hour clock in bands (red, yellow, green) and, inside a band, the best odds on paper, then least time left.
-    Odds only order the list: a likely no still gets its answer inside 2 hours."""
+    Odds only order the list: we still try to answer a likely no within 2 hours."""
     band = {"red": 0, "yellow": 1, "green": 2}.get(v["color"], 3)
     urgent = v.get("danger") == "red" or v.get("suggested_route") == "security_hold"
     odds = v.get("odds")

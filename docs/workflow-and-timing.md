@@ -184,7 +184,7 @@ purpose.
 
 ### What the written documents add
 
-- **The 2-hour promise is printed on the form.** Form RC0725 says the decision goes back "within two
+- **The 2-hour goal is printed on the form.** Form RC0725 says the decision goes back "within two
   hours of receiving the referral". The form also lists "online" as a way to send.
   (`challenges/1-referral-intake/criteria/referral-form-and-checklist.md`)
 - **The coordinator's day** (role card). Missing items mean phone calls to hospital case managers.

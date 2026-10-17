@@ -8,7 +8,7 @@ too sick to recover outside.
 
 **Today.** Each referral is 15 to 35 faxed pages, read by hand against six pages of criteria.
 Hospitals send the same referral to several providers, so a slow answer can mean the person is
-discharged with nowhere to go. IHH promises hospitals an answer within two hours.
+discharged with nowhere to go. IHH tries to answer hospitals within two hours.
 
 **If you crack it.** A faster, surer answer. A bed instead of the street, and coordinators spending
 their time on people, not pages.
