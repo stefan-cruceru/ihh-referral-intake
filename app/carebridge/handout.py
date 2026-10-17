@@ -5,9 +5,9 @@ the phone, place and hours, boxes to tick, and a notes box where staff write by 
 for, an appointment time, a bus line). Two looks: `color` and `bw` (black and white, for any
 printer or copier).
 
-Every phone number, address and hour comes from the sourced resource list, looked up by ID here;
-only the "why", "first step", "good to know" and "today" wording comes from the review, and it goes
-through resources.client_text first (no phones, places, hours or advice in the model's words).
+Every phone number, address and hour comes from the sourced resource list, looked up by ID here.
+Guidance uses fixed templates selected from that record's access and referral fields. Browser or
+Copilot-supplied "why", "first step", "good to know" and "today" prose is never printed.
 
 The handout is for the client, so it can carry their name. The name is printed only: the caller
 passes it straight in for this one PDF, and nothing here saves it, logs it or sends it anywhere.
@@ -34,13 +34,6 @@ T = {
     "hours": ("Open", "Horario"),
     "online": ("Online", "En internet"),
     "know": ("Good to know", "Bueno saber"),
-    # When there is no first step from a review: what the sourced list says about how to get in.
-    "first_phone": ("Call them.", "Llámeles."),
-    "first_walk-in": ("Go in person. Call first to check the hours.", "Vaya en persona. Llame antes para confirmar el horario."),
-    "first_appointment": ("Call to make an appointment.", "Llame para hacer una cita."),
-    "first_online": ("Apply online. Ask staff to help.", "Haga la solicitud en internet. Pida ayuda al personal."),
-    "first_referral-only": ("Ask staff to make the referral.", "Pida al personal que haga el referido."),
-    "first_mixed": ("Call them, or ask staff to help.", "Llámeles, o pida ayuda al personal."),
     "referral": ("You need a referral first. Ask staff to help.", "Primero necesita un referido. Pida ayuda al personal."),
     "no_address": ("Ask staff where to go.", "Pregunte al personal adónde ir."),
     "called": ("I called", "Llamé"),
@@ -101,16 +94,18 @@ class _PDF(FPDF):
 
 def build(items: list[dict], plan_today: str = "", lang: str = "en", danger: bool = False, style: str = "color",
           client_name: str = "") -> bytes:
-    """items: [{resource_id, why, first_step, watch_out}] in the order to do them. style: color | bw.
+    """items: known resource IDs in the chosen order; any supplied prose is ignored.
+    plan_today is retained for caller compatibility but never printed. style: color | bw.
     client_name: printed on the page, never stored (see the module note)."""
     client_name = " ".join((client_name or "").split())[:60]
     look = LOOKS.get(style, LOOKS["color"])
     bw = style == "bw"
     by_id = {r["id"]: r for r in resources.catalog()}
-    # Items come back from the browser, so the model's words are cleaned again here, not trusted.
-    steps = [({**it, **{k: resources.client_text(it.get(k)) for k in ("why", "first_step", "watch_out")}},
-              by_id[it["resource_id"]]) for it in items if it.get("resource_id") in by_id][:MAX_STEPS]
-    plan_today = resources.client_text(plan_today)
+    # Re-derive guidance from the catalog, even when the caller provides a known ID alongside
+    # forged prose or source fields. There is no arbitrary-prose path into the client's plan.
+    selected = [by_id[it["resource_id"]] for it in items if it.get("resource_id") in by_id][:MAX_STEPS]
+    steps = [(resources.client_guidance(r, lang), r) for r in selected]
+    plan_today = resources.client_plan(lang, bool(steps))
 
     pdf = _PDF(lang, look)
     pdf.alias_nb_pages()
@@ -230,11 +225,7 @@ def _step(pdf, n, it, r, lang, look, bw, text, L, W):
 
     pdf.set_xy(inner, top + 1.5)
     text(r["name"], 15, "B", h=7, x=inner, w=iw)
-    if it.get("why"):
-        text(it["why"], 11, h=5.4, color="muted", x=inner, w=iw)
-    first = it.get("first_step")
-    if not first and f"first_{r.get('how_to_access')}" in T:
-        first = _t(f"first_{r['how_to_access']}", lang)
+    first = it["first_step"]
     if first:
         text(f"{_t('do_first', lang)}: {first}", 12.5, "B", h=6.2, x=inner, w=iw)
 

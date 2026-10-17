@@ -95,30 +95,11 @@ def test_paraphrase_counts_only_when_the_words_are_there():
 
 # ---- 3. the client's words: no invented facts, no advice ---------------------------------------------
 
-def test_client_text_strips_phones_addresses_and_hours():
-    got = resources.client_text("Call (714) 555-0123 or go to 1505 E 17th Street, open Mon-Fri 9am-5pm, today.")
-    assert "555" not in got and "1505" not in got and "17th" not in got and "9am" not in got and "Mon" not in got
-    assert got.startswith("Call") and got.endswith("today.")
-    es = resources.client_text("Llame al 714.555.0123 de lunes a viernes, 8:00 a 17:00.")
-    assert not any(ch.isdigit() for ch in es) and "lunes" not in es and es.startswith("Llame")
-    assert resources.client_text("They help with food and a bed tonight.") == "They help with food and a bed tonight."
-
-
-@pytest.mark.parametrize("text", [
-    "Ask about your insulin dose before you go.", "Take your medication with food.",
-    "A lawyer there can help with your case.", "Un abogado le puede ayudar.",
-    "They can help with immigration papers.", "Pregunte por su caso de inmigración.",
-    "Bring your green card.", "They help with asylum claims.", "Ayuda con asilo.", "If you fear deportation, go.",
-])
-def test_advice_blanks_the_field(text):
-    assert resources.client_text(text) == ""
-
-
 def _seed_id():
     return next(r["id"] for r in resources.catalog() if not ({"survivors", "domestic-violence"} & set(r.get("tags", []))))
 
 
-def test_ai_pick_not_in_the_seed_is_dropped_and_words_are_cleaned(monkeypatch):
+def test_ai_pick_not_in_the_seed_is_dropped_and_model_words_are_ignored(monkeypatch):
     rid = _seed_id()
     monkeypatch.setattr(llm, "call_json", lambda **kw: {
         "needs": ["shelter"], "ask_staff": [],
@@ -129,8 +110,8 @@ def test_ai_pick_not_in_the_seed_is_dropped_and_words_are_cleaned(monkeypatch):
     got = resources.find("Unhoused, needs shelter", "en", use_ai=True)
     assert [c["id"] for c in got["cards"]] == [rid] and got["dropped"] == ["made-up-shelter"]
     card = got["cards"][0]
-    assert "123" not in card["why"] and "555" not in card["first_step"] and card["watch_out"] == ""
-    assert got["plan_today"] == ""
+    assert "123" not in card["why"] and "555" not in card["first_step"] and "medication" not in card["watch_out"]
+    assert "9:00" not in got["plan_today"] and "lawyer" not in got["plan_today"]
 
 
 def test_handout_prints_no_model_phone_or_advice():
@@ -138,7 +119,7 @@ def test_handout_prints_no_model_phone_or_advice():
     pdf = handout.build([{"resource_id": rid, "why": "Open 24/7, call 949-555-0142.", "first_step": "Ask for a lawyer.",
                           "watch_out": ""}], "Your dosage stays the same.", "en")
     text = "".join(p.get_textpage().get_text_range() for p in pdfium.PdfDocument(pdf))
-    # The seed's own hours and phone still print; only the model's words are cleaned.
+    # The seed's own hours and phone still print; the model's words are ignored.
     assert "949" not in text and "lawyer" not in text and "dosage" not in text
 
 
