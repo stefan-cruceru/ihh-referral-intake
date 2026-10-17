@@ -1,6 +1,6 @@
 """Per-user install: no admin rights needed.
 
-Copies the exe to %LOCALAPPDATA%\\Programs\\IHH Care Bridge, adds a Start menu shortcut, and
+Copies the exe to %LOCALAPPDATA%\\Programs\\IHH Care Bridge, adds a "Lamplight" Start menu shortcut, and
 registers the MCP server with GitHub Copilot in VS Code and with Claude Desktop when they are
 installed. For Copilot it also adds the "Lamplight" agent (it shows in Copilot Chat's agent
 dropdown) and the ihh-referral-intake skill. Existing config files are backed up before they are
@@ -18,7 +18,9 @@ NAME = "ihh-care-bridge"
 APPDATA = Path(os.environ.get("APPDATA", Path.home()))
 LOCAL = Path(os.environ.get("LOCALAPPDATA", Path.home()))
 TARGET_DIR = LOCAL / "Programs" / "IHH Care Bridge"
-SHORTCUT = APPDATA / "Microsoft/Windows/Start Menu/Programs/IHH Care Bridge.lnk"
+SHORTCUT = APPDATA / "Microsoft/Windows/Start Menu/Programs/Lamplight.lnk"
+# Before the rename to Lamplight. Install and uninstall remove it so nobody sees two shortcuts.
+OLD_SHORTCUT = APPDATA / "Microsoft/Windows/Start Menu/Programs/IHH Care Bridge.lnk"
 VSCODE_MCP = APPDATA / "Code/User/mcp.json"
 CLAUDE_DESKTOP = APPDATA / "Claude/claude_desktop_config.json"
 VSCODE_AGENT = APPDATA / "Code/User/prompts/ihh-care-bridge.agent.md"
@@ -65,8 +67,9 @@ def install() -> int:
     print(f"Installed to {exe}")
 
     SHORTCUT.parent.mkdir(parents=True, exist_ok=True)
+    OLD_SHORTCUT.unlink(missing_ok=True)
     ps = (f"$s=(New-Object -ComObject WScript.Shell).CreateShortcut('{SHORTCUT}');"
-          f"$s.TargetPath='{exe}';$s.WorkingDirectory='{TARGET_DIR}';$s.Description='IHH Care Bridge';$s.Save()")
+          f"$s.TargetPath='{exe}';$s.WorkingDirectory='{TARGET_DIR}';$s.Description='Lamplight';$s.Save()")
     r = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True)
     print("Start menu shortcut:", "added" if r.returncode == 0 else "could not be added")
 
@@ -74,7 +77,7 @@ def install() -> int:
     print("GitHub Copilot (VS Code):", _edit_json(VSCODE_MCP, lambda d: d.setdefault("servers", {}).__setitem__(NAME, {"type": "stdio", **entry})))
     print("Copilot agent and skill:", install_copilot_files())
     print("Claude Desktop:", _edit_json(CLAUDE_DESKTOP, lambda d: d.setdefault("mcpServers", {}).__setitem__(NAME, entry)))
-    print("\nDone. Open IHH Care Bridge from the Start menu. In VS Code, open Copilot Chat and pick\n"
+    print("\nDone. Open Lamplight from the Start menu. In VS Code, open Copilot Chat and pick\n"
           "Lamplight in the agent dropdown, or type / to see its commands.")
     return 0
 
@@ -90,5 +93,6 @@ def uninstall() -> int:
     VSCODE_AGENT.unlink(missing_ok=True)
     shutil.rmtree(COPILOT_SKILL, ignore_errors=True)
     SHORTCUT.unlink(missing_ok=True)
+    OLD_SHORTCUT.unlink(missing_ok=True)
     print(f"Unregistered. Delete {TARGET_DIR} to remove the program.")
     return 0

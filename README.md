@@ -165,6 +165,14 @@ cd app
 cd ..                            # back to the repo root
 ```
 
+**Try it first with practice patients (no key needed):** open the app, sign in as a made-up staff
+member, and click **Practice** at the top. In the side panel, click **Practice with made-up
+referrals** to fill the board, or **Practice patients** to send one of the ten made-up patients
+(S01 to S10) yourself. Open any card to see each rule, the page it came from, and what is still
+unknown. Every practice patient is invented, and the practice reviews come from the organizers'
+answer key, so nothing leaves the computer. Real-referrals mode (`CAREBRIDGE_PRODUCTION=1`) hides
+all of this. The patients live in [`demo/synthetic/`](demo/synthetic/README.md).
+
 To read real (de-identified) packets, an admin adds a Claude API key in Settings (saved in Windows
 Credential Manager) or sets `ANTHROPIC_API_KEY`. For Claude in IHH's Azure, pick Foundry in
 Settings, or set `CAREBRIDGE_PROVIDER=foundry`, `ANTHROPIC_FOUNDRY_RESOURCE` and
