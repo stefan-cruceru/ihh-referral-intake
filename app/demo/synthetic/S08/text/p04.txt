@@ -1,0 +1,34 @@
+09/12/2026 12:30 FROM: BAYFRONT UNIV MED CTR CASE MGMT FAX 714-555-0188 TO: IHH RECUP                                            P.4/13
+
+
+
+
+
+
+DOMBROWSKI, WALTER (MRN: SYN-452608) DOB: 06/01/1948                        78y M          Bayfront University Medical Center · 7 Tower
+                                                                                                                              Geriatrics
+
+
+Authorization Request: Recuperative Care (Community Support)
+Submitted 09/12/2026 12:30 by Rachel Imani
+
+      Health Plan       Medi-Cal managed care plan
+      Member ID         SYN-M-905312
+      Service           Recuperative care (medical respite)
+      Requested
+      Requested         Illumination Health + Home
+      Provider
+      Days Requested    30
+      Diagnosis         N39.0, G93.41, G30.9, F02.80, Z59.02
+      Code(s)
+      Status            Pending health plan review
+      Authorization #   Not yet assigned
+
+CLINICAL JUSTIFICATION
+Recuperative care referral. 78-year-old man treated for a urinary tract infection. Infection resolved. Walks well
+without a device. Unhoused. Ready 09/13.
+
+
+
+
+                             SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

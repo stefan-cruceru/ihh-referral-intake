@@ -1,0 +1,56 @@
+08/20/2026 10:12 FROM: LOS OLIVOS REGIONAL CASE MGMT FAX 949-555-0177 TO: IHH RECUP                                                               P.2/14
+
+
+
+
+
+
+Recuperative Care Referral Form
+Illumination Health + Home. Submit this form with supporting documents by fax to 888-555-0155.
+
+REFERRING PARTY
+       Referring Hospital            Los Olivos Regional Hospital                             Dept/Floor                     Orthopedic Unit 2B
+       SW/CM/RN                      Dana Whitfield                                           Phone/Pager #                  949-555-0178
+       Email                         dwhitfield@losolivos.example.org                         Nursing Station #              949-555-0120
+       Authorized by                 Elena Vasquez-Ruiz, DO                                   Phone #                        949-555-0120
+
+PATIENT INFORMATION
+       Patient Name                  GREGORY WHITLOCK                                              MRN                           SYN-318255
+       Date of Birth                 11/02/1978                                                    Ethnicity                     White
+       Insurance                     Medi-Cal managed care plan                                    Preferred                     English
+                                                                                                   Language
+Gender: X Male                  Female   Transgender       Other Last 4 # of Social Security: xxx-xx-0000
+Housing Situation: X Currently Unhoused                     4+ episodes of homelessness in the past 3 years
+HOSPITAL ADMISSION DETAILS
+Chief Complaint / Admitting Diagnosis: Closed right bimalleolar ankle fracture, status post open reduction and internal fixation
+08/18/2026
+Admit Date: 08/17/2026 Any Wounds? X Yes                          No
+If yes, explain the number, location, size and stage: 2 surgical incisions, right ankle, closed with staples, under splint
+Independent with Wound Care? X Yes                      No If no, will Home Health be ordered?             Yes      No
+Was PPD/TB Test or Chest X-Ray Performed?                      Yes X No Date: Results:
+HISTORY OF HEALTH & LIVING SITUATION
+     O2                                                                Yes X No                Active Infection                     Yes X No
+     Self Administer All Meds                                      X Yes       No              Ambulatory                           Yes X No
+     Continent of Bowel & Bladder                                  X Yes       No              Assistive Device                   X Yes     No
+     Colostomy/Ileostomy                                               Yes X No                Hospice                              Yes X No
+     Foley Catheter                                                    Yes X No                Car                                  Yes X No
+     Diabetes                                                          Yes X No                Service Animal                       Yes X No
+     Insulin                                                           Yes     No
+     Diabetes related Oral Meds                                        Yes     No
+Explain (O2 / infection / device / hospice): Wheelchair. Non-weight-bearing right leg 6 weeks. Transfers independently
+BEHAVIORAL AND MENTAL HEALTH STATUS
+Does the patient have any limitations, behavioral or mental health challenges?                       Yes X No
+               Mental Health DX If checked, what type?
+               Non-compliant      Forgetful    Cognitive Impairment           Registered Sex Offender
+               Other Explain:
+                                          Length of Stay Authorized in Recuperative Care: 45 Days
+
+        ILLUMINATION STAFF ONLY
+        Date Received: ____________ Reviewed by: ____________
+        Approved: [ ] Yes [ ] No Date: ________ Authorization #: ________ Reason for Denial: ____________
+        Admission Date: ________ Admission Time: ________ Exit Date: ________
+
+
+
+
+                                         SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

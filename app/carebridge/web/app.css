@@ -1,22 +1,16 @@
 /* Care Bridge: calm, plain and friendly. A front desk, not a dashboard.
-   Sage-white paper, evergreen for actions, lamplight yellow used sparingly.
+   White paper, evergreen for actions, lamplight yellow used sparingly. Always light, even when
+   the computer is set to dark mode.
    Fonts are system fonts on purpose: the app makes no network calls. */
 :root {
-  --bg: #f3f6f2; --panel: #ffffff; --ink: #23302d; --muted: #5d6b67; --line: #dbe3dc;
+  --bg: #ffffff; --panel: #ffffff; --ink: #23302d; --muted: #5d6b67; --line: #dbe3dc;
   --brand: #2f6b4f; --brand-ink: #ffffff; --brand-soft: #e3eee6; --lamp: #f2b43a; --lamp-soft: #fdf3dc;
   --green: #2e7d4f; --green-soft: #e3f2e8; --yellow: #8a5a00; --yellow-soft: #fbefd5;
   --red: #b3261e; --red-soft: #fbe7e4; --blue-soft: #e7eef4; --gray-soft: #edf1ed;
   --radius: 18px; --radius-sm: 12px;
+  color-scheme: light;
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Roboto, sans-serif;
   color: var(--ink); background: var(--bg);
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #151c1a; --panel: #1d2623; --ink: #e9efeb; --muted: #a3b1ab; --line: #2f3b37;
-    --brand: #7cc49d; --brand-ink: #10201a; --brand-soft: #22352c; --lamp: #f2c25a; --lamp-soft: #362d17;
-    --green: #7cc49d; --green-soft: #1d3328; --yellow: #f0c25a; --yellow-soft: #352b12;
-    --red: #ff9b90; --red-soft: #3b201d; --blue-soft: #1f2a33; --gray-soft: #242e2b;
-  }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); font-size: 17px; line-height: 1.55; }
@@ -56,6 +50,10 @@ details > summary { cursor: pointer; }
 .tabs button svg { width: 22px; height: 22px; flex: none; }
 .tabs button:hover { color: var(--ink); background: var(--gray-soft); }
 .tabs button.on { color: var(--brand); border-bottom-color: var(--lamp); }
+/* A tab that opens its own page (Practice patients) looks like the others. */
+.tabs a.tab-link { padding: .7rem 1.1rem .85rem; color: var(--muted); font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; gap: .5rem; border-bottom: 4px solid transparent; border-radius: 10px 10px 0 0; text-decoration: none; }
+.tabs a.tab-link svg { width: 22px; height: 22px; flex: none; }
+.tabs a.tab-link:hover { color: var(--ink); background: var(--gray-soft); }
 .privacy-bar { display: flex; gap: .55rem; align-items: center; justify-content: center; padding: .55rem 1.5rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg); color: var(--muted); font-size: .9rem; text-align: center; }
 .privacy-bar svg { width: 18px; height: 18px; flex: none; color: var(--brand); }
 

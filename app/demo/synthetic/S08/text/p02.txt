@@ -1,0 +1,56 @@
+09/12/2026 12:30 FROM: BAYFRONT UNIV MED CTR CASE MGMT FAX 714-555-0188 TO: IHH RECUP                                                                P.2/13
+
+
+
+
+
+
+Recuperative Care Referral Form
+Illumination Health + Home. Submit this form with supporting documents by fax to 888-555-0155.
+
+REFERRING PARTY
+      Referring                     Bayfront University Medical Center                            Dept/Floor                   7 Tower Geriatrics
+      Hospital
+      SW/CM/RN                      Rachel Imani                                                  Phone/Pager #                714-555-0189
+      Email                         rimani@bayfrontumc.example.org                                Nursing Station # 714-555-0130
+      Authorized by                 Samuel Oyelaran, MD                                           Phone #                      714-555-0130
+
+PATIENT INFORMATION
+      Patient Name                  WALTER DOMBROWSKI                                                MRN                          SYN-452608
+      Date of Birth                 06/01/1948                                                       Ethnicity                    White
+      Insurance                     Medi-Cal managed care plan                                       Preferred                    English
+                                                                                                     Language
+Gender: X Male                    Female       Transgender         Other      Last 4 # of Social Security: xxx-xx-0000
+Housing Situation: X Currently Unhoused                              4+ episodes of homelessness in the past 3 years
+HOSPITAL ADMISSION DETAILS
+Chief Complaint / Admitting Diagnosis: Urinary tract infection with confusion
+Admit Date: 09/09/2026                      Any Wounds?           Yes     X No
+If yes, explain the number, location, size and stage:
+Independent with Wound Care?                          Yes       No     If no, will Home Health be ordered?                 Yes        No
+Was PPD/TB Test or Chest X-Ray Performed?                               Yes    X No     Date: Results:
+HISTORY OF HEALTH & LIVING SITUATION
+     O2                                                                 Yes     X No             Active Infection                      Yes    X No
+     Self Administer All Meds                                        X Yes         No            Ambulatory                           X Yes    No
+     Continent of Bowel & Bladder                                    X Yes         No            Assistive Device                      Yes    X No
+     Colostomy/Ileostomy                                                Yes     X No             Hospice                               Yes    X No
+     Foley Catheter                                                     Yes     X No             Car                                   Yes    X No
+     Diabetes                                                           Yes     X No             Service Animal                        Yes    X No
+     Insulin                                                            Yes        No
+     Diabetes related Oral Meds                                         Yes        No
+Explain (O2 / infection / device / hospice):
+BEHAVIORAL AND MENTAL HEALTH STATUS
+Does the patient have any limitations, behavioral or mental health challenges? X Yes                                             No
+               Mental Health DX     If checked, what type?
+               Non-compliant      X Forgetful         Cognitive Impairment               Registered Sex Offender
+               Other   Explain:
+                                      Length of Stay Authorized in Recuperative Care: 30 Days
+
+       ILLUMINATION STAFF ONLY
+       Date Received: ____________ Reviewed by: ____________
+       Approved: [ ] Yes [ ] No        Date: ________ Authorization #: ________ Reason for Denial: ____________
+       Admission Date: ________ Admission Time: ________ Exit Date: ________
+
+
+
+
+                                           SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

@@ -1,0 +1,48 @@
+08/27/2026 11:05 FROM: BAYFRONT UNIV MED CTR CASE MGMT FAX 714-555-0188 TO: IHH RECUP                                                  P.8/15
+
+
+
+
+
+
+BENNING, HAROLD (MRN: SYN-407192) DOB: 01/30/1960                      66y M                 Bayfront University Medical Center · 5 Tower
+                                                                                                                              Pulmonary
+
+
+Laboratory Results
+Collected 08/27/2026 05:15
+
+COMPLETE BLOOD COUNT
+        Test                                    Result                        Reference                                    Units
+        WBC                                     9.1                           4.0-11.0                                     K/uL
+        Hemoglobin                              14.5                          12.0-17.0                                    g/dL
+        Hematocrit                              43.5                          36-50                                        %
+        Platelets                               287                           150-400                                      K/uL
+
+BASIC METABOLIC PANEL
+        Test                             Result                       Reference                                    Units
+        Sodium                           139                          135-145                                      mmol/L
+        Potassium                        4.2                          3.5-5.1                                      mmol/L
+        Chloride                         103                          98-107                                       mmol/L
+        CO2                              25                           22-29                                        mmol/L
+        BUN                              12                           7-20                                         mg/dL
+        Creatinine                       1.0                          0.6-1.3                                      mg/dL
+        Glucose                          88                           70-99                                        mg/dL
+
+TRENDS AND OTHER RESULTS
+        Test                 Collected                                     Result                                          Reference
+        WBC                  08/24, 08/25, 08/27                           14.6, 12.0, 9.1 K/uL                            4.0-11.0
+        Procalcitonin        08/24/2026 07:05                              1.8 ng/mL                                       <0.25
+
+MICROBIOLOGY
+        Test                                                  Collected                             Result
+        Blood culture x2                                      08/24/2026 07:10                      No growth at 72 hours
+        Sputum culture                                        08/24/2026 08:30                      Normal respiratory flora
+        MRSA nares PCR                                        08/24/2026 09:00                      NOT DETECTED
+        SARS-CoV-2, influenza, RSV PCR                        08/24/2026 07:00                      ALL NOT DETECTED
+        SARS-CoV-2 antigen                                    08/27/2026 10:15                      NEGATIVE
+
+
+
+
+                               SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

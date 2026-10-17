@@ -1,0 +1,61 @@
+09/12/2026 12:30 FROM: BAYFRONT UNIV MED CTR CASE MGMT FAX 714-555-0188 TO: IHH RECUP                                                    P.5/13
+
+
+
+
+
+
+DOMBROWSKI, WALTER (MRN: SYN-452608) DOB: 06/01/1948                                78y M          Bayfront University Medical Center · 7 Tower
+                                                                                                                                      Geriatrics
+
+
+History and Physical
+Samuel Oyelaran, MD - Admission date 09/09/2026 - Signed
+
+CHIEF COMPLAINT
+Found wandering and confused.
+
+HISTORY OF PRESENT ILLNESS
+78-year-old man brought in by police after he was found walking in traffic. He could not say where he lived.
+Temperature 100.9 F. Urinalysis consistent with infection. No other source found. CT head without acute
+findings.
+Started IV ceftriaxone for a urinary tract infection with acute confusion. A former landlord reached by phone
+reports memory problems for at least 2 years and that he was evicted after repeatedly leaving the stove on.
+
+PAST MEDICAL HISTORY
+             Memory problems for at least 2 years by report, not previously evaluated
+             Hypertension
+
+PAST SURGICAL HISTORY
+None.
+
+HOME MEDICATIONS
+             Unknown. Patient cannot name any medications
+ALLERGIES
+No known drug allergies.
+
+SOCIAL HISTORY
+Unhoused since an eviction about 6 months ago. No known family. Found with no identification or belongings.
+
+PHYSICAL EXAM
+General: Awake, alert, in no acute distress.
+HEENT: Normocephalic. Mucous membranes moist.
+Cardiovascular: Regular rate and rhythm. No murmurs.
+Respiratory: Clear to auscultation bilaterally. No increased work of breathing.
+Abdomen: Soft, non-tender, non-distended.
+Extremities: No edema.
+Skin: Warm and dry.
+Neuro: Awake. Oriented to name only. Not oriented to place, date or situation. Follows one-step commands. No
+focal weakness. Normal gait.
+Psych: Pleasant. Inattentive. Asks the same question repeatedly.
+
+ASSESSMENT AND PLAN
+             Urinary tract infection: ceftriaxone, follow urine culture.
+             Confusion: treat infection, reassess thinking once infection clears. Geriatrics consult.
+             Safety: wandering precautions.
+             Disposition to follow cognitive evaluation.
+
+
+
+
+                                     SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

@@ -1,5 +1,8 @@
-# Run the CareBridge app locally:  docker compose up --build -d   then open http://localhost:8780
+# Start with .\start.ps1 (Windows) or ./start.sh (Mac, Linux), or: docker compose up --build -d
+# Then open http://localhost:8780. See docs/run-with-docker.md.
 # (8780 so it can run beside a native `python -m carebridge serve 8765`; change with CAREBRIDGE_PORT.)
+name: ihh-care-bridge
+
 services:
   carebridge:
     build:

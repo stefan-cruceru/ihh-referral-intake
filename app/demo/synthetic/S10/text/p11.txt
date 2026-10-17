@@ -1,0 +1,22 @@
+09/18/2026 11:35 FROM: LOS OLIVOS REGIONAL CASE MGMT FAX 949-555-0177 TO: IHH RECUP                                                P.11/14
+
+
+
+
+
+
+ARCENEAUX, PHILLIP (MRN: SYN-339018) DOB: 09/30/1963 62y M                                    Los Olivos Regional Hospital · Medical Unit 4C
+
+
+Vital Signs Flowsheet
+         Date/Time                      BP                 HR          RR         Temp F                SpO2          O2
+         09/17/2026 16:00               122/76             78          16         98.2                  97%           Room air
+         09/17/2026 20:00               118/74             76          16         98.4                  97%           Room air
+         09/18/2026 00:00               116/72             72          14         98.0                  96%           Room air
+         09/18/2026 04:00               118/72             70          14         97.9                  97%           Room air
+         09/18/2026 08:00               124/78             76          16         98.1                  97%           Room air
+
+
+
+
+                            SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

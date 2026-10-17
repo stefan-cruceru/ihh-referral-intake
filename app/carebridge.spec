@@ -1,5 +1,5 @@
 # PyInstaller spec for ihh-care-bridge.exe. Run through build.ps1, which first renders the
-# invented demo packets and the icon into build/stage.
+# icon and version resource into build/stage.
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
@@ -21,7 +21,11 @@ datas = [
 # fpdf2 (the client handout PDF) ships font metric files alongside its code.
 from PyInstaller.utils.hooks import collect_data_files
 datas += collect_data_files("fpdf")
-datas += [(str(p), "data/demo") for p in sorted((STAGE / "demo").glob("D*.pdf"))]
+# The synthetic practice patients: packets, page text, profiles and answer key. demo/synthetic
+# reads them next to its own module, so they go to demo/synthetic inside the bundle.
+SYN = APP / "demo" / "synthetic"
+datas += [(str(f), str(Path("demo/synthetic") / f.parent.relative_to(SYN)))
+          for f in sorted(SYN.rglob("*")) if f.is_file() and f.suffix in (".pdf", ".txt", ".json")]
 
 icon = STAGE / "carebridge.ico"
 
@@ -30,7 +34,7 @@ a = Analysis(
     pathex=[str(APP)],
     datas=datas,
     hiddenimports=[
-        "demo", "demo.samples", "demo.packets",
+        "demo", "demo.synthetic",
         "keyring.backends.Windows", "win32ctypes.core", "win32ctypes.pywin32",
     ],
     excludes=["tkinter", "numpy", "matplotlib", "pandas", "scipy", "IPython", "pytest"],

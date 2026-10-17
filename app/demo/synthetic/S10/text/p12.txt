@@ -1,0 +1,45 @@
+09/18/2026 11:35 FROM: LOS OLIVOS REGIONAL CASE MGMT FAX 949-555-0177 TO: IHH RECUP                                                   P.12/14
+
+
+
+
+
+
+ARCENEAUX, PHILLIP (MRN: SYN-339018) DOB: 09/30/1963 62y M                                       Los Olivos Regional Hospital · Medical Unit 4C
+
+
+Laboratory Results
+Collected 09/17/2026 05:20
+
+COMPLETE BLOOD COUNT
+         Test                                 Result                          Reference                                   Units
+         WBC                                  8.4                             4.0-11.0                                    K/uL
+         Hemoglobin                           10.8                            12.0-17.0                                   g/dL
+         Hematocrit                           33.1                            36-50                                       %
+         Platelets                            212                             150-400                                     K/uL
+
+BASIC METABOLIC PANEL
+         Test                          Result                       Reference                                     Units
+         Sodium                        137                          135-145                                       mmol/L
+         Potassium                     4.0                          3.5-5.1                                       mmol/L
+         Chloride                      105                          98-107                                        mmol/L
+         CO2                           24                           22-29                                         mmol/L
+         BUN                           17                           7-20                                          mg/dL
+         Creatinine                    1.0                          0.6-1.3                                       mg/dL
+         Glucose                       88                           70-99                                         mg/dL
+
+OTHER RESULTS
+         Test                  Collected                                              Result                        Reference
+         Albumin               09/17/2026 05:20                                       3.1 g/dL                      3.5-5.0
+         Prealbumin            09/17/2026 05:20                                       16 mg/dL                      18-38
+
+MICROBIOLOGY
+         Test                  Collected                       Result
+         Blood culture x2      09/04/2026 14:00                Streptococcus pneumoniae; repeat 09/06 no growth
+         MRSA nares PCR        09/04/2026 15:30                NOT DETECTED
+         SARS-CoV-2 antigen    09/18/2026 10:50                NEGATIVE
+
+
+
+
+                              SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026
