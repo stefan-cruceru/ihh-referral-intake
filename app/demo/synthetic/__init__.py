@@ -62,6 +62,10 @@ def _best_line(text: str, why: str) -> str | None:
     return best
 
 
+def _no_verdict(summary: str) -> str:
+    return re.sub(r"^(Approve|Deny)( for now)?\.\s+", "", summary)
+
+
 def _report(pid: str) -> dict:
     from carebridge import intake, rules
 
@@ -115,7 +119,9 @@ def _report(pid: str) -> dict:
         "wheelchair_dependent": "unknown", "preferred_language": prof["patient"].get("language") or "",
         "rules": assessed, "diagnoses": diagnoses, "checklist": checklist, "conflicts": conflicts,
         "questions": [{"en": q, "es": q, "rule_ids": []} for q in key["follow_up"]],
-        "summary": key["summary"], "summary_es": key["summary"],
+        # The key's summary opens with the organizers' verdict ("Deny."). The review only points
+        # things out, so the verdict stays in answer_key_decision, shown on the practice page's reveal.
+        "summary": _no_verdict(key["summary"]), "summary_es": _no_verdict(key["summary"]),
     }
     rep = intake.quality_control(assessment, facts, sorted_pages, {m["page"]: m["title"] for m in key["page_map"]})
     rep.update(id=f"sample-{pid}", packet=f"{pid}.pdf", received_at=None, reviewed_at=None, model="organizers' answer key",
