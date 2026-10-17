@@ -89,11 +89,10 @@ main { padding: 1.6rem 1.5rem 3rem; max-width: 1180px; margin: 0 auto; }
 .pill { display: inline-block; padding: .3rem .8rem; border-radius: 999px; font-size: .9rem; background: var(--gray-soft); }
 
 /* ---- referrals ---- */
-.hero { display: grid; grid-template-columns: 1fr auto; gap: 1.5rem 2rem; align-items: center; padding: .4rem 0 1.4rem; }
-.hero h1 { font-size: 2.2rem; }
-.hero p { max-width: 60ch; color: var(--muted); margin: 0; font-size: 1.05rem; }
-.hero-actions { display: flex; gap: .7rem; flex-wrap: wrap; }
-.drop { border: 2px dashed var(--line); border-radius: var(--radius); padding: 1.1rem; text-align: center; color: var(--muted); margin: 0 0 1.2rem; cursor: pointer; }
+.board-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem 2rem; flex-wrap: wrap; padding: .2rem 0 1rem; }
+.board-top h1 { margin-bottom: .35rem; }
+.board-meta { display: flex; align-items: center; gap: .5rem 1rem; flex-wrap: wrap; }
+.drop { border: 2px dashed var(--line); border-radius: var(--radius); padding: .7rem 1rem; text-align: center; color: var(--muted); margin: 0 0 1rem; cursor: pointer; font-size: .95rem; }
 .drop:hover, .drop.over { border-color: var(--brand); background: var(--brand-soft); color: var(--ink); }
 
 .sim { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.3rem; margin-bottom: 1.2rem; }
@@ -104,10 +103,8 @@ main { padding: 1.6rem 1.5rem 3rem; max-width: 1180px; margin: 0 auto; }
 .sim-bar.ok { background: var(--green); } .sim-bar.miss { background: var(--amber); } .sim-bar.walk { background: var(--red); }
 .sim-limit { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--ink); opacity: .35; }
 
-.board-head { display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 .8rem; gap: 1rem; flex-wrap: wrap; }
 .clock { display: flex; gap: .55rem; align-items: center; color: var(--muted); }
 .clock b { color: var(--ink); }
-.clock select { width: auto; padding: .4rem .7rem; }
 .stats { display: flex; gap: .5rem; flex-wrap: wrap; }
 .peak { background: var(--lamp-soft); color: var(--ink); border-radius: var(--radius-sm); padding: .8rem 1rem; margin-bottom: .9rem; }
 
@@ -119,7 +116,7 @@ main { padding: 1.6rem 1.5rem 3rem; max-width: 1180px; margin: 0 auto; }
 /* The 2-hour countdown: a ring that empties as time runs out (--pct set by app.js). */
 .timer { --ring: var(--green); width: 76px; height: 76px; border-radius: 50%; display: grid; place-content: center; text-align: center;
   background: radial-gradient(closest-side, var(--panel) 80%, transparent 81%), conic-gradient(var(--ring) calc(var(--pct, 1) * 100%), var(--gray-soft) 0); }
-.timer b { font-size: 1.45rem; display: block; line-height: 1; font-weight: 600; color: var(--ring); }
+.timer b { font-size: 1.3rem; letter-spacing: -.03em; font-variant-numeric: tabular-nums; display: block; line-height: 1; font-weight: 600; color: var(--ring); }
 .timer span { font-size: .72rem; color: var(--muted); line-height: 1.2; }
 .c-yellow .timer { --ring: var(--amber); } .c-yellow .timer b { color: var(--yellow); }
 .c-red .timer { --ring: var(--red); }
@@ -203,9 +200,9 @@ details.admin p { margin: .4rem 0; }
 .transcript mark { background: var(--red-soft); color: var(--red); font-weight: 600; padding: 0 .2rem; border-radius: 4px; }
 
 /* ---- the pinned countdown, who am I, and the queue chips ---- */
-.urgent { position: sticky; top: 0; z-index: 4; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; background: var(--lamp-soft); border: 1.5px solid var(--lamp); border-radius: var(--radius); padding: .75rem 1.1rem; margin: 1rem 0 0; cursor: pointer; }
+.urgent { position: sticky; top: 0; z-index: 4; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; background: var(--lamp-soft); border: 1.5px solid var(--lamp); border-radius: var(--radius-sm); padding: .45rem 1rem; margin: 0 0 .6rem; cursor: pointer; box-shadow: 0 2px 6px var(--shadow); }
 .urgent.red { background: var(--red-soft); border-color: var(--red); }
-.urgent .count { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+.urgent .count { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
 .urgent.red .count { color: var(--red); }
 .urgent .who { color: var(--muted); }
 .whoami { display: flex; gap: .55rem; align-items: center; color: var(--muted); flex-wrap: wrap; }
@@ -230,14 +227,22 @@ details.admin p { margin: .4rem 0; }
 .res-card .facts span:nth-child(odd) { color: var(--muted); }
 .safety { background: var(--red-soft); border-radius: var(--radius); padding: 1.1rem 1.3rem; margin: .9rem 0; }
 
-/* ---- practice ---- */
-.roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; margin: 1.1rem 0; }
-.role { text-align: left; border: 2px solid var(--line); border-radius: var(--radius); background: var(--panel); padding: 1rem 1.1rem; cursor: pointer; display: grid; gap: .3rem; }
-.role b { font-weight: 600; font-size: 1.05rem; }
-.role span { color: var(--muted); font-size: .93rem; }
-.role:hover { border-color: color-mix(in srgb, var(--brand) 50%, var(--line)); }
-.role.on { border-color: var(--brand); background: var(--brand-soft); }
-.role-panel textarea, .role-panel input { margin-bottom: .7rem; }
+/* ---- practice: a panel on the right side, the board stays usable next to it ---- */
+.side-panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 15; width: min(440px, 100vw); overflow-y: auto; background: var(--bg); border-left: 1px solid var(--line); box-shadow: -8px 0 30px rgba(0,0,0,.12); padding: 1.2rem 1.3rem 2.5rem; }
+.side-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.side-head h2 { margin: 0; }
+.side-block { display: flex; gap: .5rem; flex-wrap: wrap; margin: .6rem 0 1rem; }
+.side-tool { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: .85rem 1rem; margin: .7rem 0; }
+.side-tool summary { display: grid; gap: .15rem; list-style: none; }
+.side-tool summary::-webkit-details-marker { display: none; }
+.side-tool summary b::after { content: " ▸"; color: var(--muted); }
+.side-tool[open] summary b::after { content: " ▾"; }
+.side-tool[open] summary { margin-bottom: .6rem; }
+.side-tool textarea, .side-tool input { margin-bottom: .7rem; }
+.side-block a.btn { color: var(--ink); }
+@media (min-width: 1200px) { body.practice-open main { margin-right: 440px; } }
+.practice-btn svg { width: 20px; height: 20px; }
+.practice-btn[aria-expanded="true"] { background: var(--brand-soft); border-color: var(--brand); }
 .sentence { padding: .4rem .6rem; border-radius: 10px; margin: .25rem 0; }
 .sentence.bad { background: var(--yellow-soft); }
 .sentence .src { font-size: .84rem; color: var(--muted); }
@@ -263,12 +268,13 @@ details.admin p { margin: .4rem 0; }
   .top { padding: .8rem 1rem; }
   main { padding: 1.2rem 1rem 2.5rem; }
   .tabs button { padding: .6rem .7rem .75rem; font-size: .95rem; }
-  .hero { grid-template-columns: 1fr; }
-  .hero h1 { font-size: 1.7rem; }
-  .gates, .roles { grid-template-columns: 1fr; }
+  .board-top h1 { font-size: 1.6rem; }
+  .gates { grid-template-columns: 1fr; }
+  .bar-row .whoami { margin-left: 0; }
+  .practice-btn span { display: none; }
   .card { grid-template-columns: 68px 1fr; padding: .8rem; }
   .timer { width: 64px; height: 64px; }
-  .timer b { font-size: 1.2rem; }
+  .timer b { font-size: 1.05rem; }
   .card .side { display: none; }
   .sim-row { grid-template-columns: 1fr; }
   .viewer-body { flex-direction: column; }
@@ -464,7 +470,16 @@ main:focus { outline: none; }
 #tab-resources #situation { display: block; margin-bottom: 1rem; }
 
 /* ---- the patient dashboard: search, the Show filter, and where each patient is ---- */
-.finder { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin: .2rem 0 .8rem; }
+/* One bar holds every way to narrow the list: search, Show, the steps, and whose referrals. */
+.board-bar { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: .75rem .9rem; margin: 0 0 1rem; box-shadow: 0 2px 6px var(--shadow); }
+.board-bar .stages { margin: 0; flex: 1 1 auto; }
+.bar-row { display: flex; gap: .6rem 1rem; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: .65rem; }
+.bar-row .whoami { margin-left: auto; }
+.stages button { padding: .3rem .8rem; font-size: .93rem; }
+.search-row { display: flex; gap: .6rem; align-items: center; margin-bottom: .6rem; }
+.search-row input { flex: 1 1 auto; }
+input[type="search"] { padding-left: 2.4rem; background: var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23715d50' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='m20 20-4.2-4.2'/%3E%3C/svg%3E") no-repeat .8rem center / 18px; }
+.finder { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin: 0 0 .65rem; }
 .finder input[type="search"] { flex: 1 1 260px; min-width: 0; }
 .finder-show { display: flex; align-items: center; gap: .4rem; font-weight: 600; }
 .finder-show select { width: auto; }

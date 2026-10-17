@@ -173,7 +173,8 @@ function renderStages(cards) {
   const n = Object.fromEntries(STAGES.map((s) => [s, 0]));
   cards.forEach((c) => n[stageOf(c)]++);
   const btn = (s, count) => `<button data-stage="${s}" class="${s === STAGE ? "on" : ""}">${esc(t("stage_" + s))} <span class="count">${count}</span></button>`;
-  $("#stages").innerHTML = btn("all", cards.length) + STAGES.map((s) => btn(s, n[s])).join("");
+  // Only the steps that have someone in them, plus the one picked, so the row stays short.
+  $("#stages").innerHTML = btn("all", cards.length) + STAGES.filter((s) => n[s] || s === STAGE).map((s) => btn(s, n[s])).join("");
   $$("#stages button").forEach((b) => b.addEventListener("click", () => { STAGE = b.dataset.stage; pref.set("cb_stage", STAGE); renderQueue(LAST_Q); }));
 }
 
@@ -210,7 +211,8 @@ $("#find-filter").value = FILTERS[FILTER] ? FILTER : "all";
 $("#find-q").addEventListener("input", (e) => { FIND = e.target.value; renderQueue(LAST_Q); });
 $("#find-filter").addEventListener("change", (e) => { FILTER = e.target.value; pref.set("cb_filter", FILTER); renderQueue(LAST_Q); });
 $("#find-clear").addEventListener("click", () => {
-  FIND = ""; FILTER = "all"; $("#find-q").value = ""; $("#find-filter").value = "all"; pref.set("cb_filter", FILTER);
+  FIND = ""; FILTER = "all"; STAGE = "all"; $("#find-q").value = ""; $("#find-filter").value = "all";
+  pref.set("cb_filter", FILTER); pref.set("cb_stage", STAGE);
   renderQueue(LAST_Q); $("#find-q").focus();
 });
 
@@ -293,7 +295,7 @@ function renderQueue(q) {
   renderUrgent(mine);
   const cards = mine.filter(matches);
   const narrowed = FIND.trim() || FILTER !== "all";
-  $("#find-clear").classList.toggle("hidden", !narrowed);
+  $("#find-clear").classList.toggle("hidden", !narrowed && STAGE === "all");
   $("#find-count").textContent = narrowed ? t("find_count", { n: cards.length, total: mine.length }) : "";
   renderStages(cards);
   if (!cards.length) {
@@ -318,10 +320,8 @@ function renderQueue(q) {
         <div>
           <div class="title">${esc(c.case_no)} · ${esc(c.hospital || t("unknown"))}</div>
           <div class="meta">${sourceText(c)} · ${esc(t("owner"))}: <b>${esc(c.owner)}</b>${c.owner === ME ? ` (${esc(t("you"))})` : ""}</div>
-          ${contactLine(c)}
           ${whereLine(c)}
           <div class="chips">${dangerChip(c)}${statusChip(c.status)}${overnightChip(c)}${kipuChip(c)}${kipuCheckChip(c)}${viewersChip(c)}${handwritingChip(c)}${review}${alerts}${silent}${c.sample ? `<span class="chip">${esc(t("sample_badge"))}</span>` : ""}</div>
-          ${oddsLine(c)}
         </div>
         <div class="side">${fmtClock(c.arrived_at)}</div>
       </div>`;
@@ -332,8 +332,7 @@ function renderQueue(q) {
     .map((s) => {
       const list = cards.filter((c) => stageOf(c) === s);
       if (!list.length && STAGE === "all") return "";
-      return `<section class="stage-group"><h3 class="stage-h">${esc(t("stage_" + s))} <span class="count">${list.length}</span>
-          <span class="muted small">${esc(t("next_" + s))}</span></h3>
+      return `<section class="stage-group"><h3 class="stage-h">${esc(t("stage_" + s))} <span class="count">${list.length}</span></h3>
         ${list.length ? list.map(cardHtml).join("") : `<div class="empty">${esc(t("stage_empty"))}</div>`}</section>`;
     })
     .join("");
@@ -384,6 +383,8 @@ $("#start-demo").addEventListener("click", async () => {
   const sim = await post("/api/demo", { speed: 60 });
   renderSim(sim);
   toast(t("start_demo"));
+  closePractice();
+  goTab("referrals");
 });
 
 async function upload(file) {
@@ -444,7 +445,8 @@ document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
   if (!$("#viewer").classList.contains("hidden")) return $("#viewer").classList.add("hidden");
   if (!$("#settings").classList.contains("hidden")) return $("#settings").classList.add("hidden");
-  closeDetail();
+  if (OPEN) return closeDetail();
+  closePractice();
 });
 
 function showPage(n) {
@@ -479,7 +481,9 @@ function renderDetail() {
     · ${card.left_min >= 0 ? `${card.left_min} ${t("min")} ${t("left")}` : `+${-card.left_min} ${t("min")} ${t("over")}`}
     ${card.clock_start > card.arrived_at + 60 ? `· ${esc(t("clock_from_morning", { time: fmtClock(card.clock_start) }))}` : ""}
     ${card.more_for ? `· ${esc(t("more_for", { case: card.more_for }))}` : ""}</div>
+    ${contactLine(card)}
     <div class="chips">${dangerChip(card)}${statusChip(card.status)}${overnightChip(card)}${viewersChip(card)}${(card.alerts || []).map((a) => `<span class="chip alert">${esc(t("al_" + a.code))}</span>`).join("")}</div>
+    ${oddsLine(card)}
     ${ME && card.owner !== ME && !["accepted", "denied", "withdrawn"].includes(card.status) ? `<button class="btn sm" data-act="claim">${esc(t("claim"))}</button>` : ""}</div>
     <button class="btn ghost" id="d-close">${esc(t("close"))}</button></div>`;
 
@@ -800,13 +804,23 @@ $("#find").addEventListener("click", () => {
 });
 $("#find-offline").addEventListener("click", () => findResources(false));
 
-// ---------------------------------------------------------------- staff
-$$(".role").forEach((b) => b.addEventListener("click", () => {
-  if (b.dataset.role === "cm") return goTab("resources");
-  $$(".role").forEach((x) => x.classList.toggle("on", x === b));
-  $("#role-lvn").classList.toggle("hidden", b.dataset.role !== "lvn");
-  $("#role-coord").classList.toggle("hidden", b.dataset.role !== "coord");
-}));
+// ---------------------------------------------------------------- practice panel (staff tools)
+// It opens on the side, so the board stays in view. tool: "note" or "explain" opens that part.
+function openPractice(tool) {
+  $("#practice").classList.remove("hidden");
+  document.body.classList.add("practice-open");
+  $("#open-practice").setAttribute("aria-expanded", "true");
+  if (tool) $("#tool-" + tool).open = true;
+  $("#practice-close").focus();
+}
+function closePractice() {
+  if ($("#practice").classList.contains("hidden")) return;
+  $("#practice").classList.add("hidden");
+  document.body.classList.remove("practice-open");
+  $("#open-practice").setAttribute("aria-expanded", "false");
+}
+$("#open-practice").addEventListener("click", () => ($("#practice").classList.contains("hidden") ? openPractice() : closePractice()));
+$("#practice-close").addEventListener("click", () => { closePractice(); $("#open-practice").focus(); });
 
 $("#make-note").addEventListener("click", async () => {
   const out = $("#note-out");
@@ -848,12 +862,15 @@ $("#explain").addEventListener("click", async () => {
 // ---------------------------------------------------------------- rules browser
 async function renderRules() {
   if (!RULES) RULES = await api("/api/rules");
-  const q = ($("#rule-search").value || "").toLowerCase();
+  // Every word has to match somewhere, in any order, like the patient search.
+  const terms = ($("#rule-search").value || "").toLowerCase().split(/\s+/).filter(Boolean);
   const gaps = Object.fromEntries(RULES.gaps);
   $("#rule-ids").innerHTML = RULES.rules.map((r) => `<option value="${esc(r.id)}">`).join("");
   let section = null;
-  $("#rules-out").innerHTML = RULES.rules
-    .filter((r) => !q || `${r.id} ${r.section} ${r.text}`.toLowerCase().includes(q))
+  const shown = RULES.rules.filter((r) => terms.every((w) => `${r.id} ${r.section} ${r.text}`.toLowerCase().includes(w)));
+  $("#rule-count").textContent = terms.length ? t("find_count", { n: shown.length, total: RULES.rules.length }) : "";
+  if (!shown.length) return ($("#rules-out").innerHTML = `<div class="empty">${esc(t("rules_none"))}</div>`);
+  $("#rules-out").innerHTML = shown
     .map((r) => {
       const head = r.section !== section ? `<h3>${esc((section = r.section))}</h3>` : "";
       return `${head}<div class="rule-item"><b>${esc(r.id)}</b><span class="pill">${esc(r.kind)}</span> ${esc(r.text)}
@@ -985,7 +1002,7 @@ function renderOnboard() {
     store.set("cb_role", OB.role);
     $("#onboard").classList.add("hidden");
     if (OB.role === "cm") goTab("resources");
-    else if (OB.role === "lvn") { goTab("staff"); $('.role[data-role="lvn"]').click(); }
+    else if (OB.role === "lvn") openPractice("note");
     else { goTab("referrals"); if (practice && !STATE.production) $("#start-demo")?.click(); }
   };
   $("#ob-skip")?.addEventListener("click", () => finish(false));
