@@ -8,6 +8,8 @@ How to read the labels:
 - **(lead)**: from our recorded Q&A with IHH's referral lead, who also runs hospital outreach and
   oversees the referral team.
 - **(staff)**: from an earlier, shorter conversation with IHH staff in the room.
+- **(Q&A 2)**: from a second recorded conversation with IHH, about referral outcomes and how staff
+  feel about AI.
 - **unconfirmed**: we think so, but nobody at IHH has confirmed it yet.
 - **placeholder**: a made-up number for illustration. Replace it with IHH's real number (section 12).
 
@@ -28,6 +30,15 @@ purpose.
 - Withdrawals mostly stall in **"communication black holes"**: hospital case managers stop
   answering follow-ups. Today IHH handles this with regular check-ins, escalating to supervisors,
   and more training for case managers. **(lead)**
+- **IHH's own pick for the measure that matters most: fewer withdrawals**, over fuller beds or
+  faster decisions. They see all three as linked. **(Q&A 2)**
+- **Once IHH says yes, most patients come: about 80 to 90%.** A few change their minds at the last
+  minute or are taken somewhere else. So the loss happens before the decision, not after.
+  **(Q&A 2)**
+- **IHH already tracks outcomes.** Each referral ends as accepted, declined or withdrawn (the middle
+  word was unclear in the recording). Their own look at withdrawals found the reasons: the patient
+  left AMA, went to another facility or someone's home, or the hospital was under pressure to
+  discharge and couldn't wait. **(Q&A 2)**
 
 ### How intake works today
 
@@ -82,6 +93,19 @@ purpose.
   health information. **(lead)**
 - Hospital contacts live mostly in Excel, not in a CRM. **(lead)**
 
+### Staff and AI
+
+- Leadership is comfortable with AI and looking for ways to use it. Frontline staff are more
+  hesitant: some worry it will replace them, some have ethical concerns, and many don't yet see how
+  it applies to their work. **IHH is not looking to replace anyone.** **(Q&A 2)**
+- Two barriers to giving staff AI tools: **compliance** (legal and compliance review, a BAA for
+  each tool) and **cost** (enterprise token pricing). **(Q&A 2)**
+- Kipu has built-in AI features that IHH is rolling out: transcription, help with notes and
+  assessments, and mock chart audits that find what's missing before a supervisor does. Uptake has
+  been slow. **(Q&A 2)**
+- IHH wants a baseline of AI comfort across staff before rolling out more tools. The way they see
+  to get there: staff watching AI help with their own day-to-day work. **(Q&A 2)**
+
 ### From the earlier conversation
 
 - The clinical team approves after intake, and an intake yes that clinical then rejects causes
@@ -135,6 +159,8 @@ purpose.
 ## 2. What it changes about the build
 
 **Pitch: "A quarter of referrals walk because we're too slow. Win them back and the beds fill."**
+IHH picked fewer withdrawals as the measure that matters most, so the demo and the README lead
+with it.
 
 The biggest gain is **closing the follow-up gap with hospitals**, not only reading faster. The
 packet review pipeline in `intake-context.md` section 6 stays the core. Around it:
@@ -149,6 +175,12 @@ packet review pipeline in `intake-context.md` section 6 stays the core. Around i
    (section 7).
 6. **English and Spanish throughout:** every screen, status and draft, with one switch
    (`docs/bilingual.md`).
+7. **Built for staff trust.** The coordinator stays in charge, every flag shows its page and quote,
+   and the tool takes the busywork (reading, chasing, retyping) so people spend their time on the
+   decision. Show it as help, never replacement. Challenge 3 (`challenges/3-staff-ai-confidence/`)
+   is about the same worry.
+8. **Cost shown up front.** The eval logs tokens and cost per packet, so IHH can see what running
+   it would take. Cost is one of IHH's two barriers to AI tools.
 
 **Judging constraint:** features that need IHH's live systems to mean anything do not place
 (`docs/judging.md`). Everything here has to run on its own, with a mock inbox and packets read by
@@ -229,8 +261,10 @@ This is where the lost quarter goes.
   peak marks the referral most likely to walk.
 - **Contacts.** Hospital contacts live in Excel today. The prototype reads an invented contact
   sheet. A pilot would read IHH's.
-- **Learn why they walk.** When a referral is withdrawn, record the reason (another placement, AMA,
-  no reply) so the report shows where the quarter goes.
+- **Learn why they walk.** When a referral is withdrawn, record the reason (left AMA, another
+  facility, someone's home, the hospital couldn't wait, no reply) so the report shows where the
+  quarter goes. IHH already sorts outcomes as accepted, declined or withdrawn and has looked at
+  withdrawal reasons, so match their categories once we see them.
 
 ---
 
@@ -396,6 +430,10 @@ A design checklist, not legal advice. IHH's counsel should review it.
 | What tools do they use? | Microsoft 365, Copilot under a BAA, Kipu, Excel |
 | Where do the 2 hours go? | Mostly reviewing. Referrals that end up withdrawn tend to be stuck waiting on the hospital |
 | How do hospitals learn the criteria? | In-person trainings (in-services) for case managers and social workers, plus printed documentation |
+| Do you track why referrals are withdrawn? | Yes. Outcomes are sorted accepted, declined or withdrawn, and IHH has looked at withdrawal reasons |
+| Once accepted, how many patients arrive? | About 80 to 90% |
+| What would show this worked? | Fewer withdrawals, IHH's pick over fuller beds or faster decisions |
+| How do frontline staff feel about AI? | More hesitant than leadership: job worries, ethical concerns, unclear fit with their work |
 
 ### Still open, most important first
 
@@ -407,7 +445,7 @@ A design checklist, not legal advice. IHH's counsel should review it.
    placeholder in the capacity math.
 3. **When a case manager goes quiet, how long do you wait before following up, and who do you
    escalate to?** This sets the chase ladder in section 4.
-4. **When a hospital withdraws, do you hear why?** Is it tracked anywhere?
+4. **Can we see the withdrawal reasons you already use?** So the tool's categories match yours.
 5. **If you could have one thing on Monday, what would it be?** Judges weight IHH's day-one view
    most.
 
@@ -426,7 +464,8 @@ A design checklist, not legal advice. IHH's counsel should review it.
 - When a packet arrives without the IHH form (like R03 and R10), do you review it or send it back?
 - What fields does the hospital contact sheet have: case manager, supervisor, phone, email?
 - For LA and Riverside referrals, which plan pays, and does it auto-authorize like CalOptima?
-- In three months, what number would tell you this worked?
+- In three months, what withdrawal rate would count as success? (IHH named withdrawals as the
+  measure; the target is open.)
 
 ---
 
@@ -438,6 +477,7 @@ A design checklist, not legal advice. IHH's counsel should review it.
 | Busiest times | Start of the week, around 4 PM; weekends quiet **(lead)** |
 | Withdrawn referrals | About half **(lead, estimate)** |
 | Lost to another placement or AMA | About a quarter of all referrals **(lead, estimate)** |
+| Accepted patients who arrive | About 80 to 90% **(Q&A 2, estimate)** |
 | Minutes per referral, start to finish, and the longest step | Unknown |
 | Referrals per day or month | Unknown ("about 150" was said without a unit) |
 | Time spent waiting on hospitals for missing documents | Unknown; the lead said most of the 2 hours is reviewing **(lead)** |
