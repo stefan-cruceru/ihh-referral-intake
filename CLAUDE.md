@@ -33,6 +33,8 @@ designers, and healthcare and nonprofit people. Some have never used a terminal.
   design, gaps, liability guardrails and open questions. Keep business figures out of the repo.
 - `docs/bilingual.md`: everything people see works in English and Spanish: what that covers, how
   to build it, and the word list.
+- `docs/myhappyhealth.md`: how our solution complements My Happy Health, the free AI health service
+  IHH supports. They explain health information to clients; we handle the staff-side referral work.
 
 - `docs/ground-rules.md`: the event rules in full.
 - `docs/background.md`, `docs/glossary.md`: what recuperative care is and what the terms mean.
@@ -54,6 +56,8 @@ designers, and healthcare and nonprofit people. Some have never used a terminal.
 - Say "unknown" when it is unknown. A confident wrong answer is the worst outcome here.
 - **Everything people see is in English and Spanish**: screens, statuses, drafts, the demo and a
   Spanish summary in the README. No hard-coded English in the UI. Follow `docs/bilingual.md`.
+- **Complement My Happy Health; don't duplicate it.** Nothing we build explains health information
+  to clients, and no patient information is ever sent to it. Follow `docs/myhappyhealth.md`.
 - Keep the team's README current as you go. Submissions are due at 4:00 PM.
 - Commit often with clear messages. The team's own work starts after 9:30 AM on the day.
 
