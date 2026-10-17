@@ -68,6 +68,24 @@
       <div id="stats" class="stats"></div>
     </div>
     <div id="peak" class="peak hidden"></div>
+    <div class="finder" role="search">
+      <input type="search" id="find-q" autocomplete="off" data-i18n-ph="find_ph" data-i18n-aria="find_label">
+      <label class="finder-show"><span data-i18n="filter_label"></span>
+        <select id="find-filter">
+          <option value="all" data-i18n="filter_all"></option>
+          <option value="open" data-i18n="filter_open"></option>
+          <option value="late" data-i18n="filter_late"></option>
+          <option value="over" data-i18n="filter_over"></option>
+          <option value="safety" data-i18n="filter_safety"></option>
+          <option value="person" data-i18n="filter_person"></option>
+          <option value="alerts" data-i18n="filter_alerts"></option>
+          <option value="overnight" data-i18n="filter_overnight"></option>
+          <option value="no_kipu" data-i18n="filter_no_kipu"></option>
+        </select>
+      </label>
+      <button class="btn ghost hidden" id="find-clear" data-i18n="find_clear"></button>
+      <span id="find-count" class="muted small" role="status" aria-live="polite"></span>
+    </div>
     <div id="stages" class="stages" role="group"></div>
     <div id="queue" class="queue"></div>
     <!-- Staff alerts: drafts a person sends from Outlook or Teams -->

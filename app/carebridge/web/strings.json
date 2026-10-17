@@ -2194,5 +2194,69 @@
  "err_unknown_rule": {
   "en": "We don't know that rule.",
   "es": "No conocemos esa regla."
+ },
+ "find_label": {
+  "en": "Search patients",
+  "es": "Buscar pacientes"
+ },
+ "find_ph": {
+  "en": "Search: case number, hospital, owner, Kipu number…",
+  "es": "Buscar: número de caso, hospital, encargado, número de Kipu…"
+ },
+ "find_clear": {
+  "en": "Clear",
+  "es": "Borrar"
+ },
+ "find_count": {
+  "en": "Showing {n} of {total}",
+  "es": "Se ven {n} de {total}"
+ },
+ "find_none": {
+  "en": "No patients match. Try other words or pick \"Everyone\".",
+  "es": "Ningún paciente coincide. Pruebe otras palabras o elija \"Todos\"."
+ },
+ "filter_label": {
+  "en": "Show",
+  "es": "Mostrar"
+ },
+ "filter_all": {
+  "en": "Everyone",
+  "es": "Todos"
+ },
+ "filter_open": {
+  "en": "Still open",
+  "es": "Todavía abiertos"
+ },
+ "filter_late": {
+  "en": "30 minutes or less left",
+  "es": "Quedan 30 minutos o menos"
+ },
+ "filter_over": {
+  "en": "Past the 2 hours",
+  "es": "Pasaron las 2 horas"
+ },
+ "filter_safety": {
+  "en": "Safety flag",
+  "es": "Aviso de seguridad"
+ },
+ "filter_person": {
+  "en": "Pages a person must read",
+  "es": "Páginas que debe leer una persona"
+ },
+ "filter_alerts": {
+  "en": "Has an alert",
+  "es": "Tiene un aviso"
+ },
+ "filter_overnight": {
+  "en": "Came in overnight",
+  "es": "Llegó de noche"
+ },
+ "filter_no_kipu": {
+  "en": "Arrived, no Kipu number yet",
+  "es": "Llegó, sin número de Kipu"
+ },
+ "where_step": {
+  "en": "Step {n} of {total}",
+  "es": "Paso {n} de {total}"
  }
 }
