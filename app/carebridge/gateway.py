@@ -43,6 +43,58 @@ ROUTES = [
 ]
 
 
+# Error messages the server sends to the screen. Each gets a stable code; the screen shows the words
+# for "err_<code>" from strings.json in the chosen language. "error" keeps the English as a fallback.
+ERROR_CODES = [
+    (r"not found$", "not_found"),
+    (r"empty file$", "empty_file"),
+    (r"No packet file for this referral\.$", "no_packet"),
+    (r"No review yet\.$", "no_review"),
+    (r"No clinical reviewer on the staff list\.$", "no_clinical"),
+    (r"Pick your name first\.$", "pick_name"),
+    (r"Only the clinical reviewer writes clinical notes\.$", "only_clinical_notes"),
+    (r"Type the note first\.$", "type_note"),
+    (r"Unknown check\.$", "unknown_check"),
+    (r"Only the clinical line can deny a referral\.$", "only_clinical_deny"),
+    (r"A clinical reviewer must read page\(s\) (?P<pages>.+) before this can be accepted\.$", "read_pages"),
+    (r"unknown action ", "unknown_action"),
+    (r"A person needs a name\.$", "person_name"),
+    (r"unknown status ", "unknown_status"),
+    (r"Type a name ", "type_name"),
+    (r"Type a work email", "type_email"),
+    (r"Pick a role\.$", "pick_role"),
+    (r"Someone already uses that email\.$", "email_taken"),
+    (r"No one with that email\.$", "no_email"),
+    (r"Accounts come from IHH's Microsoft sign-in", "accounts_entra"),
+    (r"Roles come from IHH's Microsoft Entra", "roles_entra"),
+    (r"Kipu is turned off", "kipu_off"),
+    (r"Writing to Kipu is turned off", "kipu_write_off"),
+    (r"Live Kipu needs ", "kipu_keys"),
+    (r"Could not reach Kipu", "kipu_unreachable"),
+    (r"Kipu said ", "kipu_said"),
+    (r"This referral already has a Kipu chart \((?P<id>[^)]*)\)\.$", "kipu_has_chart"),
+    (r"Needs a Kipu chart and a packet first\.$", "kipu_needs_packet"),
+    (r"Needs a Kipu chart, a review and a decision first\.$", "kipu_needs_decision"),
+    (r"unknown step$", "unknown_step"),
+]
+
+
+def error(msg: str, code: str | None = None) -> dict:
+    """{"error": English text, "code": stable code, "vars": values for the words} for a JSON reply."""
+    out = {"error": msg}
+    if code:
+        out["code"] = code
+        return out
+    for rx, c in ERROR_CODES:
+        m = re.match(rx, msg)
+        if m:
+            out["code"] = c
+            if m.groupdict():
+                out["vars"] = m.groupdict()
+            break
+    return out
+
+
 def permission(method: str, path: str) -> tuple[bool, str | None]:
     """(listed, permission) for a request. Unlisted GETs are reads anyone signed in may do."""
     for m, rx, perm in ROUTES:
@@ -154,6 +206,12 @@ W = {
     "role_lead": ("lead", "líder"),
     "role_clinical": ("clinical", "clínico"),
     "role_admin": ("admin (IT)", "admin (TI)"),
+    # Errors the referral can send back when someone acts from a Teams link (codes from error()).
+    "err_pick_name": ("Pick your name first.", "Primero escoja su nombre."),
+    "err_only_clinical_deny": ("Only the clinical line can say no to a referral.",
+                               "Solo la línea clínica puede decir que no a un referido."),
+    "err_read_pages": ("A clinical reviewer must read page(s) {pages} before this can be a yes.",
+                       "Una persona de revisión clínica debe leer la(s) página(s) {pages} antes de decir que sí."),
 }
 # Messages auth.py raises in English, shown back on the sign-in page.
 ERRORS_ES = {
@@ -363,10 +421,10 @@ def handle(h, method: str) -> bool:
             else:
                 who = auth.set_role(b.get("email", ""), b.get("role", ""))
         except PermissionError as e:
-            h._json({"error": str(e)}, 409)
+            h._json(error(str(e)), 409)
             return True
         except ValueError as e:
-            h._json({"error": str(e)}, 400)
+            h._json(error(str(e)), 400)
             return True
         audit(h, "practice person added" if b.get("add") else "role changed", f"{who['email']} to {who['role']}")
         h._json({"ok": True, "person": who})
@@ -407,9 +465,9 @@ def handle(h, method: str) -> bool:
         try:
             _kipu(h, method, p, parts)
         except kipu.KipuOff as e:
-            h._json({"error": str(e), "mode": "off"}, 409)
+            h._json({**error(str(e)), "mode": "off"}, 409)
         except kipu.KipuError as e:
-            h._json({"error": str(e)}, 502)
+            h._json(error(str(e)), 502)
         return True
     return False
 
@@ -445,7 +503,10 @@ def _go(h, method: str, token: str):
     try:
         webapp.TRACK.act(card["id"], data["a"], me["name"], f"{reason} (from Teams link)", role=auth.act_role(me))
     except ValueError as e:
-        return _page(h, str(e), f"<h1>{escape(str(e))}</h1>", 400, lang=lg)
+        got = error(str(e))
+        key = "err_" + got.get("code", "")
+        msg = w(key, **got.get("vars", {})) if key in W else escape(str(e))
+        return _page(h, msg, f"<h1>{msg}</h1>", 400, lang=lg)
     _page(h, w("done", label=label), f"<h1>{w('done', label=label)}</h1><p class='m'>{w('logged', who=me['name'])}</p>"
           f"<a class='b' href='/'>{w('open_board')}</a>", lang=lg)
 
@@ -454,13 +515,13 @@ def _teams_card(h, cid: str, q: dict):
     from . import webapp
 
     if cid not in webapp.TRACK.cards:
-        return h._json({"error": "not found"}, 404)
+        return h._json(error("not found"), 404)
     rep = webapp.card_report(cid)
     if not rep:
-        return h._json({"error": "No review yet."}, 400)
+        return h._json(error("No review yet."), 400)
     to = auth.lookup(q.get("to", "")) or next((s for s in auth.staff() if s["role"] == "clinical"), None)
     if not to:
-        return h._json({"error": "No clinical reviewer on the staff list."}, 400)
+        return h._json(error("No clinical reviewer on the staff list."), 400)
     base = f"http://{h.headers.get('Host', '127.0.0.1')}"
     h._json({"to": to, "card": teams.review_card(webapp.TRACK.view(cid), rep, to, base, q.get("lang", "en")),
              "note": "Draft. Paste into a Teams chat with this person (or let a Power Automate flow post it). Nothing was sent."})
@@ -474,8 +535,11 @@ def _kipu(h, method: str, p: str, parts: list[str]):
         # The background readiness checks (kipu_check.py). Reading them never writes to Kipu.
         return h._json(kipu_check.summary(webapp.TRACK))
     if p == "/api/kipu/status" and method == "GET":
+        # Live Kipu holds real records: it is read only when a person clicks "Load from Kipu" (?load=1),
+        # never just because the page opened. Practice Kipu loads on its own.
         out = {"mode": kipu.mode(), "write": kipu.write_enabled()}
-        if kipu.mode() != "off":
+        load = parse_qs(urlparse(h.path).query).get("load") == ["1"]
+        if kipu.mode() == "mock" or (kipu.mode() == "live" and load):
             out["census"] = kipu.census()
             out["pending"] = len(kipu.pending_referrals())
         return h._json(out)
@@ -502,30 +566,30 @@ def _kipu(h, method: str, p: str, parts: list[str]):
         cid = parts[2]
         card = webapp.TRACK.cards.get(cid)
         if not card:
-            return h._json({"error": "not found"}, 404)
+            return h._json(error("not found"), 404)
         b = h._jbody()
         step = b.get("step")
         rep = webapp.card_report(cid)
         if step == "create_chart":
             if card.get("kipu_id"):
-                return h._json({"error": f"This referral already has a Kipu chart ({card['kipu_id']})."}, 409)
+                return h._json(error(f"This referral already has a Kipu chart ({card['kipu_id']})."), 409)
             fields = dict(drafts.handoffs(webapp.TRACK.view(cid), rep, "en")["kipu_fields"])
             res = kipu.create_chart(fields, me["name"])
             card["kipu_id"] = res.get("id") or card.get("kipu_id")
         elif step == "file_documents":
             if not card.get("kipu_id") or cid not in webapp.PACKETS:
-                return h._json({"error": "Needs a Kipu chart and a packet first."}, 400)
+                return h._json(error("Needs a Kipu chart and a packet first."), 400)
             data, name = webapp.PACKETS[cid]
             res = kipu.file_documents(card["kipu_id"], name, data, me["name"])
         elif step == "intake_note":
             if not card.get("kipu_id") or not rep or not card.get("decision"):
-                return h._json({"error": "Needs a Kipu chart, a review and a decision first."}, 400)
+                return h._json(error("Needs a Kipu chart, a review and a decision first."), 400)
             res = kipu.add_intake_note(card["kipu_id"], rep, card["decision"], me["name"])
         else:
-            return h._json({"error": "unknown step"}, 400)
+            return h._json(error("unknown step"), 400)
         webapp.TRACK.log(cid, me["name"] or "staff", f"Kipu: {step}", f"chart {card.get('kipu_id')}")
         return h._json({"ok": True, "kipu_id": card.get("kipu_id"), "result": res})
-    h._json({"error": "not found"}, 404)
+    h._json(error("not found"), 404)
 
 
 def sync(me: dict | None = None) -> dict:

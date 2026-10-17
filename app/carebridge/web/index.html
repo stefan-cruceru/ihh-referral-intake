@@ -28,10 +28,10 @@
 <a class="tab-link" href="/static/audit.html" data-permission="audit_view"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></svg><span data-i18n="tab_audit"></span></a>
   </nav>
   <div class="right">
-    <div class="lang" role="group" aria-label="Language">
+    <div class="lang" role="group" data-i18n-aria="aria_lang">
       <button data-lang="en">English</button><button data-lang="es">Español</button>
     </div>
-    <button class="icon" id="open-settings" aria-label="Settings">
+    <button class="icon" id="open-settings" data-i18n-aria="settings">
       <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
     </button>
   </div>
@@ -76,7 +76,7 @@
       <div class="row" style="justify-content:space-between">
         <h3><span data-i18n="outbox_title"></span> <span class="count hidden" id="outbox-count"></span></h3>
         <div class="row" style="margin:0">
-          <select id="outbox-person" style="width:auto" aria-label="Person"></select>
+          <select id="outbox-person" style="width:auto" data-i18n-aria="aria_person"></select>
           <label class="small"><input type="checkbox" id="outbox-done" style="width:auto"> <span data-i18n="outbox_show_done"></span></label>
         </div>
       </div>

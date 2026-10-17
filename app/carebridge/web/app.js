@@ -19,11 +19,15 @@ const t = (k, vars) => {
   return s;
 };
 
+// The server sends a stable error code; the words come from strings.json ("err_<code>").
+// Its English "error" text is only a fallback.
+const errText = (j, fallback) => (j.code && S["err_" + j.code] ? t("err_" + j.code, j.vars) : j.error || fallback);
+
 async function api(path, opts = {}) {
   const r = await fetch(path, { headers: { "Content-Type": "application/json" }, ...opts });
   const j = await r.json().catch(() => ({}));
   if (r.status === 403 && j.error === "not_allowed") throw new Error(t("not_allowed"));
-  if (!r.ok) throw new Error(j.error || r.statusText);
+  if (!r.ok) throw new Error(errText(j, r.statusText));
   return j;
 }
 const post = (path, body) => api(path, { method: "POST", body: JSON.stringify(body || {}) });
@@ -38,8 +42,10 @@ function toast(msg) {
 
 function applyI18n() {
   document.documentElement.lang = LANG;
+  document.title = t("page_title");
   $$("[data-i18n]").forEach((el) => (el.textContent = t(el.dataset.i18n)));
   $$("[data-i18n-ph]").forEach((el) => (el.placeholder = t(el.dataset.i18nPh)));
+  $$("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t(el.dataset.i18nAria)));
   $$(".lang button").forEach((b) => b.classList.toggle("on", b.dataset.lang === LANG));
   $("#situation").placeholder = t("res_ph");
 }
@@ -330,7 +336,7 @@ async function upload(file) {
   if (!file) return;
   const r = await fetch("/api/upload", { method: "POST", headers: { "X-Filename": file.name }, body: file });
   const j = await r.json();
-  if (!r.ok) return toast(j.error ? t(j.error) : t("error"));
+  if (!r.ok) return toast(j.code ? errText(j, t("error")) : j.error ? t(j.error) : t("error"));
   if (!STATE.has_key) toast(t("need_key"));
   openCard(j.card.id);
 }
@@ -773,7 +779,7 @@ $("#explain").addEventListener("click", async () => {
   out.innerHTML = `<div class="progress"><div class="spinner"></div></div>`;
   try {
     const r = await post("/api/staff/explain", { rule_id: $("#explain-id").value, lang: LANG });
-    if (r.error) return (out.innerHTML = `<div class="phi">${esc(r.error)}</div>`);
+    if (r.error) return (out.innerHTML = `<div class="phi">${esc(r.error === "unknown rule" ? t("err_unknown_rule") : r.error)}</div>`);
     out.innerHTML = `<div class="panel"><div class="muted small">${esc(t("rule_text"))} · ${esc(r.rule.id)}</div><p><i>${esc(r.rule.text)}</i></p>
       ${r.gap ? `<p class="phi">${esc(t("gap"))}: ${esc(r.gap)}</p>` : ""}
       <p>${esc(r.plain)}</p><h3>${esc(t("look_in"))}</h3><ul>${r.look_in.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>

@@ -44,8 +44,8 @@
   </section>
   <section class="a-box">
     <div class="a-row">
-      <input id="case" maxlength="24" aria-label="case">
-      <select id="kind" aria-label="kind"></select>
+      <input id="case" maxlength="24">
+      <select id="kind"></select>
       <label class="a-m"><input type="checkbox" id="practice" checked> <span id="l-practice"></span></label>
       <button class="a-btn" id="go"></button>
       <a class="a-btn" id="csv" href="/api/audit-log?format=csv"></a>
@@ -65,7 +65,7 @@ const T = {
   bad: ["Seal check failed at line {at}. Ask IT to review the file.", "El sello no coincide en la línea {at}. Pida a TI que revise el archivo."],
   why: ["The app has no action to edit or delete log entries. This check verifies the seals of entries still present. It cannot detect removal of the newest entries or the whole log. IT must protect and back up the files. Packet text and clinical notes are not kept here.",
         "La app no permite editar ni borrar entradas del registro. Esta revisión comprueba los sellos de las entradas que siguen guardadas. No detecta si se borraron las entradas más recientes o todo el registro. TI debe proteger los archivos y guardar copias. Aquí no se guarda el texto del paquete ni las notas clínicas."],
-  case_ph: ["Case number", "Número de caso"], l_practice: ["Show practice", "Mostrar práctica"],
+  case_ph: ["Case number", "Número de caso"], kind: ["What to show", "Qué mostrar"], l_practice: ["Show practice", "Mostrar práctica"],
   go: ["Show", "Mostrar"], csv: ["Download (CSV)", "Descargar (CSV)"],
   k_all: ["Everything", "Todo"], k_decision: ["Decisions only", "Solo decisiones"], k_ai: ["AI steps only", "Solo pasos de la IA"], k_people: ["Sign-in, roles, settings", "Entradas, roles, ajustes"],
   th_n: ["#", "#"], th_t: ["When", "Cuándo"], th_case: ["Case", "Caso"], th_who: ["Who", "Quién"], th_role: ["Role", "Rol"],
@@ -93,11 +93,14 @@ function kindOf(r) {
 
 function render() {
   document.documentElement.lang = LANG;
+  document.title = t("title");
   for (const id of ["back", "title", "go", "csv", "why"]) $("#" + id).textContent = t(id);
   $("#h-check").textContent = t("h_check");
   $("#l-practice").textContent = t("l_practice");
   $("#lang").textContent = LANG === "es" ? "English" : "Español";
   $("#case").placeholder = t("case_ph");
+  $("#case").setAttribute("aria-label", t("case_ph"));
+  $("#kind").setAttribute("aria-label", t("kind"));
   const k = $("#kind").value || "all";
   $("#kind").innerHTML = ["all", "decision", "ai", "people"].map((x) => `<option value="${x}"${x === k ? " selected" : ""}>${esc(t("k_" + x))}</option>`).join("");
   if (!D) return;

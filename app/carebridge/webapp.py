@@ -407,7 +407,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"docs": send_page_checklist()})
             if p == "/send/status":
                 got = send_page_status(q.get("case", [""])[0], q.get("key", [""])[0], q.get("lang", ["en"])[0])
-                return self._json(got) if got else self._json({"error": "not found"}, 404)
+                return self._json(got) if got else self._json(gateway.error("not found"), 404)
             if p.startswith("/static/"):
                 return self._static(p[len("/static/"):])
             if p == "/api/state":
@@ -438,7 +438,7 @@ class Handler(BaseHTTPRequestHandler):
             if parts[:2] == ["api", "cards"] and len(parts) >= 3:
                 cid = parts[2]
                 if cid not in TRACK.cards:
-                    return self._json({"error": "not found"}, 404)
+                    return self._json(gateway.error("not found"), 404)
                 if len(parts) == 3:
                     r = REVIEWS.get(cid)
                     rep_ = card_report(cid)
@@ -466,10 +466,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(TRACK.audit[-300:])
             if p.startswith("/api/notify"):
                 return self._notify_get(p, q)
-            return self._json({"error": "not found"}, 404)
+            return self._json(gateway.error("not found"), 404)
         except Exception as e:
             traceback.print_exc()
-            return self._json({"error": str(e)}, 500)
+            return self._json(gateway.error(str(e), "server"), 500)
 
     def do_POST(self):
         if not self._local_only():
@@ -490,7 +490,7 @@ class Handler(BaseHTTPRequestHandler):
             if p == "/api/key":
                 key = self._jbody().get("key", "").strip()
                 if not key.startswith("sk-ant-"):
-                    return self._json({"error": "That doesn't look like a Claude API key (it starts with sk-ant-)."}, 400)
+                    return self._json(gateway.error("That doesn't look like a Claude API key (it starts with sk-ant-).", "bad_key"), 400)
                 config.set_api_key(key)
                 gateway.audit(self, "Claude API key set")
                 return self._json({"ok": True})
@@ -501,7 +501,7 @@ class Handler(BaseHTTPRequestHandler):
             if p == "/send/upload":
                 data = self._body()
                 if not data:
-                    return self._json({"error": "empty file"}, 400)
+                    return self._json(gateway.error("empty file"), 400)
                 name = re.sub(r"[^\w .()-]", "_", Path(self.headers.get("X-Filename") or "packet.pdf").name)[:120]
                 if not name.lower().endswith((".pdf", ".tif", ".tiff")):
                     return self._json({"error": "pdf_only"}, 400)
@@ -532,7 +532,7 @@ class Handler(BaseHTTPRequestHandler):
                 data = self._body()
                 name = re.sub(r"[^\w .()-]", "_", Path(self.headers.get("X-Filename") or "packet.pdf").name)[:120]
                 if not data:
-                    return self._json({"error": "empty file"}, 400)
+                    return self._json(gateway.error("empty file"), 400)
                 if name.lower().endswith(".eml"):
                     case = self.headers.get("X-Case") or ""
                     if not re.fullmatch(r"[A-Za-z0-9-]{1,24}", case) or case in TRACK.cards:
@@ -553,10 +553,10 @@ class Handler(BaseHTTPRequestHandler):
             if parts[:2] == ["api", "cards"] and len(parts) == 4:
                 cid, what = parts[2], parts[3]
                 if cid not in TRACK.cards:
-                    return self._json({"error": "not found"}, 404)
+                    return self._json(gateway.error("not found"), 404)
                 if what == "review":
                     if cid not in PACKETS:
-                        return self._json({"error": "No packet file for this referral."}, 400)
+                        return self._json(gateway.error("No packet file for this referral."), 400)
                     if not config.get_api_key():
                         return self._json({"error": "no_key"}, 400)
                     start_review(cid)
@@ -573,7 +573,7 @@ class Handler(BaseHTTPRequestHandler):
                                       role=auth.act_role(me),
                                       target=b.get("who") if b["action"] == "handoff" else None)
                     except ValueError as e:
-                        return self._json({"error": str(e)}, 400)
+                        return self._json(gateway.error(str(e)), 400)
                     return self._json({"card": TRACK.view(c["id"])})
             if p == "/api/resources":
                 b = self._jbody()
@@ -583,7 +583,7 @@ class Handler(BaseHTTPRequestHandler):
                 try:
                     return self._json({"card": send_profile(p.split("/")[3])})
                 except KeyError:
-                    return self._json({"error": "not found"}, 404)
+                    return self._json(gateway.error("not found"), 404)
             if p == "/api/handout":
                 b = self._jbody()
                 # client_name goes onto the printed page only: not logged, not stored, not sent to Claude,
@@ -602,14 +602,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(staff.explain_rule(b.get("rule_id", ""), b.get("lang", "en")))
             if p.startswith("/api/notify"):
                 return self._notify_post(p)
-            return self._json({"error": "not found"}, 404)
+            return self._json(gateway.error("not found"), 404)
         except guard.Blocked as e:
             return self._json({"error": "security_block", "findings": e.threat["findings"]}, 422)
         except llm.LLMError as e:
-            return self._json({"error": str(e)}, 502)
+            return self._json(gateway.error(str(e), "ai"), 502)
         except Exception as e:
             traceback.print_exc()
-            return self._json({"error": str(e)}, 500)
+            return self._json(gateway.error(str(e), "server"), 500)
 
     def _static(self, rel: str):
         if rel == "lamplight-logo.svg":
@@ -617,7 +617,7 @@ class Handler(BaseHTTPRequestHandler):
         base = (BUNDLE / "web").resolve()
         f = (base / rel).resolve()
         if base not in f.parents and f != base or not f.is_file():
-            return self._json({"error": "not found"}, 404)
+            return self._json(gateway.error("not found"), 404)
         ctype = mimetypes.guess_type(f.name)[0] or "application/octet-stream"
         if ctype.startswith("text/") or ctype in ("application/javascript", "application/json"):
             ctype += "; charset=utf-8"
@@ -633,7 +633,7 @@ class Handler(BaseHTTPRequestHandler):
         pid = parts[0]
         prof = next((x for x in synthetic.profiles() if x["id"] == pid), None)
         if not prof:
-            return self._json({"error": "not found"}, 404)
+            return self._json(gateway.error("not found"), 404)
         if len(parts) == 1:
             return self._json({"profile": prof, "review": _demo_samples().get(pid)})
         if len(parts) == 2 and parts[1] == "handout.pdf":
@@ -653,9 +653,9 @@ class Handler(BaseHTTPRequestHandler):
             path = synthetic.packet_path(pid)
             pages = load_packet(path.read_bytes(), path.name) if path else []
             if not 1 <= n <= len(pages):
-                return self._json({"error": "not found"}, 404)
+                return self._json(gateway.error("not found"), 404)
             return self._send(200, pages[n - 1].jpeg(long_edge=1400), "image/jpeg")
-        return self._json({"error": "not found"}, 404)
+        return self._json(gateway.error("not found"), 404)
 
     def _page(self, cid: str, n: int):
         r = REVIEWS.get(cid)
@@ -670,7 +670,7 @@ class Handler(BaseHTTPRequestHandler):
                     if meta:
                         pg.rotation = meta["rotation"]
         if not pages or not 1 <= n <= len(pages):
-            return self._json({"error": "not found"}, 404)
+            return self._json(gateway.error("not found"), 404)
         return self._send(200, pages[n - 1].jpeg(upright=True, long_edge=1400), "image/jpeg")
 
     def _drafts(self, cid: str, lang: str) -> dict:
@@ -709,14 +709,14 @@ class Handler(BaseHTTPRequestHandler):
         if len(parts) >= 3 and parts[2].split(".")[0].isdigit():
             row = notify.get(int(parts[2].split(".")[0]), TRACK.staff)
             if not row:
-                return self._json({"error": "not found"}, 404)
+                return self._json(gateway.error("not found"), 404)
             if parts[2].endswith(".eml") and row["channel"] == "email":
                 return self._send(200, notify.eml(row), "message/rfc822",
                                   {"Content-Disposition": f'attachment; filename="{row["case_no"]}-{row["event"]}.eml"'})
             if len(parts) == 4 and parts[3] == "card.json" and row["channel"] == "teams":
                 return self._send(200, json.dumps(row["card"] or {}, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8",
                                   {"Content-Disposition": f'attachment; filename="{row["case_no"]}-{row["event"]}.json"'})
-        return self._json({"error": "not found"}, 404)
+        return self._json(gateway.error("not found"), 404)
 
     def _notify_post(self, p: str):
         from . import notify
@@ -731,14 +731,14 @@ class Handler(BaseHTTPRequestHandler):
                 me = gateway.person(self) if auth.mode() != "off" else None
                 row = store.get_notification(int(parts[2]))
                 if not row:
-                    return self._json({"error": "not found"}, 404)
+                    return self._json(gateway.error("not found"), 404)
                 if me and row["person"] != me["name"] and not auth.can(me, "alert_mark_any"):
                     return self._json({"error": "not_allowed", "needs": "alert_mark_any"}, 403)
                 notify.mark(int(parts[2]), b.get("status", ""), me["name"] if me else b.get("who", ""))
                 return self._json({"ok": True})
         except ValueError as e:
-            return self._json({"error": str(e)}, 400)
-        return self._json({"error": "not found"}, 404)
+            return self._json(gateway.error(str(e)), 400)
+        return self._json(gateway.error("not found"), 404)
 
 
 _LAND = threading.Lock()
