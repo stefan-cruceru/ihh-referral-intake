@@ -80,8 +80,9 @@ write about them. It does **not** run Care Bridge's packet checker, because it c
 program on your computer. So it has no page-by-page quote check.
 
 **For a pilot:** run the Care Bridge engine as a web service inside IHH's Microsoft setup, under
-IHH's BAA, and point the agent at it. The app already answers MCP requests at `POST /mcp`. That
-connection is not built yet.
+IHH's BAA, and point the agent at it. The app already answers MCP requests at `POST /mcp`, which
+needs a signed-in person's token and checks their role for each tool
+(see [docs/kipu-and-teams.md](../docs/kipu-and-teams.md#sign-in)). That connection is not built yet.
 
 ## Privacy
 

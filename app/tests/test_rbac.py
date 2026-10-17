@@ -159,3 +159,42 @@ def test_every_tracker_action_is_in_the_permission_table():
         actions |= set(re.findall(r'"([a-z_]+)"', group))
     missing = sorted(a for a in actions if f"act:{a}" not in auth.PERMISSIONS)
     assert not missing, f"add these to auth.PERMISSIONS: {missing}"
+
+
+def test_once_microsoft_is_set_up_it_is_the_only_way_in(monkeypatch):
+    assert auth.mode() == "practice"  # no Microsoft IDs: practice by default
+    monkeypatch.setenv("CAREBRIDGE_AUTH", "off")
+    assert auth.mode() == "off"  # allowed on a laptop with no Microsoft set up
+    monkeypatch.setenv("CAREBRIDGE_TEAMS_TENANT", "tenant-1")
+    monkeypatch.setenv("CAREBRIDGE_TEAMS_CLIENT_ID", "client-1")
+    for asked in ("off", "practice", "teams"):
+        monkeypatch.setenv("CAREBRIDGE_AUTH", asked)
+        assert auth.mode() == "teams"
+
+
+def _mcp(base, msg, token=None):
+    headers = {"Content-Type": "application/json"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    try:
+        r = urllib.request.urlopen(urllib.request.Request(base + "/mcp", data=json.dumps(msg).encode(), headers=headers))
+        return r.status, json.load(r)
+    except urllib.error.HTTPError as e:
+        return e.code, None
+
+
+def test_mcp_over_http_needs_sign_in_and_a_role():
+    base, _ = _serve()
+    call = {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+            "params": {"name": "review_referral_packet", "arguments": {"practice_patient": "P01"}}}
+    assert _mcp(base, call)[0] == 401  # no sign-in, no tools
+    assert _mcp(base, call, token="made-up")[0] == 401
+    bea = _browser(base, BEA["email"])
+    code, out = bea("/api/me/token", {})
+    assert code == 200 and out["token"]
+    code, listed = _mcp(base, {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}, out["token"])
+    assert code == 200 and listed["result"]["tools"]
+    # An admin (IT) token may not run a packet review: that needs a referral-team role.
+    it_token = auth.start_session(IT, "token")
+    code, res = _mcp(base, call, it_token)
+    assert code == 200 and res["result"]["isError"] and "role" in res["result"]["content"][0]["text"]

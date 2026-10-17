@@ -323,8 +323,11 @@ def complete(arg: str, value: str) -> list[str]:
     return []
 
 
-def handle(msg: dict) -> dict | None:
-    """One JSON-RPC message in, one response out (None for notifications)."""
+def handle(msg: dict, allow=None) -> dict | None:
+    """One JSON-RPC message in, one response out (None for notifications).
+
+    allow(tool_name) -> bool is the signed-in person's role check (HTTP /mcp). The local stdio
+    server passes none: it runs as the Windows user who started it."""
     mid = msg.get("id")
     method = msg.get("method")
     if mid is None:
@@ -355,6 +358,9 @@ def handle(msg: dict) -> dict | None:
             result = {"completion": {"values": vals, "total": len(vals), "hasMore": False}}
         elif method == "tools/call":
             p = msg.get("params") or {}
+            if allow is not None and not allow(p.get("name")):
+                return {"jsonrpc": "2.0", "id": mid, "result": {"isError": True, "content": [
+                    {"type": "text", "text": "Your Care Bridge role can't run this tool. Ask your lead."}]}}
             try:
                 text, err = call_tool(p.get("name"), p.get("arguments") or {}), False
             except KeyError:

@@ -29,9 +29,22 @@ Teams on its own.
 
 | Mode | What happens |
 |---|---|
-| `practice` (default) | Pick a made-up staff member. Looks like a Teams sign-in. Never calls Microsoft |
+| `practice` (default before IT sets up Microsoft) | Pick a made-up staff member. Looks like a Teams sign-in. Never calls Microsoft |
 | `teams` | Sign in with the Microsoft work account people use for Teams (Microsoft Entra ID) |
-| `off` | No sign-in, for a single-user laptop |
+| `off` | No sign-in, for a single-user laptop with no Microsoft set up |
+
+**Once IT sets the tenant and client IDs, Microsoft sign-in is the only way in.** `practice` and
+`off` are refused whatever the setting says, since practice sign-in lets anyone pick a made-up
+clinician. There is no switch in the app to turn sign-in off.
+
+**Agents and MCP.** Copilot in VS Code and Claude Desktop start Care Bridge on the same computer
+(stdio) and run as the Windows user who started them. An agent that calls the app over the network
+(`POST /mcp`, for example a Microsoft 365 Copilot agent in a pilot) must sign in. A signed-in
+person makes a personal token (`POST /api/me/token`), and the agent sends it as
+`Authorization: Bearer <token>`. Each tool then follows that person's role: a packet review needs a
+referral-team role. Tokens last as long as a sign-in (12 hours) and end when the app restarts.
+A pilot that wants agents to sign in with Entra directly needs Entra-issued access tokens checked
+against Microsoft's signing keys. Not built.
 
 Microsoft says **who** you are. **What you may do** comes from IHH's own Microsoft Entra ID: IT
 gives each person (or a security group) a Care Bridge app role, and the role arrives in the sign-in

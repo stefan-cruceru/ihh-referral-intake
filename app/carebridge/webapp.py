@@ -368,7 +368,8 @@ class Handler(BaseHTTPRequestHandler):
         p = urlparse(self.path).path
         try:
             if p == "/mcp":
-                resp = mcp.handle(self._jbody())
+                me = gateway.person(self)
+                resp = mcp.handle(self._jbody(), allow=lambda tool: auth.can(me, auth.MCP_TOOLS.get(tool, "staff_tools")))
                 return self._json(resp) if resp else self._send(202, b"", "text/plain")
             if p == "/api/key":
                 key = self._jbody().get("key", "").strip()

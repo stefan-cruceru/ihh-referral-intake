@@ -10,7 +10,9 @@ from urllib.parse import parse_qs, quote, urlparse
 
 from . import auth, config, drafts, kipu, teams
 
-OPEN = ("/static/", "/auth/", "/go/", "/mcp", "/api/state")
+# /mcp is not open: an agent calling it over HTTP signs in with a personal token (/api/me/token).
+# The local stdio MCP server (Copilot in VS Code, Claude Desktop) runs as the Windows user instead.
+OPEN = ("/static/", "/auth/", "/go/", "/api/state")
 
 # Which permission (auth.PERMISSIONS) each changing route needs. Checked here for every request so a
 # route cannot forget it. Any POST under /api/ that is not listed is refused (fail closed).
@@ -31,6 +33,8 @@ ROUTES = [
     ("POST", re.compile(r"^/api/notify/people$"), "people_edit"),
     ("POST", re.compile(r"^/api/notify/\d+/mark$"), "alert_mark"),
     ("POST", re.compile(r"^/api/(resources|handout|phi-check|staff/note|staff/explain)$"), "staff_tools"),
+    ("POST", re.compile(r"^/api/me/token$"), "mcp_token"),
+    ("POST", re.compile(r"^/mcp$"), None),  # each tool is checked in mcp.handle
 ]
 
 
@@ -43,7 +47,7 @@ def permission(method: str, path: str) -> tuple[bool, str | None]:
 
 
 def person(h) -> dict | None:
-    return auth.session(h.headers.get("Cookie"))
+    return auth.session(h.headers.get("Cookie")) or auth.bearer_session(h.headers.get("Authorization"))
 
 
 def allowed(h, path: str) -> bool:
@@ -53,7 +57,7 @@ def allowed(h, path: str) -> bool:
         return True
     me = person(h)
     if not me:
-        if path.startswith("/api/"):
+        if path.startswith(("/api/", "/mcp")):
             h._json({"error": "sign_in", "sign_in": "/auth/signin"}, 401)
         else:
             h._send(302, b"", "text/plain", {"Location": f"/auth/signin?next={quote(h.path)}"})
@@ -143,6 +147,15 @@ def handle(h, method: str) -> bool:
             # What this person may do, so the screen can hide buttons it would refuse anyway.
             out["can"] = sorted(k for k in auth.PERMISSIONS if auth.can(me, k))
         h._json(out, 200 if me else 401)
+        return True
+    if p == "/api/me/token" and method == "POST":
+        # A token for an agent to call /mcp as this person, with this person's roles. Same lifetime
+        # as a sign-in; making a new one does not end the old ones.
+        me = person(h)
+        who = {k: me.get(k) for k in ("email", "name", "role", "roles")}
+        token = auth.start_session(who, "token")
+        h._json({"token": token, "hours": auth.SESSION_HOURS,
+                 "use": "Authorization: Bearer <token> on POST /mcp. Treat it like a password."})
         return True
     # ---- Teams card links ----
     if p.startswith("/go/"):
