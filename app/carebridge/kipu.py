@@ -138,7 +138,10 @@ def client() -> Client:
     access_id, secret, app_id = credentials()
     if not (access_id and secret and app_id):
         raise KipuError("Live Kipu needs KIPU_ACCESS_ID, KIPU_SECRET_KEY and KIPU_APP_ID.")
-    base = os.environ.get("KIPU_BASE_URL") or config.load_settings().get("kipu_base_url") or DEFAULT_BASE
+    # A live Kipu address comes from IT's environment only; the settings page may only point at a local mock.
+    saved = config.load_settings().get("kipu_base_url") or ""
+    local = (urllib.parse.urlparse(saved).hostname or "") in ("127.0.0.1", "localhost")
+    base = os.environ.get("KIPU_BASE_URL") or (saved if local else "") or DEFAULT_BASE
     return Client(base, access_id, secret, app_id)
 
 

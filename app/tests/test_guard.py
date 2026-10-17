@@ -235,3 +235,27 @@ def test_demo_attack_packet_is_held_and_safe_to_open():
     assert t["verdict"] == guard.HOLD and list(t["pages"]) == [3]
     # Only text: no JavaScript, actions or embedded files, so anyone can open it.
     assert {f["code"] for f in t["findings"]} == {"hidden_instructions"}
+
+
+def test_packets_are_scanned_when_they_land_even_without_a_key(monkeypatch):
+    """Inbox, upload, email and the hospital page all go through webapp.arrive(): a blocked file is
+    dropped before anything renders it, and a held one is marked on the card before any review."""
+    from carebridge import config, webapp
+
+    monkeypatch.setattr(config, "get_api_key", lambda: None)
+    webapp.TRACK.reset()
+    attack = (APP / "demo" / "attack" / "attack-packet.pdf").read_bytes()
+    for cid, data, name, verdict in (("SEC-1", b"MZ" + b"\0" * 64, "fax-1.pdf", guard.BLOCK),
+                                     ("SEC-2", attack, "fax-2.pdf", guard.HOLD),
+                                     ("SEC-3", _pdf([(CLINICAL, "")]), "fax-3.pdf", guard.OK)):
+        webapp.TRACK.add({"id": cid, "case_no": cid, "channel": "fax", "hospital": "unknown", "packet_used": name})
+        webapp.arrive(cid, data, name)
+        card = webapp.TRACK.cards[cid]
+        assert card["security"] == verdict
+        assert (cid in webapp.PACKETS) == (verdict != guard.BLOCK), "a blocked file must not stay in memory"
+        assert cid not in webapp.REVIEWS, "no key: no review starts"
+        logged = [a["what"] for a in webapp.TRACK.audit if a["card"] == cid]
+        assert (f"security {verdict}" in logged) == (verdict != guard.OK)
+    assert webapp.TRACK.cards["SEC-2"]["security_findings"] == ["hidden_instructions"]
+    webapp.TRACK.reset()
+    webapp.PACKETS.clear()

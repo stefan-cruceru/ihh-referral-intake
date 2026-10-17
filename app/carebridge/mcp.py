@@ -10,6 +10,7 @@ Prompts show up in Copilot Chat's "/" menu, and their arguments offer a pick lis
 staff can run a check without typing a file path.
 """
 
+import contextvars
 import json
 import re
 import sys
@@ -153,6 +154,18 @@ def _practice_id(v: str) -> str | None:
     return m.group(1).upper() if m else None
 
 
+_OVER_HTTP = contextvars.ContextVar("mcp_over_http", default=False)
+
+
+def _in_packet_folder(p: Path) -> bool:
+    roots = [r for r in (packets_dir(), config.inbox_dir()) if r]
+    try:
+        rp = p.resolve()
+    except OSError:
+        return False
+    return any(rp.is_relative_to(Path(r).resolve()) for r in roots)
+
+
 def _review(args: dict, lang: str) -> str:
     path = str(args.get("path") or "").strip().strip('"')
     # A patient picked from the "/" list ("S06 · Acute ischemic stroke...") can land in either field.
@@ -172,6 +185,10 @@ def _review(args: dict, lang: str) -> str:
     # reading keys, mail or other files on this computer.
     if p.suffix.lower() not in PACKET_TYPES + (".eml",):
         return "Blocked: only PDF, TIFF, PNG or JPEG referral packets, or a saved .eml email, can be reviewed."
+    if _OVER_HTTP.get() and not _in_packet_folder(p):
+        # A signed-in browser or Copilot session gets the packet and inbox folders only; the stdio server
+        # runs as the Windows user who started it and may open any packet file they can.
+        return "Blocked: over HTTP only files in the packets or inbox folder can be reviewed."
     if not p.is_file():
         return f"File not found: {p}"
     data, name, head = p.read_bytes(), p.name, []
@@ -192,6 +209,19 @@ def _review(args: dict, lang: str) -> str:
     return "\n".join(head) + report_markdown(intake.run(review), lang)
 
 
+def _blocked(res: dict, what: str) -> str:
+    """Say which check stopped the text: identifiers (PHI) or orders to the AI (guard.py)."""
+    kinds = sorted({h["kind"] for h in res["phi"]["hits"]})
+    told = [k for k in kinds if k.startswith("instructions_")]
+    ids = [k for k in kinds if k not in told]
+    out = []
+    if ids:
+        out.append(f"Blocked: found identifiers in the {what} ({', '.join(ids)}). Remove them and try again.")
+    if told:
+        out.append(f"Blocked: found orders to the AI in the {what}. Describe the situation instead.")
+    return " ".join(out)
+
+
 def call_tool(name: str, args: dict) -> str:
     lang = args.get("language", "en")
     if name == "list_practice_patients":
@@ -210,7 +240,7 @@ def call_tool(name: str, args: dict) -> str:
     if name == "find_client_resources":
         res = resources.find(args["situation"], lang)
         if res["blocked"]:
-            return "Blocked: the text looks like it contains identifiers (" + ", ".join(sorted({h["kind"] for h in res["phi"]["hits"]})) + "). Remove them and try again."
+            return _blocked(res, "text")
         lines = []
         if res["danger"]:
             lines.append("SAFETY FIRST: if someone is in danger call 911. Bring in staff now.")
@@ -226,7 +256,7 @@ def call_tool(name: str, args: dict) -> str:
     if name == "make_client_handout":
         res = resources.find(args["situation"], lang)
         if res["blocked"]:
-            return "Blocked: the text looks like it contains identifiers. Remove them and try again."
+            return _blocked(res, "text")
         items = [{"resource_id": c["id"], "why": c["why"], "first_step": c["first_step"], "watch_out": c["watch_out"]} for c in res["cards"]]
         out = Path.home() / "Documents" / "IHH Care Bridge" / "handouts"
         out.mkdir(parents=True, exist_ok=True)
@@ -236,7 +266,7 @@ def call_tool(name: str, args: dict) -> str:
     if name == "draft_progress_note":
         res = staff.note_draft(args["jottings"], lang)
         if res["blocked"]:
-            return "Blocked: the jottings look like they contain identifiers. Remove them and try again."
+            return _blocked(res, "jottings")
         lines = [("" if s["supported"] else "[CHECK: not found in your jottings] ") + s["text"] for s in res["sentences"]]
         if res["missing"]:
             lines += ["", "Usually in a note but not in your jottings:"] + [f"- {m}" for m in res["missing"]]
@@ -370,7 +400,11 @@ def handle(msg: dict, allow=None) -> dict | None:
                 return {"jsonrpc": "2.0", "id": mid, "result": {"isError": True, "content": [
                     {"type": "text", "text": "Your Care Bridge role can't run this tool. Ask your lead."}]}}
             try:
-                text, err = call_tool(p.get("name"), p.get("arguments") or {}), False
+                token = _OVER_HTTP.set(allow is not None)
+                try:
+                    text, err = call_tool(p.get("name"), p.get("arguments") or {}), False
+                finally:
+                    _OVER_HTTP.reset(token)
             except KeyError:
                 return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32602, "message": f"Unknown tool {p.get('name')}"}}
             except Exception as e:  # tool errors go back to the model as text

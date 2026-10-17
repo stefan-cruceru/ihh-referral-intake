@@ -226,7 +226,8 @@ function renderQueue(q) {
         c.review_stage && c.review_stage !== "done" && c.review_stage !== "sample" && c.review_stage !== "error"
           ? `<span class="chip info"><span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:-2px"></span> ${esc(c.review_progress || t("reviewing"))}</span>`
           : "";
-      const alerts = (c.alerts || []).map((a) => `<span class="chip alert">${esc(t("al_" + a.code))}</span>`).join("");
+      const alerts = (c.alerts || []).map((a) => `<span class="chip alert">${esc(t("al_" + a.code))}</span>`).join("")
+        + (["hold", "block"].includes(c.security) ? `<span class="chip alert">${esc(t("sec_chip_" + c.security))}</span>` : "");
       const silent = c.hospital_silent_min ? `<span class="chip">${esc(t("silent_for"))}: ${c.hospital_silent_min} ${t("min")}</span>` : "";
       const pct = c.color === "done" || left < 0 ? 1 : Math.max(0, Math.min(1, left / 120)); // late: a full red ring
       return `<div class="card c-${c.color}" data-id="${esc(c.id)}" tabindex="0">
@@ -405,6 +406,9 @@ function renderDetail() {
   if (sec && sec.verdict !== "ok") {
     const iso = sec.isolated_pages.length ? ` ${esc(t("security_isolated"))}: ${esc(t("page"))} ${sec.isolated_pages.map(esc).join(", ")}.` : "";
     h += `<div class="stop">${esc(t("security_stop"))}${iso}<ul>${sec.findings.map((f) => `<li>${esc(t("sec_" + f.code))}</li>`).join("")}</ul></div>`;
+  } else if (!sec && ["hold", "block"].includes(card.security)) {
+    // The file scan ran when the packet landed, before any review (or without an API key).
+    h += `<div class="stop">${esc(t(card.security === "block" ? "security_block" : "security_stop"))}<ul>${(card.security_findings || []).map((c) => `<li>${esc(t("sec_" + c))}</li>`).join("")}</ul></div>`;
   }
 
   if (!rep) {

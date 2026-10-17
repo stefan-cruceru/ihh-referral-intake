@@ -149,6 +149,14 @@ def _redirect(h) -> str:
     return f"http://{h.headers.get('Host', '127.0.0.1')}/auth/callback"
 
 
+def _same_site(nxt: str | None) -> str:
+    """Where to go after sign-in: a path on this app only, never another site or a header break."""
+    nxt = nxt or "/"
+    if not nxt.startswith("/") or nxt.startswith(("//", "/" + chr(92))) or any(c in nxt for c in (chr(13), chr(10))):
+        return "/"
+    return nxt
+
+
 def _form(h) -> dict:
     return {k: v[0] for k, v in parse_qs(h._body().decode()).items()}
 
@@ -179,7 +187,7 @@ def handle(h, method: str) -> bool:
             _sign_in_page(h, f.get("next", "/"), str(e))
             return True
         token = auth.start_session(who, "practice")
-        h._send(302, b"", "text/plain", {"Location": f.get("next") or "/", "Set-Cookie": auth.set_cookie(token)})
+        h._send(302, b"", "text/plain", {"Location": _same_site(f.get("next")), "Set-Cookie": auth.set_cookie(token)})
         return True
     if p == "/auth/practice" and method == "POST":
         f = _form(h)
@@ -188,7 +196,7 @@ def handle(h, method: str) -> bool:
             _sign_in_page(h, f.get("next", "/"), "Pick someone on the list.")
             return True
         token = auth.start_session(who, "practice")
-        h._send(302, b"", "text/plain", {"Location": f.get("next") or "/", "Set-Cookie": auth.set_cookie(token)})
+        h._send(302, b"", "text/plain", {"Location": _same_site(f.get("next")), "Set-Cookie": auth.set_cookie(token)})
         return True
     if p == "/auth/callback":
         try:

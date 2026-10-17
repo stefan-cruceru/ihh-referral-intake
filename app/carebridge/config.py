@@ -8,6 +8,7 @@ own data folder (the Docker volume), so staff can still add it from Settings.
 
 import json
 import os
+import re
 
 from .paths import user_dir
 
@@ -55,7 +56,9 @@ def provider() -> str:
 
 
 def foundry_resource() -> str | None:
-    return os.environ.get("ANTHROPIC_FOUNDRY_RESOURCE") or load_settings().get("foundry_resource")
+    # A resource name, never a URL: the API key is sent to the host built from it.
+    v = os.environ.get("ANTHROPIC_FOUNDRY_RESOURCE") or load_settings().get("foundry_resource")
+    return v if v and re.fullmatch(r"[a-z0-9][a-z0-9-]{1,63}", v) else None
 
 
 def kipu_url() -> str | None:

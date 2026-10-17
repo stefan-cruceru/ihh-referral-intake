@@ -144,10 +144,14 @@ REASON = {"not_a_fax_file": "not a PDF or image", "security_block": "blocked by 
 
 def summary_lines(got: dict) -> list[str]:
     """What staff should know about the email itself, shown above the review (Copilot and the command line)."""
-    out = [f"**Email:** {got['subject'] or '(no subject)'}, from {got['sender'] or 'unknown'}. "
-           f"Attachments used: {', '.join(got['attachments']) or 'none'}."]
+    def safe(v: str) -> str:
+        return "[set aside]" if guard.scan_text(v or "") else guard.clean(v or "")
+
+    subject = "[set aside]" if got["body_set_aside"] else safe(got["subject"]) or "(no subject)"
+    out = [f"**Email:** {subject}, from {safe(got['sender']) or 'unknown'}. "
+           f"Attachments used: {', '.join(safe(a) for a in got['attachments']) or 'none'}."]
     if got["body_set_aside"]:
         out.append("> **SECURITY HOLD:** the email text gives orders to the AI. It was not used. A person reads the "
                    "email in the mail program.")
-    out += [f"- Not used: {s['name']} ({REASON.get(s['reason'], s['reason'])})" for s in got["skipped"]]
+    out += [f"- Not used: {safe(s['name'])} ({REASON.get(s['reason'], s['reason'])})" for s in got["skipped"]]
     return out
