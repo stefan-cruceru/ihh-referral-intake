@@ -348,7 +348,7 @@ class Handler(BaseHTTPRequestHandler):
             if p == "/api/scenarios":
                 return self._json({"scenarios": resources.scenarios(), "examples": staff.EXAMPLES})
             if p == "/api/profiles" or p.startswith("/api/profiles/"):
-                return self._profiles(p.strip("/").split("/")[2:], q.get("lang", ["en"])[0])
+                return self._profiles(p.strip("/").split("/")[2:], q.get("lang", ["en"])[0], q.get("style", ["color"])[0])
             if p == "/api/report":
                 return self._json(store.weekly_report(int(q.get("days", ["7"])[0]), q.get("practice", ["0"])[0] == "1"))
             if p == "/api/audit":
@@ -449,7 +449,8 @@ class Handler(BaseHTTPRequestHandler):
                     return self._json({"error": "not found"}, 404)
             if p == "/api/handout":
                 b = self._jbody()
-                pdf = handout.build(b.get("items") or [], b.get("plan_today", ""), b.get("lang", "en"), bool(b.get("danger")))
+                pdf = handout.build(b.get("items") or [], b.get("plan_today", ""), b.get("lang", "en"), bool(b.get("danger")),
+                                    b.get("style", "color"))
                 name = "sus-proximos-pasos.pdf" if b.get("lang") == "es" else "your-next-steps.pdf"
                 return self._send(200, pdf, "application/pdf", {"Content-Disposition": f'inline; filename="{name}"'})
             if p == "/api/phi-check":
@@ -481,7 +482,7 @@ class Handler(BaseHTTPRequestHandler):
             ctype += "; charset=utf-8"
         return self._send(200, f.read_bytes(), ctype)
 
-    def _profiles(self, parts: list[str], lang: str = "en"):
+    def _profiles(self, parts: list[str], lang: str = "en", style: str = "color"):
         """Synthetic practice patients: the list, one profile with its practice review, a page image,
         or the patient's take-home next-steps PDF."""
         from demo import synthetic
@@ -501,8 +502,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": "blocked"}, 400)
             items = [{"resource_id": c["id"], "why": c["why"], "first_step": c["first_step"], "watch_out": c["watch_out"]}
                      for c in res["cards"]]
-            pdf = handout.build(items, res.get("plan_today", ""), lang, res["danger"])
-            name = f"{pid}-{'proximos-pasos' if lang == 'es' else 'next-steps'}.pdf"
+            pdf = handout.build(items, res.get("plan_today", ""), lang, res["danger"], style)
+            name = f"{pid}-{'proximos-pasos' if lang == 'es' else 'next-steps'}{'-bw' if style == 'bw' else ''}.pdf"
             return self._send(200, pdf, "application/pdf", {"Content-Disposition": f'inline; filename="{name}"'})
         if len(parts) == 3 and parts[1] == "pages":
             n = int(parts[2].split(".")[0])

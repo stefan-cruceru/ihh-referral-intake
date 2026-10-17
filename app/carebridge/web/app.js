@@ -614,7 +614,8 @@ async function findResources(useAi) {
       return;
     }
     LAST_RES = r;
-    let h = r.cards.length ? `<div class="row end"><button class="btn" id="print-handout">${esc(t("res_print"))}</button></div>` : "";
+    let h = r.cards.length ? `<div class="row end"><button class="btn" id="print-handout">${esc(t("res_print"))}</button>
+      <button class="btn ghost" id="print-handout-bw">${esc(t("res_print_bw"))}</button></div>` : "";
     if (r.danger) h += `<div class="safety"><b>${esc(t("res_safety"))}</b>${r.safety.map(resCard).join("")}</div>`;
     if (r.plan_today) h += `<div class="panel"><h3>${esc(t("res_plan"))}</h3><p>${esc(r.plan_today)}</p></div>`;
     h += r.cards.map(resCard).join("");
@@ -622,7 +623,8 @@ async function findResources(useAi) {
     if (r.cost) h += `<details class="admin"><summary>${esc(t("for_admins"))}</summary><p>${esc(t("cost"))}: $${r.cost.usd.toFixed(3)}</p></details>`;
     h += `<p class="muted small">${esc(r.disclaimer)}</p>`;
     out.innerHTML = h;
-    $("#print-handout")?.addEventListener("click", printHandout);
+    $("#print-handout")?.addEventListener("click", () => printHandout("color"));
+    $("#print-handout-bw")?.addEventListener("click", () => printHandout("bw"));
   } catch (e) {
     out.innerHTML = `<div class="phi">${esc(e.message)}</div>`;
   }
@@ -801,12 +803,13 @@ $("#ob-again").addEventListener("click", startOnboard);
 let LAST_RES = null;
 // The client's take-home PDF: built server-side so phones, addresses and hours come only from
 // the sourced list. Opens in the browser's PDF viewer, ready to print.
-async function printHandout() {
+// style: "color", or "bw" for black-and-white printers.
+async function printHandout(style = "color") {
   if (!LAST_RES) return;
   const r = LAST_RES;
   const items = r.cards.map((c) => ({ resource_id: c.id, why: c.why, first_step: c.first_step, watch_out: c.watch_out }));
   const resp = await fetch("/api/handout", { method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ items, plan_today: r.plan_today, lang: LANG, danger: r.danger }) });
+    body: JSON.stringify({ items, plan_today: r.plan_today, lang: LANG, danger: r.danger, style }) });
   if (!resp.ok) return toast(t("error"));
   const url = URL.createObjectURL(await resp.blob());
   window.open(url, "_blank");
