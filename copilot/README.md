@@ -10,8 +10,35 @@ Run this once:
 ihh-care-bridge.exe install
 ```
 
-It copies the program to your user folder, adds a Start menu shortcut, and adds Care Bridge to
-VS Code's `mcp.json`. Open Copilot Chat, switch to **Agent** mode, and its tools show up.
+It copies the program to your user folder, adds a Start menu shortcut, adds Care Bridge to
+VS Code's `mcp.json`, and adds two files Copilot Chat reads:
+
+- the **IHH Care Bridge** agent (`%APPDATA%\Code\User\prompts\ihh-care-bridge.agent.md`)
+- the **ihh-referral-intake** skill (`%USERPROFILE%\.copilot\skills\ihh-referral-intake\SKILL.md`)
+
+Both come from [`vscode/`](vscode/). Restart VS Code after you install.
+
+### Try it
+
+1. Open Copilot Chat (Ctrl+Alt+I) and sign in to GitHub if it asks.
+2. Open the agent dropdown under the chat box and pick **IHH Care Bridge**.
+3. Type `/` and pick a command. A box opens with a pick list:
+
+| Command | What it shows in the chat |
+|---|---|
+| `/mcp.ihh-care-bridge.check_referral` | The full check: suggested route, the two big checks, each flag with page and quote, missing documents, questions for the hospital |
+| `/mcp.ihh-care-bridge.missing_documents` | What is missing, plus a DRAFT note to the case manager |
+| `/mcp.ihh-care-bridge.practice_patients` | The 10 invented practice patients |
+| `/mcp.ihh-care-bridge.explain_rule` | One rule word for word, in plain words, and any known gap |
+| `/mcp.ihh-care-bridge.document_checklist` | DOC-1 to DOC-10 |
+| `/mcp.ihh-care-bridge.client_next_steps` | Next steps in Orange County for a client |
+| `/mcp.ihh-care-bridge.client_handout` | A large-print PDF for the client |
+| `/mcp.ihh-care-bridge.progress_note` | A progress note draft from shift jottings |
+
+Or just type in plain words, for example "check S06" or "what does MOB-4 say?".
+
+The practice patients (S01 to S10) answer at once and need no API key. A real packet file needs a
+Claude API key: run `ihh-care-bridge.exe set-key` once.
 
 To add it by hand, put this in `%APPDATA%\Code\User\mcp.json`:
 
@@ -27,7 +54,7 @@ To add it by hand, put this in `%APPDATA%\Code\User\mcp.json`:
 }
 ```
 
-Tools: check a referral packet, look up a rule, search the rules, the document checklist, find
+Tools: check a referral packet (or a practice patient), list the practice patients, look up a rule, search the rules, the document checklist, find
 client resources, and draft a progress note.
 
 ## 2. Claude Desktop

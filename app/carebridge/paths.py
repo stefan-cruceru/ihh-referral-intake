@@ -32,6 +32,8 @@ CRITERIA = _data("admission-criteria.json", "challenges/1-referral-intake/criter
 RESOURCES = _data("oc-resources.seed.json", "challenges/2-finding-the-right-resource/data/oc-resources.seed.json")
 SCENARIOS = _data("client-scenarios.json", "challenges/2-finding-the-right-resource/scenarios/client-scenarios.json")
 DEMO_DIR = _data("demo", "app/demo")
+# The Copilot Chat agent (the "IHH Care Bridge" choice in the agent dropdown) and its skill.
+COPILOT_DIR = _data("copilot", "copilot/vscode")
 
 
 def packets_dir() -> Path | None:

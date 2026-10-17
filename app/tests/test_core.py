@@ -105,3 +105,18 @@ def test_mcp_stdio_handshake():
     assert [x["id"] for x in lines] == [1, 2, 3]
     assert len(lines[1]["result"]["tools"]) == len(mcp.TOOLS)
     assert "MOB-4" in lines[2]["result"]["content"][0]["text"]
+
+
+def test_mcp_prompts_and_pick_lists():
+    # What Copilot Chat's "/" menu shows, and the pick list behind the patient box.
+    assert {p["name"] for p in mcp.handle({"id": 1, "method": "prompts/list"})["result"]["prompts"]} >= {"check_referral", "explain_rule"}
+    picks = mcp.complete("patient", "s06")
+    assert len(picks) == 1 and picks[0].startswith("S06 ")
+    assert mcp.complete("rule_id", "mob") == ["MOB-1", "MOB-2", "MOB-3", "MOB-4"]
+    text = mcp.get_prompt("check_referral", {"patient": picks[0]})["messages"][0]["content"]["text"]
+    assert 'practice_patient "S06"' in text
+    # A practice patient needs no API key and comes back as the full review.
+    rep = mcp.call_tool("review_referral_packet", {"practice_patient": "S06"})
+    assert "Practice review" in rep and "Can care for themselves" in rep and "p.11" in rep
+    assert "No practice patient" in mcp.call_tool("review_referral_packet", {"practice_patient": "S99"})
+    assert mcp.call_tool("review_referral_packet", {"path": "C:/Windows/win.ini"}).startswith("Blocked")
