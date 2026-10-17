@@ -376,3 +376,11 @@ header > .disp-btn { flex: none; }
 .skip-link:focus { top: 1rem; }
 main:focus { outline: none; }
 @media (prefers-reduced-motion: reduce) { .spinner { animation: none; border-right-color: var(--brand); } }
+
+/* Kipu readiness checklist (checked in the background, nothing written) */
+.kipu-ck { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .4rem 1.2rem; margin-top: .6rem; font-size: .92rem; }
+.kipu-ck > p { grid-column: 1 / -1; margin: .3rem 0 0; }
+.kipu-ck .ck { padding: .12rem 0; }
+.kipu-ck .ck.ok > span:first-child { color: var(--green); font-weight: 700; }
+.kipu-ck .ck.wait > span:first-child { color: var(--yellow); font-weight: 700; }
+.kipu-ck .ck.fail { color: var(--red); }

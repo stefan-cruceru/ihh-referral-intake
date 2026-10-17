@@ -169,6 +169,25 @@ function renderStages(cards) {
 }
 
 // A link to the client's Kipu record, only once IHH has given the link format (Settings).
+// Kipu readiness, checked in the background (kipu_check.py). Checking only: nothing is written.
+function kipuCheckChip(c) {
+  const k = c.kipu_check;
+  if (!k) return "";
+  const fails = k.items.filter((i) => i.state === "fail").length;
+  const [cls, label] = k.status === "ok" ? ["st-accepted", t("kipu_ck_ok")] : k.status === "fail" ? ["alert", t("kipu_ck_fail", { n: fails })] : ["st-needs_info", t("kipu_ck_wait")];
+  return `<span class="chip ${cls}" title="${esc(t("kipu_ck_note"))}">${esc(label)}</span>`;
+}
+
+function kipuCheckList(c) {
+  const k = c.kipu_check;
+  if (!k) return "";
+  const mark = { ok: "✓", wait: "…", fail: "✗" };
+  const groups = ["chart", "documents", "note"];
+  return `<div class="kipu-ck">${groups.map((g) => `<div><b>${esc(t("kipu_grp_" + g))}</b>${k.items.filter((i) => i.group === g).map((i) =>
+      `<div class="ck ${i.state}"><span aria-hidden="true">${mark[i.state]}</span> ${esc(LANG === "es" ? i.label_es : i.label_en)}${i.detail ? ` <span class="muted small">(${esc(i.detail)})</span>` : ""}</div>`).join("")}</div>`).join("")}
+    <p class="muted small">${esc(t("kipu_ck_note"))}</p></div>`;
+}
+
 function kipuChip(c) {
   if (!c.kipu_id) return "";
   const tpl = STATE.kipu_url || "";
@@ -236,7 +255,7 @@ function renderQueue(q) {
           <div class="title">${esc(c.case_no)} · ${esc(c.hospital || t("unknown"))}</div>
           <div class="meta">${sourceText(c)} · ${esc(t("owner"))}: <b>${esc(c.owner)}</b>${c.owner === ME ? ` (${esc(t("you"))})` : ""}</div>
           ${contactLine(c)}
-          <div class="chips">${dangerChip(c)}${statusChip(c.status)}${overnightChip(c)}${kipuChip(c)}${viewersChip(c)}${handwritingChip(c)}${review}${alerts}${silent}${c.sample ? `<span class="chip">${esc(t("sample_badge"))}</span>` : ""}</div>
+          <div class="chips">${dangerChip(c)}${statusChip(c.status)}${overnightChip(c)}${kipuChip(c)}${kipuCheckChip(c)}${viewersChip(c)}${handwritingChip(c)}${review}${alerts}${silent}${c.sample ? `<span class="chip">${esc(t("sample_badge"))}</span>` : ""}</div>
           ${oddsLine(c)}
         </div>
         <div class="side">${fmtClock(c.arrived_at)}</div>
@@ -556,7 +575,8 @@ function renderDetail() {
   // The client's Kipu record, once staff have created it there
   h += `<div class="panel"><h3>${esc(t("kipu_title"))}</h3><div class="row">
     <input id="kipu-id" value="${esc(card.kipu_id || "")}" placeholder="${esc(t("kipu_id_ph"))}" autocomplete="off">
-    <button class="btn" id="kipu-save">${esc(t("save"))}</button>${kipuChip(card)}</div>
+    <button class="btn" id="kipu-save">${esc(t("save"))}</button>${kipuChip(card)}${kipuCheckChip(card)}</div>
+    ${kipuCheckList(card)}
     ${card.kipu_id && !(STATE.kipu_url || "").includes("{kipu_id}") ? `<p class="muted small">${esc(t("kipu_no_link"))}</p>` : ""}</div>`;
 
   // Actions

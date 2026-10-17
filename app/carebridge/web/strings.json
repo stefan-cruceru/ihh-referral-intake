@@ -1770,5 +1770,33 @@
  "only_clinical_deny": {
   "en": "Only the clinical line can say no.",
   "es": "Solo la línea clínica puede decir que no."
+ },
+ "kipu_ck_ok": {
+  "en": "Kipu: ready",
+  "es": "Kipu: listo"
+ },
+ "kipu_ck_wait": {
+  "en": "Kipu: waiting on a person",
+  "es": "Kipu: espera a una persona"
+ },
+ "kipu_ck_fail": {
+  "en": "Kipu: {n} to fix",
+  "es": "Kipu: {n} por arreglar"
+ },
+ "kipu_ck_note": {
+  "en": "Checked in the background against what Kipu needs. Nothing is written to Kipu until a person clicks.",
+  "es": "Revisado en segundo plano contra lo que pide Kipu. No se escribe nada en Kipu hasta que una persona haga clic."
+ },
+ "kipu_grp_chart": {
+  "en": "Chart",
+  "es": "Expediente"
+ },
+ "kipu_grp_documents": {
+  "en": "Packet",
+  "es": "Paquete"
+ },
+ "kipu_grp_note": {
+  "en": "Intake note",
+  "es": "Nota de admisión"
  }
 }

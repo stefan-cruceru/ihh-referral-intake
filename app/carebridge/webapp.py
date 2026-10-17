@@ -18,7 +18,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import APP_NAME, __version__, auth, config, critical, drafts, gateway, guard, handout, hospital, intake, llm, mail, mcp, phi, resources, rules, staff, store, tracker
+from . import APP_NAME, __version__, auth, config, critical, drafts, gateway, guard, handout, hospital, intake, kipu_check, llm, mail, mcp, phi, resources, rules, staff, store, tracker
 from .pages import load_packet
 from .paths import BUNDLE, DEMO_DIR, FROZEN, load_json, packets_dir
 
@@ -738,6 +738,7 @@ def serve(port: int = 0, open_browser: bool = True) -> None:
         print(f"{APP_NAME} {__version__} is listening on {host}:{httpd.server_address[1]} in the container.")
         print("Open the host port from compose.yaml (default http://localhost:8780/). Reviews are not saved.")
     watch_inbox()
+    kipu_check.start(TRACK, PACKETS, card_report)
     from . import notify
 
     notify.APP_URL = url
