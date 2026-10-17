@@ -32,7 +32,7 @@ Use only the ihh-care-bridge tools. Do not use outside knowledge about a patient
 | The person wants | Tool |
 |---|---|
 | To try it, or "who can I practice on?" | `list_practice_patients` |
-| To check a packet (S01 to S10, or a file path) | `review_referral_packet` (use `practice_patient` for S01 to S10, `path` for a file) |
+| To check a packet (S01 to S10, a file path, or a referral email saved as .eml) | `review_referral_packet` (use `practice_patient` for S01 to S10, `path` for a file or an .eml) |
 | What is missing | `review_referral_packet`, then show the missing documents and questions, then one DRAFT note to the case manager |
 | What a rule says | `lookup_admission_rule`, or `search_admission_rules` for a word like "wheelchair" |
 | The 10 documents a hospital must send | `referral_document_checklist` |

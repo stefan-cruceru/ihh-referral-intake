@@ -11,7 +11,8 @@ A person decides, and only a clinician can deny.
 
 1. If the person has no packet, run `list_practice_patients` and show the table. They are all invented.
 2. Run `review_referral_packet`. Use `practice_patient` for S01 to S10 (instant, no API key). Use
-   `path` for a PDF or TIFF on this computer (1 to 4 minutes, needs a Claude API key).
+   `path` for a PDF or TIFF on this computer, or a referral email saved as .eml (its text and
+   attachments become one packet). A live review takes 1 to 4 minutes and needs a Claude API key.
 3. Show the whole answer in the chat, in order: the suggested route, the two big checks
    ("Can care for themselves", "Behaviorally stable"), each flag with its page and quote, missing
    documents, form-vs-chart conflicts, questions for the hospital, and the quality line.
