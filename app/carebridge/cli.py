@@ -40,12 +40,15 @@ def main(argv=None):
     if cmd == "review" and len(argv) > 1:
         from pathlib import Path
 
-        from . import intake
+        from . import guard, intake
         from .mcp import report_markdown
-        from .pages import load_packet
 
         p = Path(argv[1])
-        review = intake.Review(load_packet(p.read_bytes(), p.name), p.name)
+        try:
+            review = intake.review_file(p.read_bytes(), p.name)
+        except guard.Blocked as e:
+            print(f"Blocked by the security check ({e}). The file was not opened.")
+            return 1
         lang = argv[2] if len(argv) > 2 else "en"
         rep = intake.run(review)
         sys.stdout.reconfigure(encoding="utf-8")

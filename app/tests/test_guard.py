@@ -216,3 +216,13 @@ def test_clean_review_has_no_hold():
                  "duplicate_of": None, "blank": False}}, {})
     rep = guard.hold(rep, {"findings": [], "pages": {}}, set(), [])
     assert rep["security"]["verdict"] == guard.OK and rep["recommendation"]["code"] != "security_hold"
+
+
+def test_every_packet_review_goes_through_the_security_scan():
+    """A new way in (CLI, eval, email, MCP...) must not build a review from pages without the file scan."""
+    import re
+
+    for f in [*APP.glob("carebridge/*.py"), *APP.glob("*.py")]:
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if re.search(r"\bReview\(load_packet", line) and "threat" not in line:
+                raise AssertionError(f"{f.name}: review built without guard.scan_file: {line.strip()}")

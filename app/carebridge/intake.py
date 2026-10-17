@@ -220,6 +220,16 @@ class Review:
         self.progress.append(msg)
 
 
+def review_file(data: bytes, name: str, received_at: float | None = None) -> Review:
+    """A Review for a packet file, with the security scan done. Raises guard.Blocked for a file we won't open."""
+    from .pages import load_packet
+
+    threat = guard.scan_file(data, name)
+    if threat["verdict"] == guard.BLOCK:
+        raise guard.Blocked(threat)
+    return Review(load_packet(data, name), name, received_at, threat)
+
+
 def _batches(items, n):
     return [items[i:i + n] for i in range(0, len(items), n)]
 
