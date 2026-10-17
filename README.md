@@ -125,6 +125,8 @@ detail, and stay drafts unless IHH agrees to send them on their own.
 
 **Demo video:** [Watch it on the demo site](https://stefan-cruceru.github.io/ihh-referral-intake/), [download the 720p MP4](docs/media/demo-720p.mp4), or [get the 1080p/720p presentation release](https://github.com/stefan-cruceru/ihh-referral-intake/releases/tag/demo-lamplight-2026-10-17). The two-minute film uses fictional practice patients, English narration and English/Spanish captions. It does not demonstrate live AI extraction or measured time savings. [Recording sources and credits](docs/demo/README.md).
 
+**Architecture:** [Interactive system map and referral walkthrough](docs/architecture.html). Download and open the HTML, or use the standalone copy included with the demo release.
+
 ## How Claude is used
 
 - **Built with Claude:** Claude Code wrote the app with our team, from the event repo, IHH's
