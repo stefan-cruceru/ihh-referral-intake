@@ -47,6 +47,8 @@ def _demo_samples() -> dict:
 
 def _demo_packet(pid: str) -> tuple[bytes, str] | None:
     """A synthetic practice patient (S01...), or a de-identified event packet (R01...) read by path."""
+    if not re.fullmatch(r"[RS]\d\d", pid or ""):
+        return None  # it becomes a file name below
     if pid.startswith("R"):
         d = packets_dir()
         p = d / f"{pid}.pdf" if d else None
@@ -125,9 +127,25 @@ def _on_land(card: dict):
         REVIEWS[card["id"]] = None  # sample, not a live run
 
 
+def arrive(cid: str, data: bytes, name: str) -> None:
+    """Every packet goes through here the moment it lands, with or without an API key: the file scan runs
+    first, a blocked file is dropped from memory (never rendered, never sent), a held one is marked."""
+    threat = guard.scan_file(data, name)
+    TRACK.cards[cid]["security"] = threat["verdict"]
+    TRACK.cards[cid]["security_findings"] = [f["code"] for f in threat["findings"]]
+    if threat["verdict"] != guard.OK:
+        TRACK.log(cid, "system", f"security {threat['verdict']}", ", ".join(TRACK.cards[cid]["security_findings"]))
+    if threat["verdict"] == guard.BLOCK:
+        return
+    PACKETS[cid] = (data, name)
+    if config.get_api_key():
+        start_review(cid)
+
+
 def start_review(cid: str) -> None:
     data, name = PACKETS[cid]
     threat = guard.scan_file(data, name)
+    seen = TRACK.cards[cid].get("security")
     TRACK.cards[cid]["security"] = threat["verdict"]
     if threat["verdict"] == guard.BLOCK:
         # Isolate: the file is dropped from memory, never rendered and never sent anywhere.
@@ -138,7 +156,7 @@ def start_review(cid: str) -> None:
         TRACK.cards[cid]["review_state"] = "error"
         TRACK.log(cid, "system", "security block", ", ".join(f["code"] for f in threat["findings"]))
         return
-    if threat["verdict"] == guard.HOLD:
+    if threat["verdict"] == guard.HOLD and seen != guard.HOLD:
         TRACK.log(cid, "system", "security hold", ", ".join(f["code"] for f in threat["findings"]))
     review = intake.Review(load_packet(data, name), name, TRACK.cards[cid]["arrived_at"], threat)
     REVIEWS[cid] = review
@@ -174,9 +192,7 @@ def add_email(raw: bytes, name: str, arrived_at: float | None = None, case: str 
     if got["body_set_aside"]:
         TRACK.log(card["id"], "system", "security hold", "email text gives orders to the AI; not used")
     if got["pdf"]:
-        PACKETS[card["id"]] = (got["pdf"], Path(name).stem + ".pdf")
-        if config.get_api_key():
-            start_review(card["id"])
+        arrive(card["id"], got["pdf"], Path(name).stem + ".pdf")
     return card
 
 
@@ -235,9 +251,7 @@ def watch_inbox(interval: float = 5.0) -> None:
                               "hospital": "unknown", "packet_used": f.name}
                     fields.update(_form_sidecar(f))
                     card = TRACK.add(fields, arrived_at=f.stat().st_mtime)
-                    PACKETS[card["id"]] = (data, f.name)
-                    if config.get_api_key():
-                        start_review(card["id"])
+                    arrive(card["id"], data, f.name)
             time.sleep(interval)
 
     threading.Thread(target=loop, daemon=True).start()
@@ -252,7 +266,9 @@ SOURCES = ("hospital", "snf", "community", "partner")
 
 
 def _field(form: dict, k: str, n: int = 120) -> str:
-    return re.sub(r"\s+", " ", str(form.get(k) or "")).strip()[:n]
+    # Typed by whoever has the upload link: it lands in drafts, Kipu fields and staff alerts.
+    v = guard.clean(re.sub(r"\s+", " ", str(form.get(k) or "")).strip()[:n])
+    return "[set aside]" if guard.scan_text(v) else v
 
 
 def send_page_upload(data: bytes, name: str, form: dict) -> dict:
@@ -275,12 +291,10 @@ def send_page_upload(data: bytes, name: str, form: dict) -> dict:
                       "case_manager": who or None, "cm_email": _field(form, "email") or None,
                       "cm_phone": _field(form, "phone", 40) or None, "cm_lang": lang, "packet_used": name,
                       "more_for": parent["id"] if parent else None, "receipt_key": secrets.token_urlsafe(9)})
-    PACKETS[card["id"]] = (data, name)
     if parent:
         TRACK.act(parent["id"], "hospital_replied", "hospital", f"more documents: {case}")
     hospital.sync(TRACK)
-    if config.get_api_key():
-        start_review(card["id"])
+    arrive(card["id"], data, name)
     receipt = next(m for m in TRACK.cards[case]["hospital_messages"] if m["kind"] == "received")
     return {"case_code": case, "key": card["receipt_key"], "arrived_at": card["arrived_at"],
             "deadline": TRACK.view(case)["deadline"], "receipt": {k: receipt[k] for k in ("subject", "body")}}
@@ -335,7 +349,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def _body(self) -> bytes:
         n = int(self.headers.get("Content-Length") or 0)
-        if n > guard.MAX_BYTES:
+        if n < 0 or n > guard.MAX_BYTES:
             raise guard.Blocked({"verdict": guard.BLOCK, "kind": None, "pages": {},
                                  "findings": [{"code": "too_big", "level": guard.BLOCK}]})
         return self.rfile.read(n) if n else b""
@@ -350,10 +364,15 @@ class Handler(BaseHTTPRequestHandler):
         # Refuse requests a web page on another site could forge against this local server.
         origin = self.headers.get("Origin")
         host = self.headers.get("Host", "")
-        if origin and urlparse(origin).netloc != host:
+        # The exact name, not a prefix: "localhost.evil.com" is a DNS-rebinding site, not this computer.
+        try:
+            name = urlparse("//" + host).hostname
+        except ValueError:
+            name = None
+        if name not in ("127.0.0.1", "localhost", "::1"):
             self._json({"error": "forbidden"}, 403)
             return False
-        if not host.startswith(("127.0.0.1", "localhost")):
+        if origin and urlparse(origin).netloc != host:
             self._json({"error": "forbidden"}, 403)
             return False
         return True
@@ -500,10 +519,9 @@ class Handler(BaseHTTPRequestHandler):
                 if not re.fullmatch(r"[A-Za-z0-9-]{1,24}", case) or case in TRACK.cards:
                     case = f"REF-{len(TRACK.cards) + 1:03d}"
                 card = TRACK.add({"id": case, "case_no": case, "channel": "upload",
-                                  "hospital": self.headers.get("X-Hospital") or "unknown", "packet_used": name})
-                PACKETS[card["id"]] = (data, name)
-                if config.get_api_key():
-                    start_review(card["id"])
+                                  "hospital": _field({"h": self.headers.get("X-Hospital")}, "h") or "unknown",
+                                  "packet_used": name})
+                arrive(card["id"], data, name)
                 return self._json({"card": TRACK.view(card["id"])})
             parts = p.strip("/").split("/")
             if parts[:2] == ["api", "cards"] and len(parts) == 4:
