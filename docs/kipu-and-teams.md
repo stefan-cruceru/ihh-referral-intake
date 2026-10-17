@@ -45,9 +45,9 @@ The table lives in one place, `PERMISSIONS` in `app/carebridge/auth.py`.
 
 | Action | Coordinator | Lead | Clinical | Admin (IT) |
 |---|---|---|---|---|
-| Work a referral: open, request info, log replies, chase, say yes, withdrawn | ✓ | ✓ | ✓ | |
+| Work a referral: open, take it, request info, log replies, chase, say yes, withdrawn | ✓ | ✓ | ✓ | |
 | **Say no** (deny), "I have it" for a clinical check | | | ✓ | |
-| Hand a referral to someone else, record that the patient arrived | ✓ | ✓ | | |
+| Hand a referral to someone else, record that the patient arrived, link its Kipu chart | ✓ | ✓ | | |
 | Add a packet, make a Teams card | ✓ | ✓ | | |
 | Run a review | ✓ | ✓ | ✓ | |
 | Kipu: pull referrals, returning-client check, make a chart, file papers | ✓ | ✓ | | |

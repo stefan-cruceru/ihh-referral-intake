@@ -145,3 +145,17 @@ def test_the_server_refuses_what_a_role_may_not_do():
     assert bea(f"/api/notify/{dana['id']}/mark", {"status": "sent_by_person", "who": "Dana"})[0] == 403
     assert avery(f"/api/notify/{dana['id']}/mark", {"status": "sent_by_person", "who": "someone else"})[0] == 200
     assert store.get_notification(dana["id"])["done_by"] == "Avery (lead)"
+
+
+def test_every_tracker_action_is_in_the_permission_table():
+    """A new board action without a row here would be refused for everyone."""
+    import re
+
+    src = (APP / "carebridge" / "tracker.py").read_text(encoding="utf-8")
+    body = src[src.index("    def act("):]
+    body = body[:body.index("\n    def ", 10)]
+    actions = set(re.findall(r'action == "([a-z_]+)"', body))
+    for group in re.findall(r"action in \(([^)]*)\)", body):
+        actions |= set(re.findall(r'"([a-z_]+)"', group))
+    missing = sorted(a for a in actions if f"act:{a}" not in auth.PERMISSIONS)
+    assert not missing, f"add these to auth.PERMISSIONS: {missing}"

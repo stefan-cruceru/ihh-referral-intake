@@ -39,6 +39,8 @@ PERMISSIONS = {
     "act:intake_cleared": _STAFF, "act:accepted": _STAFF, "act:withdrawn": _STAFF,
     "act:handoff": ("coordinator", "lead"), "act:patient_arrived": ("coordinator", "lead"),
     "act:denied": ("clinical",), "act:clinical_pickup": ("clinical",),
+    "act:viewing": _STAFF + ("admin",), "act:leave": _STAFF + ("admin",), "act:claim": _STAFF,
+    "act:kipu_id": ("coordinator", "lead"),
     "upload": ("coordinator", "lead"), "review": _STAFF, "teams_card": ("coordinator", "lead"),
     "demo": ("lead", "admin"),
     # Kipu
