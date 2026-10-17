@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lamplight Demo</title>
+<meta name="description" content="Lamplight: referral intake, client help and staff practice for Illumination Health + Home. A working prototype with made-up patients.">
+<link rel="icon" href="campaign/logo/lamplight-logo.svg">
+<style>
+  /* Lamplight's own tokens (app/carebridge/web/app.css). Light only, like the app's default. */
+  :root { --bg: #fff8f0; --panel: #fffdf9; --ink: #3b2b22; --muted: #715d50; --line: #dfd0bf;
+    --brand: #3b2b22; --brand-ink: #fff8f0; --brand-soft: #f4eadb; --lamp: #e39235; --lamp-soft: #fbe3cc; --link: #a0461f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--link); }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 20px; color: var(--ink); text-decoration: none; }
+  .brand img { width: 34px; height: 34px; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px; align-items: center; padding: 24px 0 40px; }
+  h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.1; margin: 0 0 14px; letter-spacing: -.01em; }
+  h2 { font-size: 26px; line-height: 1.2; margin: 0 0 8px; }
+  .lede { font-size: 19px; color: var(--muted); margin: 0 0 8px; }
+  .es { color: var(--muted); font-size: 15px; margin: 0 0 20px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 12px 20px; font-weight: 600; text-decoration: none; border: 1.5px solid var(--brand); color: var(--brand); background: var(--panel); }
+  .btn.primary { background: var(--brand); color: var(--brand-ink); }
+  .btn[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+  .btn svg { width: 18px; height: 18px; }
+  #status { color: var(--muted); font-size: 15px; margin-top: 10px; min-height: 1.6em; }
+  video { width: 100%; border-radius: 16px; border: 1px solid var(--line); background: #000; display: block; }
+  .cap { font-size: 14px; color: var(--muted); margin-top: 8px; }
+  section { padding: 36px 0; border-top: 1px solid var(--line); }
+  .sub { color: var(--muted); margin: 0 0 20px; max-width: 70ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+  .card h3 { margin: 0 0 6px; font-size: 18px; }
+  .card p, .card ul { margin: 0; }
+  .card ul { padding-left: 20px; }
+  .arch { width: 100%; height: 1180px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+  ul.docs { list-style: none; padding: 0; margin: 0; columns: 2 300px; column-gap: 32px; }
+  ul.docs li { break-inside: avoid; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .path { color: var(--muted); font-size: 13px; font-family: ui-monospace, Consolas, monospace; display: block; }
+  ul.prints { columns: 2 260px; margin: 8px 0 0; padding-left: 20px; text-transform: capitalize; }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 48px; color: var(--muted); font-size: 15px; }
+  @media (max-width: 820px) { .hero { grid-template-columns: 1fr; } .arch { height: 1500px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./"><img src="campaign/logo/lamplight-logo.svg" alt="">Lamplight</a>
+    <a class="btn" href="https://github.com/stefan-cruceru/ihh-referral-intake">
+      <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.66 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      Code on GitHub</a>
+  </header>
+
+  <div class="hero">
+    <div>
+      <h1>Every referral. A two-hour promise.</h1>
+      <p class="lede">Lamplight helps Illumination Health + Home answer hospital referrals in time. It reads the
+        faxed pages, shows the rule and the page behind every flag, keeps the 2-hour clock, and drafts the
+        follow-up. People make every decision.</p>
+      <p class="es">Cada referido. Una promesa de dos horas. Lamplight lee las páginas, muestra la regla y la página
+        de cada alerta, y prepara los borradores. Las personas deciden.</p>
+      <div class="actions">
+        <a class="btn primary" id="go" href="app/" aria-disabled="true">Try the working app</a>
+        <a class="btn" href="https://github.com/stefan-cruceru/ihh-referral-intake">See what we built</a>
+      </div>
+      <div id="status" role="status">Getting the app ready in your browser. The first time takes about 20 seconds.</div>
+    </div>
+    <div>
+      <video controls preload="metadata" poster="media/demo-cover.png">
+        <source src="media/demo-720p.mp4" type="video/mp4">
+        <track kind="subtitles" src="media/demo.en.vtt" srclang="en" label="English" default>
+        <track kind="subtitles" src="media/demo.es.vtt" srclang="es" label="Español">
+      </video>
+      <div class="cap">Two-minute demo, with English and Spanish subtitles. Made-up patients. Filmed before the app took
+        the name Lamplight, so it says "Care Bridge". <a href="media/demo-credits.txt">Credits and notes</a>.</div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Try the working app</h2>
+    <p class="sub">This is the real app, not a mock-up. Its Python code runs inside your browser, so there is no server.</p>
+    <div class="grid">
+      <div class="card"><h3>1. Sign in</h3><p>Pick a made-up staff member. Each has a role. Only the clinical reviewer can say no.</p></div>
+      <div class="card"><h3>2. Send a practice patient</h3><p>Open <b>Practice patients</b> and send S01 to S10 to the board. Each gets an owner and a 2-hour clock.</p></div>
+      <div class="card"><h3>3. Open the card</h3><p>See each rule, the page it came from, what conflicts, and what is still unknown. Switch to Español.</p></div>
+      <div class="card"><h3>4. Print the handout</h3><p>Make the client's next-steps PDF, in color or black and white, in English or Spanish.</p></div>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><h3>What is different here</h3>
+        <ul>
+          <li>Practice mode only. Every patient is made up.</li>
+          <li>It does not call Claude. Practice reviews come from the organizers' answer key, run through the app's checks.</li>
+          <li>Nothing leaves this page. Close the tab and it is gone.</li>
+          <li>Kipu and Teams are the practice versions. Live ones need IHH's OK.</li>
+        </ul></div>
+      <div class="card"><h3>To review real packets</h3>
+        <p>Run Lamplight on your own computer with a Claude API key. See <a href="docs/getting-started.html">Getting started</a>
+          or <a href="docs/run-with-docker.html">Run with Docker</a>.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How it is built</h2>
+    <p class="sub">One app on IHH's own computer runs the whole loop. Press play to follow a referral.
+      <a href="architecture.html">Open the system map on its own page</a>.</p>
+    <iframe class="arch" src="architecture.html" title="Lamplight system map" loading="lazy"></iframe>
+  </section>
+
+  <section>
+    <h2>Docs</h2>
+    <p class="sub">The README and the notes behind each choice, from our calls with IHH. All of them are also in the
+      <a href="https://github.com/stefan-cruceru/ihh-referral-intake">repo</a>.</p>
+    <ul class="docs">
+<!--DOCS-->
+    </ul>
+  </section>
+
+  <section>
+    <h2>In our language · En nuestro idioma</h2>
+    <p class="sub">The staff campaign that introduces Lamplight to IHH's team, in English and Spanish. A draft for IHH's review.</p>
+    <div class="grid">
+      <div class="card"><h3><a href="campaign/in-our-language.html">The campaign</a></h3>
+        <p>Letters to each job, seven rollout steps, the print kit and a five-minute huddle.</p></div>
+      <div class="card"><h3>Print kit</h3>
+        <ul class="prints">
+<!--PRINTS-->
+        </ul></div>
+    </div>
+  </section>
+
+  <footer>
+    Built at the Orange County Claude Impact Lab, October 17, 2026, with Illumination Health + Home.
+    A prototype: no real patient data, and no connection to IHH's systems.
+    Code: <a href="https://github.com/stefan-cruceru/ihh-referral-intake">github.com/stefan-cruceru/ihh-referral-intake</a>.
+  </footer>
+</div>
+<script>
+  const go = document.getElementById("go"), status = document.getElementById("status");
+  const say = (msg) => { status.textContent = msg; };
+  if (!("serviceWorker" in navigator)) {
+    say("This browser can't run the app. Please try a new Chrome, Edge, Firefox or Safari.");
+  } else {
+    navigator.serviceWorker.addEventListener("message", (e) => {
+      if (e.data === "ready") { go.removeAttribute("aria-disabled"); say("Ready. / Listo."); }
+      else if (String(e.data).startsWith("error:")) say("The app did not start. Reload the page to try again.");
+    });
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(() => navigator.serviceWorker.ready)
+      .then((reg) => reg.active.postMessage("warm"))
+      .catch(() => say("The app did not start. Reload the page to try again."));
+  }
+</script>
+</body>
+</html>

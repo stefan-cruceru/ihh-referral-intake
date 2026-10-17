@@ -36,3 +36,4 @@ app/eval-results/
 
 # local Docker inbox (referral PDFs dropped in for the app to pick up)
 inbox/
+_site/
