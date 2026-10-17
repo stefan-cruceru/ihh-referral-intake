@@ -393,3 +393,68 @@ main:focus { outline: none; }
 .kipu-ck .ck.ok > span:first-child { color: var(--green); font-weight: 700; }
 .kipu-ck .ck.wait > span:first-child { color: var(--yellow); font-weight: 700; }
 .kipu-ck .ck.fail { color: var(--red); }
+
+/* ---- first-run welcome: the "In our language" campaign's warm look ----
+   Cream paper, warm brown ink, amber light. Dark and easy-to-see modes still apply. */
+:root { --ob-bg: #FFF8F0; --ob-ink: #3B2B22; --ob-soft: #6B5A4E; --ob-line: #EAD9C8; --ob-card: #ffffff;
+  --ob-peach: #FBE3CC; --ob-sand: #F4EADB; --ob-amber: #E39235; --ob-es: #A0461F; --ob-on: #3B2B22; --ob-on-ink: #FFF8F0; }
+:root[data-theme="dark"] { --ob-bg: #1F1915; --ob-ink: #F3E8DC; --ob-soft: #CDBBAA; --ob-line: #4A3B31; --ob-card: #2A221C;
+  --ob-peach: #3B2C21; --ob-sand: #2E251F; --ob-amber: #F2A65A; --ob-es: #F0B07A; --ob-on: #F3E8DC; --ob-on-ink: #1F1915; }
+#onboard.ob-full { padding: 0; place-items: stretch; background: var(--ob-bg); }
+#onboard.ob-full .onboard { width: 100%; max-width: none; max-height: none; height: 100%; border-radius: 0; padding: 0;
+  background: var(--ob-bg); color: var(--ob-ink); font-size: 1.05rem; overflow-y: auto; }
+.ob-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: .8rem 2rem; border-bottom: 1px solid var(--ob-line); }
+.ob-brand { display: flex; align-items: center; gap: .6rem; color: var(--ob-ink); }
+.ob-logo { width: 40px; height: 40px; border-radius: 11px; background: #FBE3CC; display: grid; place-items: center; }
+.ob-logo img { width: 30px; height: 30px; display: block; }
+.ob-brand b { font-size: 1.2rem; }
+.ob-brand span { color: var(--ob-soft); font-size: .9rem; }
+.ob-langpill { display: flex; gap: 4px; padding: 3px; border: 1.5px solid var(--ob-line); border-radius: 999px; background: var(--ob-card); }
+.ob-langpill button { border: 0; background: none; border-radius: 999px; min-height: 44px; padding: 0 1rem; font: inherit;
+  font-weight: 600; color: var(--ob-soft); cursor: pointer; }
+.ob-langpill button.on { background: var(--ob-on); color: var(--ob-on-ink); }
+.ob-main { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 3rem; display: flex; flex-direction: column; gap: 1.35rem; }
+.ob-art { display: flex; justify-content: center; }
+.ob-art svg { width: 100%; max-width: 520px; height: auto; display: block; }
+.ob-center { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .7rem; }
+.ob-head { display: flex; flex-direction: column; gap: .6rem; }
+#onboard.ob-full h2 { font-size: clamp(1.9rem, 4vw, 2.8rem); font-weight: 600; line-height: 1.12; letter-spacing: -.01em; margin: 0; text-wrap: balance; }
+#onboard.ob-full .ob-step { color: var(--ob-soft); margin: 0; font-size: .95rem; }
+.ob-lede { font-size: 1.2rem; line-height: 1.6; max-width: 58ch; margin: 0; }
+.ob-soft { color: var(--ob-soft); margin: 0; }
+.ob-card { background: var(--ob-card); border: 1px solid var(--ob-line); border-radius: 22px; padding: 1.4rem 1.6rem;
+  display: flex; flex-direction: column; gap: .9rem; }
+.ob-card h3 { margin: 0; font-size: 1.25rem; font-weight: 600; }
+.ob-langs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.ob-langs button { min-height: 56px; border-radius: 16px; border: 1.5px solid var(--ob-line); background: var(--ob-bg);
+  color: var(--ob-ink); font: inherit; font-size: 1.1rem; font-weight: 600; cursor: pointer; }
+.ob-langs button.on { border: 2px solid var(--ob-on); background: var(--ob-on); color: var(--ob-on-ink); }
+.ob-note { display: flex; gap: .8rem; align-items: flex-start; background: var(--ob-sand); border-radius: 18px; padding: 1rem 1.25rem; margin: 0; line-height: 1.55; }
+.ob-note svg { width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px; }
+.ob-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }
+.ob-roles button { text-align: left; display: flex; flex-direction: column; gap: .35rem; min-height: 110px; padding: 1.2rem 1.4rem;
+  border-radius: 18px; border: 1.5px solid var(--ob-line); background: var(--ob-card); color: var(--ob-ink); font: inherit; cursor: pointer; }
+.ob-roles button b { font-size: 1.15rem; }
+.ob-roles button span { color: var(--ob-es); line-height: 1.45; }
+.ob-roles button.on, .ob-roles button:hover { border: 2px solid var(--ob-on); background: var(--ob-peach); }
+.ob-three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .9rem; }
+.ob-three div { background: var(--ob-card); border: 1px solid var(--ob-line); border-radius: 18px; padding: 1.2rem; display: flex; flex-direction: column; gap: .4rem; }
+.ob-three b { color: var(--ob-soft); font-size: .95rem; }
+.ob-three p { margin: 0; line-height: 1.55; }
+.ob-role-card { background: var(--ob-peach); border-radius: 20px; padding: 1.3rem 1.6rem; display: flex; flex-direction: column; gap: .35rem; }
+.ob-role-card small { color: var(--ob-soft); font-weight: 600; font-size: .95rem; }
+.ob-role-card strong { font-size: 1.55rem; line-height: 1.2; }
+.ob-role-card p { margin: 0; }
+.ob-checks { list-style: none; margin: 0; padding: 0; background: var(--ob-card); border: 1px solid var(--ob-line); border-radius: 20px; }
+.ob-checks li { display: flex; gap: .8rem; padding: 1rem 1.4rem; border-bottom: 1px solid var(--ob-line); line-height: 1.5; }
+.ob-checks li:last-child { border-bottom: 0; }
+.ob-checks li::before { content: "✓"; color: var(--ob-amber); font-weight: 700; }
+.ob-actions { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.ob-btn { min-height: 52px; padding: 0 1.6rem; border-radius: 999px; font: inherit; font-size: 1.05rem; font-weight: 600; cursor: pointer;
+  border: 1.5px solid var(--ob-line); background: var(--ob-card); color: var(--ob-ink); }
+.ob-btn.primary { border-color: var(--ob-on); background: var(--ob-on); color: var(--ob-on-ink); }
+#onboard.ob-full .ob-dots span.on { background: var(--ob-amber); }
+.ob-foot { border-top: 1px solid var(--ob-line); padding-top: 1.1rem; display: flex; flex-direction: column; gap: .3rem; }
+.ob-foot p { margin: 0; }
+@media (max-width: 720px) { .ob-roles, .ob-three, .ob-langs { grid-template-columns: 1fr; } .ob-top { padding: .7rem 1rem; } }

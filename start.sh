@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
-# Start IHH Care Bridge in Docker and open it in the browser.
-# Inicia IHH Care Bridge en Docker y lo abre en el navegador.
+# Start Lamplight in Docker and open it in the browser.
+# Inicia Lamplight en Docker y lo abre en el navegador.
 #   ./start.sh          start (or rebuild after code changes)
 #   ./start.sh stop     stop the app (settings and the outcome log are kept)
 set -e
@@ -30,5 +30,5 @@ docker compose up --build -d
 url="http://localhost:${CAREBRIDGE_PORT:-8780}/"
 i=0
 while [ $i -lt 30 ] && ! curl -fs -o /dev/null "$url"; do i=$((i + 1)); sleep 1; done
-echo "IHH Care Bridge: $url"
+echo "Lamplight: $url"
 (command -v open >/dev/null && open "$url") || (command -v xdg-open >/dev/null && xdg-open "$url") || true

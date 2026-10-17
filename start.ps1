@@ -1,5 +1,5 @@
-# Start IHH Care Bridge in Docker and open it in the browser.
-# Inicia IHH Care Bridge en Docker y lo abre en el navegador.
+# Start Lamplight in Docker and open it in the browser.
+# Inicia Lamplight en Docker y lo abre en el navegador.
 #   .\start.ps1           start (or rebuild after code changes)
 #   .\start.ps1 -Stop     stop the app (settings and the outcome log are kept)
 param([switch]$Stop)
@@ -41,5 +41,5 @@ $url = "http://localhost:$port/"
 for ($i = 0; $i -lt 30; $i++) {
     try { Invoke-WebRequest $url -UseBasicParsing -TimeoutSec 2 | Out-Null; break } catch { Start-Sleep -Seconds 1 }
 }
-Write-Host "IHH Care Bridge: $url"
+Write-Host "Lamplight: $url"
 Start-Process $url

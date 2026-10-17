@@ -115,17 +115,13 @@
   "en": "Cost",
   "es": "Costo"
  },
- "ob_welcome": {
-  "en": "Welcome",
-  "es": "Bienvenido"
- },
  "ob_lang": {
-  "en": "Which language do you want?",
-  "es": "¿Qué idioma quiere usar?"
+  "en": "Which language feels like home?",
+  "es": "¿En qué idioma se siente en casa?"
  },
  "ob_lang_note": {
-  "en": "You can change it any time at the top of the screen.",
-  "es": "Puede cambiarlo cuando quiera arriba en la pantalla."
+  "en": "You can change this anytime, at the top of every screen.",
+  "es": "Puede cambiarlo cuando quiera, arriba en cada pantalla."
  },
  "ob_display": {
   "en": "Want bigger words, a dark screen, or colors for color blindness?",
@@ -140,8 +136,8 @@
   "es": "¿Cuál es su trabajo?"
  },
  "ob_role_coord": {
-  "en": "I answer hospital referrals",
-  "es": "Respondo referidos de hospitales"
+  "en": "Referral coordinator",
+  "es": "Coordinador/a de referidos"
  },
  "ob_role_clinical": {
   "en": "I am on the clinical line",
@@ -152,40 +148,8 @@
   "es": "Soy LVN o asistente médico"
  },
  "ob_role_cm": {
-  "en": "I help clients find what's next",
-  "es": "Ayudo a clientes con lo que sigue"
- },
- "ob_how": {
-  "en": "How it works",
-  "es": "Cómo funciona"
- },
- "ob_how_1": {
-  "en": "It reads the pages for you and points to the page and words it used.",
-  "es": "Lee las páginas por usted y le muestra la página y las palabras que usó."
- },
- "ob_how_2": {
-  "en": "It writes drafts. You check them and you send them.",
-  "es": "Escribe borradores. Usted los revisa y usted los envía."
- },
- "ob_how_3": {
-  "en": "It never says yes or no. You do. Only the clinical line can say no.",
-  "es": "Nunca dice sí o no. Usted decide. Solo la línea clínica puede decir que no."
- },
- "ob_safe": {
-  "en": "Keep it private",
-  "es": "Cuide la privacidad"
- },
- "ob_safe_1": {
-  "en": "Don't type names, birth dates, phone numbers or ID numbers.",
-  "es": "No escriba nombres, fechas de nacimiento, teléfonos ni números de ID."
- },
- "ob_safe_2": {
-  "en": "If you type one by mistake, the app stops and tells you.",
-  "es": "Si escribe uno por error, la app se detiene y le avisa."
- },
- "ob_safe_3": {
-  "en": "Lamplight helps you. It does not replace you.",
-  "es": "Lamplight le ayuda. No le reemplaza."
+  "en": "Case manager",
+  "es": "Administrador/a de casos"
  },
  "ob_next": {
   "en": "Next",
@@ -194,10 +158,6 @@
  "ob_back": {
   "en": "Back",
   "es": "Atrás"
- },
- "ob_start": {
-  "en": "Let's start",
-  "es": "Empecemos"
  },
  "ob_again": {
   "en": "Show me how it works again",
@@ -1858,5 +1818,173 @@
  "kipu_grp_note": {
   "en": "Intake note",
   "es": "Nota de admisión"
+ },
+ "ob_lang_label": {
+  "en": "Language",
+  "es": "Idioma"
+ },
+ "ob_s1_eyebrow": {
+  "en": "Welcome to Lamplight",
+  "es": "Le damos la bienvenida a Lamplight"
+ },
+ "ob_s1_title": {
+  "en": "Before anything else: thank you.",
+  "es": "Antes que nada: gracias."
+ },
+ "ob_s1_p1": {
+  "en": "Every packet, every note and every phone number is someone’s life. You know that better than anyone.",
+  "es": "Cada paquete, cada nota y cada número de teléfono es la vida de alguien. Usted lo sabe mejor que nadie."
+ },
+ "ob_s1_p2": {
+  "en": "Lamplight is here to carry some of the paperwork with you, so you have more time for the people you care for. Every decision stays with you.",
+  "es": "Lamplight está aquí para cargar un poco del papeleo con usted, para que tenga más tiempo para las personas que cuida. Cada decisión sigue siendo suya."
+ },
+ "ob_art_alt": {
+  "en": "A lamp glowing on an empty desk at night. The chair is pushed in and the work is stacked for morning.",
+  "es": "Una lámpara encendida sobre un escritorio vacío de noche. La silla está guardada y el trabajo queda listo para la mañana."
+ },
+ "ob_private": {
+  "en": "This app stays on this computer. Don’t type names, birth dates, phone numbers or ID numbers. If you type one by mistake, the app stops and tells you.",
+  "es": "Esta app se queda en esta computadora. No escriba nombres, fechas de nacimiento, teléfonos ni números de ID. Si escribe uno por error, la app se detiene y le avisa."
+ },
+ "ob_role_sub": {
+  "en": "We’ll start with the parts that help with your work. You can see everything else anytime.",
+  "es": "Empezaremos con las partes que ayudan con su trabajo. Puede ver todo lo demás cuando quiera."
+ },
+ "ob_line_coord": {
+  "en": "It finds the pages you need. You make the call.",
+  "es": "Encuentra las páginas que necesita. Usted decide."
+ },
+ "ob_line_clinical": {
+  "en": "Only you can say no.",
+  "es": "Solo usted puede decir que no."
+ },
+ "ob_line_lvn": {
+  "en": "Your note. Your name. Your words.",
+  "es": "Su nota. Su nombre. Sus palabras."
+ },
+ "ob_line_cm": {
+  "en": "It finds the door. You walk them through it.",
+  "es": "Encuentra la puerta. Usted los acompaña."
+ },
+ "ob_for_coord": {
+  "en": "For referral coordinators",
+  "es": "Para coordinadores de referidos"
+ },
+ "ob_for_clinical": {
+  "en": "For the clinical line",
+  "es": "Para la línea clínica"
+ },
+ "ob_for_lvn": {
+  "en": "For LVNs and medical assistants",
+  "es": "Para LVN y asistentes médicos"
+ },
+ "ob_for_cm": {
+  "en": "For case managers",
+  "es": "Para administradores de casos"
+ },
+ "ob_hope_coord": {
+  "en": "We hope you can stop carrying the follow-ups in your head.",
+  "es": "Ojalá pueda dejar de cargar los pendientes en la cabeza."
+ },
+ "ob_hope_clinical": {
+  "en": "We hope those nights get a little easier.",
+  "es": "Ojalá esas noches se hagan un poco más fáciles."
+ },
+ "ob_hope_lvn": {
+  "en": "We hope the note gets done during your shift, while the day is still fresh.",
+  "es": "Ojalá la nota quede lista durante su turno, mientras el día todavía está fresco."
+ },
+ "ob_hope_cm": {
+  "en": "We hope more of your time goes to the client in front of you.",
+  "es": "Ojalá más de su tiempo sea para el cliente que tiene enfrente."
+ },
+ "ob_s3_eyebrow": {
+  "en": "Before you start",
+  "es": "Antes de empezar"
+ },
+ "ob_s3_title": {
+  "en": "It never says yes or no. You do.",
+  "es": "Nunca dice sí o no. Usted decide."
+ },
+ "ob_s3_sub": {
+  "en": "This work touches people’s lives. That’s why people stay in every decision.",
+  "es": "Este trabajo toca vidas. Por eso las personas siguen en cada decisión."
+ },
+ "ob_does_h": {
+  "en": "What it does",
+  "es": "Lo que hace"
+ },
+ "ob_does": {
+  "en": "It goes through the pages, keeps track of the reminders and drafts the simple things. It shows you where it found each one.",
+  "es": "Revisa las páginas, lleva la cuenta de los recordatorios y prepara lo sencillo. Le muestra dónde encontró cada cosa."
+ },
+ "ob_yours_h": {
+  "en": "What stays yours",
+  "es": "Lo que sigue siendo suyo"
+ },
+ "ob_yours": {
+  "en": "Every yes, every no and every note with your name on it. Only the clinical line can say no.",
+  "es": "Cada sí, cada no y cada nota con su nombre. Solo la línea clínica puede decir que no."
+ },
+ "ob_wrong_h": {
+  "en": "When it’s wrong",
+  "es": "Cuando se equivoca"
+ },
+ "ob_wrong": {
+  "en": "It will be, sometimes. That’s why it shows its work, and why you always have the last word.",
+  "es": "A veces pasará. Por eso muestra su trabajo, y por eso usted siempre tiene la última palabra."
+ },
+ "ob_understand": {
+  "en": "I understand",
+  "es": "Entendido"
+ },
+ "ob_s4_title": {
+  "en": "Try it first on a made-up case.",
+  "es": "Pruébelo primero con un caso inventado."
+ },
+ "ob_s4_sub": {
+  "en": "Nothing here is real. Try it with made-up examples first, at your own pace. You stay in charge the whole time.",
+  "es": "Nada de esto es real. Pruébelo primero con ejemplos inventados, a su propio ritmo. Usted sigue a cargo todo el tiempo."
+ },
+ "ob_try_1": {
+  "en": "Made-up referrals and clients, never a real person.",
+  "es": "Referidos y clientes inventados, nunca una persona real."
+ },
+ "ob_try_2": {
+  "en": "In practice, nothing is sent.",
+  "es": "En la práctica, no se envía nada."
+ },
+ "ob_try_3": {
+  "en": "When you close the app, the pages and results are gone.",
+  "es": "Al cerrar la app, las páginas y los resultados se borran."
+ },
+ "ob_try_btn_coord": {
+  "en": "Practice with made-up referrals",
+  "es": "Practicar con referidos inventados"
+ },
+ "ob_try_btn_clinical": {
+  "en": "Practice with made-up referrals",
+  "es": "Practicar con referidos inventados"
+ },
+ "ob_try_btn_lvn": {
+  "en": "Practice with made-up examples",
+  "es": "Practicar con ejemplos inventados"
+ },
+ "ob_try_btn_cm": {
+  "en": "Try a made-up client",
+  "es": "Probar con un cliente inventado"
+ },
+ "ob_skip": {
+  "en": "Skip for now",
+  "es": "Omitir por ahora"
+ },
+ "ob_hope_end": {
+  "en": "We hope this gives you a little time back.",
+  "es": "Ojalá esto le devuelva un poco de tiempo."
+ },
+ "ob_questions": {
+  "en": "Questions are welcome. Ask your team’s Lamplight champion or your team lead.",
+  "es": "Las preguntas son bienvenidas. Pregunte a la persona referente de Lamplight de su equipo o a su líder de equipo."
  }
 }

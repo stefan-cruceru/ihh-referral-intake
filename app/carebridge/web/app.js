@@ -866,40 +866,70 @@ const store = {
 let OB = { step: 0, role: store.get("cb_role") || "coord" };
 const OB_ROLES = ["coord", "clinical", "lvn", "cm"];
 
+// Lamplight's lamp, on a light tile so it shows on light and dark backgrounds.
+const LAMP_SVG = `<span class="ob-logo"><img src="/static/lamplight-logo.svg" width="30" height="30" alt=""></span>`;
+const LOCK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
+// A lamp left on at an empty desk: it stays up so staff don't have to.
+const obArt = () => `<svg viewBox="0 0 1460 680" role="img" aria-label="${esc(t("ob_art_alt"))}"><defs><clipPath id="ob-frame"><rect width="1460" height="680" rx="60"></rect></clipPath><radialGradient id="ob-glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFE2B0" stop-opacity="0.85"></stop><stop offset="0.4" stop-color="#F7C489" stop-opacity="0.3"></stop><stop offset="1" stop-color="#F6B66A" stop-opacity="0"></stop></radialGradient></defs><g clip-path="url(#ob-frame)"><rect width="1460" height="680" fill="#5B4651"></rect><circle cx="700" cy="340" r="580" fill="url(#ob-glow)"></circle><rect x="120" y="60" width="360" height="280" rx="30" fill="#7A6A88"></rect><circle cx="400" cy="120" r="34" fill="#F6E7C8"></circle><circle cx="414" cy="110" r="30" fill="#7A6A88"></circle><line x1="300" y1="60" x2="300" y2="340" stroke="#5B4651" stroke-width="10"></line><line x1="120" y1="200" x2="480" y2="200" stroke="#5B4651" stroke-width="10"></line><circle cx="170" cy="100" r="3.5" fill="#F6E7C8"></circle><circle cx="240" cy="150" r="3" fill="#F6E7C8"></circle><circle cx="200" cy="270" r="3" fill="#F6E7C8"></circle><circle cx="350" cy="280" r="3.5" fill="#F6E7C8"></circle><circle cx="440" cy="300" r="3" fill="#F6E7C8"></circle><rect x="1196" y="348" width="178" height="24" rx="12" fill="#9A7058"></rect><rect x="1210" y="360" width="150" height="170" rx="22" fill="#8A6450"></rect><rect x="0" y="520" width="1460" height="40" fill="#C08A5E"></rect><rect x="0" y="560" width="1460" height="120" fill="#9C6B47"></rect><rect x="860" y="590" width="360" height="56" rx="8" fill="none" stroke="#86593C" stroke-width="4"></rect><circle cx="1040" cy="618" r="7" fill="#E3B07C"></circle><ellipse cx="700" cy="526" rx="300" ry="28" fill="#FFD79A" fill-opacity="0.4"></ellipse><rect x="420" y="430" width="80" height="90" rx="16" fill="#C8693C"></rect><path d="M500 450 q34 0 34 30 q0 30 -34 30" fill="none" stroke="#C8693C" stroke-width="12" stroke-linecap="round"></path><rect x="870" y="496" width="290" height="24" rx="4" fill="#F4EADB"></rect><rect x="880" y="474" width="280" height="24" rx="4" fill="#E8C9A6"></rect><rect x="866" y="452" width="284" height="24" rx="4" fill="#FBE3CC"></rect><rect x="900" y="444" width="70" height="12" rx="3" fill="#FBE3CC"></rect><path d="M566 350 L834 350 L930 520 L470 520 Z" fill="#FFE0A8" fill-opacity="0.28"></path><path d="M687 377 L713 377 C713 433 717 465 758 488 C777 498 793 501 793 510 C793 518 787 520 777 520 L623 520 C613 520 607 518 607 510 C607 501 623 498 642 488 C683 465 687 433 687 377 Z" fill="#3B2B22"></path><circle cx="700" cy="210" r="21" fill="#3B2B22"></circle><path d="M562 346 C572 270 630 223 700 223 C770 223 828 270 838 346 Z" fill="#3B2B22"></path><ellipse cx="700" cy="347" rx="138" ry="30" fill="#E39235"></ellipse><ellipse cx="700" cy="345" rx="86" ry="20" fill="#F7C25E"></ellipse><path d="M671 350 A33 33 0 1 1 729 350 Z" fill="#FFF3D6"></path></g></svg>`;
+const OB_STEPS = 4;
+
 function renderOnboard() {
-  const m = 3;
-  const dots = `<div class="ob-dots">${[0, 1, 2].map((i) => `<span class="${i === OB.step ? "on" : ""}"></span>`).join("")}</div>`;
-  let h = `<div class="ob-step">${esc(t("ob_step", { n: OB.step + 1, m }))}</div>`;
+  const r = OB.role;
+  const last = OB.step === OB_STEPS - 1;
+  const step = esc(t("ob_step", { n: OB.step + 1, m: OB_STEPS }));
+  const pressed = (on) => `class="${on ? "on" : ""}" aria-pressed="${on}"`;
+  const langs = `<button data-ob-lang="en" ${pressed(LANG === "en")}>English</button><button data-ob-lang="es" ${pressed(LANG === "es")}>Español</button>`;
+  let h = `<div class="ob-top"><div class="ob-brand">${LAMP_SVG}<b>Lamplight</b><span>Illumination Health + Home</span></div>
+    <div class="ob-langpill" role="group" aria-label="${esc(t("ob_lang_label"))}">${langs}</div></div><div class="ob-main">`;
   if (OB.step === 0) {
-    h += `<h2 id="ob-title">${esc(t("ob_welcome"))}</h2><p>${esc(t("ob_lang"))}</p>
-      <div class="ob-choices"><button data-ob-lang="en" class="${LANG === "en" ? "on" : ""}">English</button><button data-ob-lang="es" class="${LANG === "es" ? "on" : ""}">Español</button></div>
-      <p class="muted">${esc(t("ob_lang_note"))}</p>
-      <p class="muted">${esc(t("ob_display"))} <button class="btn sm" id="ob-display">${esc(t("ob_display_btn"))}</button></p>`;
+    h += `<div class="ob-art">${obArt()}</div>
+      <div class="ob-center"><p class="ob-step">${esc(t("ob_s1_eyebrow"))} · ${step}</p>
+        <h2 id="ob-title">${esc(t("ob_s1_title"))}</h2>
+        <p class="ob-lede">${esc(t("ob_s1_p1"))}</p><p class="ob-lede ob-soft">${esc(t("ob_s1_p2"))}</p></div>
+      <div class="ob-card"><h3>${esc(t("ob_lang"))}</h3><div class="ob-langs">${langs}</div>
+        <p class="ob-soft">${esc(t("ob_lang_note"))}</p>
+        <p class="ob-soft">${esc(t("ob_display"))} <button class="btn sm" id="ob-display">${esc(t("ob_display_btn"))}</button></p></div>
+      <p class="ob-note">${LOCK_SVG}<span>${esc(t("ob_private"))}</span></p>`;
   } else if (OB.step === 1) {
-    h += `<h2 id="ob-title">${esc(t("ob_role"))}</h2><div class="ob-choices">${OB_ROLES.map((r) => `<button data-ob-role="${r}" class="${OB.role === r ? "on" : ""}">${esc(t("ob_role_" + r))}</button>`).join("")}</div>`;
+    h += `<div class="ob-head"><p class="ob-step">${step}</p><h2 id="ob-title">${esc(t("ob_role"))}</h2><p class="ob-lede ob-soft">${esc(t("ob_role_sub"))}</p></div>
+      <div class="ob-roles">${OB_ROLES.map((x) => `<button data-ob-role="${x}" ${pressed(r === x)}><b>${esc(t("ob_role_" + x))}</b><span>${esc(t("ob_line_" + x))}</span></button>`).join("")}</div>`;
+  } else if (OB.step === 2) {
+    h += `<div class="ob-head"><p class="ob-step">${step} · ${esc(t("ob_s3_eyebrow"))}</p><h2 id="ob-title">${esc(t("ob_s3_title"))}</h2><p class="ob-lede ob-soft">${esc(t("ob_s3_sub"))}</p></div>
+      <div class="ob-three">${["does", "yours", "wrong"].map((k) => `<div><b>${esc(t("ob_" + k + "_h"))}</b><p>${esc(t("ob_" + k))}</p></div>`).join("")}</div>
+      <div class="ob-role-card"><small>${esc(t("ob_for_" + r))}</small><strong>${esc(t("ob_line_" + r))}</strong><p>${esc(t("ob_hope_" + r))}</p></div>`;
   } else {
-    h += `<h2 id="ob-title">${esc(t("ob_how"))}</h2><ul class="ob-list"><li>${esc(t("ob_how_1"))}</li><li>${esc(t("ob_how_2"))}</li><li>${esc(t("ob_how_3"))}</li></ul>
-      <h2>${esc(t("ob_safe"))}</h2><ul class="ob-list"><li>${esc(t("ob_safe_1"))}</li><li>${esc(t("ob_safe_2"))}</li><li>${esc(t("ob_safe_3"))}</li></ul>`;
+    h += `<div class="ob-head"><p class="ob-step">${step}</p><h2 id="ob-title">${esc(t("ob_s4_title"))}</h2><p class="ob-lede ob-soft">${esc(t("ob_s4_sub"))}</p></div>
+      <ul class="ob-checks"><li>${esc(t("ob_try_1"))}</li><li>${esc(t("ob_try_2"))}</li><li>${esc(t("ob_try_3"))}</li></ul>`;
   }
-  h += `<div class="row" style="justify-content:space-between">${dots}<div class="row">
-    ${OB.step ? `<button class="btn ghost" id="ob-back">${esc(t("ob_back"))}</button>` : ""}
-    <button class="btn primary big" id="ob-next">${esc(t(OB.step === 2 ? "ob_start" : "ob_next"))}</button></div></div>`;
+  const dots = `<div class="ob-dots">${[0, 1, 2, 3].map((i) => `<span class="${i === OB.step ? "on" : ""}"></span>`).join("")}</div>`;
+  h += `<div class="ob-actions">${dots}<div class="row">
+    ${OB.step ? `<button class="ob-btn" id="ob-back">${esc(t("ob_back"))}</button>` : ""}
+    ${last ? `<button class="ob-btn" id="ob-skip">${esc(t("ob_skip"))}</button>` : ""}
+    <button class="ob-btn primary" id="ob-next">${esc(t(last ? "ob_try_btn_" + r : OB.step === 2 ? "ob_understand" : "ob_next"))}</button></div></div>`;
+  if (last) h += `<div class="ob-foot"><p><b>${esc(t("ob_hope_end"))}</b></p><p class="ob-soft">${esc(t("ob_questions"))}</p></div>`;
+  h += `</div>`;
   $("#onboard-body").innerHTML = h;
   $$("[data-ob-lang]").forEach((b) => b.addEventListener("click", async () => { await setLang(b.dataset.obLang); renderOnboard(); }));
   $$("[data-ob-role]").forEach((b) => b.addEventListener("click", () => { OB.role = b.dataset.obRole; renderOnboard(); }));
   $("#ob-back")?.addEventListener("click", () => { OB.step--; renderOnboard(); });
   // Opens the Display panel (display.js). Stop the click here so its click-outside check doesn't close it again.
   $("#ob-display")?.addEventListener("click", (e) => { e.stopPropagation(); $(".disp-btn")?.click(); });
-  $("#ob-next").addEventListener("click", () => {
-    if (OB.step < 2) { OB.step++; return renderOnboard(); }
+  // Practice: referral staff get the made-up referrals; the other jobs land where their practice lives.
+  const finish = (practice) => {
     store.set("cb_onboarded", "1");
     store.set("cb_role", OB.role);
     $("#onboard").classList.add("hidden");
     if (OB.role === "cm") goTab("resources");
     else if (OB.role === "lvn") { goTab("staff"); $('.role[data-role="lvn"]').click(); }
-    else goTab("referrals");
+    else { goTab("referrals"); if (practice) $("#start-demo")?.click(); }
+  };
+  $("#ob-skip")?.addEventListener("click", () => finish(false));
+  $("#ob-next").addEventListener("click", () => {
+    if (!last) { OB.step++; return renderOnboard(); }
+    finish(true);
   });
-  $("#ob-next").focus();
+  $("#onboard-body").scrollTop = 0;
+  $("#ob-next").focus({ preventScroll: true });
 }
 function startOnboard() {
   OB.step = 0;
