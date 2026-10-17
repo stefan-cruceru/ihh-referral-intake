@@ -300,9 +300,13 @@ def record(browser, state, admin_state, args):
         page.evaluate("document.querySelector('#film-callout')?.remove()")
 
     def focus(locator):
-        locator.first.scroll_into_view_if_needed()
-        page.wait_for_timeout(100)
-        box = locator.first.bounding_box()
+        # Queue polling replaces rows. Resolve, scroll, and measure in one browser
+        # turn so a detached handle cannot stall while Playwright waits for stability.
+        box = locator.first.evaluate("""el => {
+            el.scrollIntoView({block:'nearest', inline:'nearest', behavior:'instant'});
+            const r = el.getBoundingClientRect();
+            return {x:r.x, y:r.y, width:r.width, height:r.height};
+        }""")
         if box:
             page.mouse.move(box["x"] + min(box["width"] / 2, 210),
                             box["y"] + min(box["height"] / 2, 60), steps=18)
@@ -417,7 +421,7 @@ def record(browser, state, admin_state, args):
                           "actor_rows": page.locator("#rows tr").filter(has_text="Avery").count(),
                           "yes_rows": page.locator("#rows tr").filter(has_text="Said yes").count()}), flush=True)
         raise
-    decision.scroll_into_view_if_needed()
+    decision.evaluate("el => el.scrollIntoView({block:'nearest', behavior:'instant'})")
     focus(decision.locator("td").nth(3))
     me = check_response(context.request.get(args.base + "/api/me"), "audit viewer identity")
     assert me.get("role") == "admin" and me.get("email") == "demo.it@ihh.example.org"
