@@ -23,7 +23,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from PIL import Image
 
-from . import config, guard, llm, rules
+from . import config, critical, guard, llm, rules
 from .pages import Page
 
 PAGE_TYPES = [
@@ -527,7 +527,7 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
 
     illegible = sorted(n for n, t in page_text.items() if t.get("handwriting") in ILLEGIBLE)
     recommendation = route(out_rules, diagnoses, checklist, gates, illegible)
-    return {
+    report = {
         "pages": [{**sorted_pages[n], "summary": page_summaries.get(n, ""),
                    "transcript": page_text.get(n, {}).get("transcript", ""),
                    "handwriting": page_text.get(n, {}).get("handwriting", "none")} for n in sorted(sorted_pages)],
@@ -554,6 +554,13 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
                "not_found": sum(1 for f in facts if f["verify"] == "not_found"),
                "downgrades": downgrades},
     }
+    # A critical value nobody found is never a quiet "likely yes": it goes on the list to ask for.
+    report["critical"] = critical.check(report)
+    absent = [c["id"] for c in report["critical"] if c["status"] == "not_found"]
+    recommendation["critical_missing"] = absent
+    if absent and recommendation["code"] == "likely_yes":
+        recommendation["code"] = "needs_info"
+    return report
 
 
 _TEMP = re.compile(r"\b(?:t|temp|temperature)\s*:?\s*(\d{2,3}(?:\.\d)?)", re.I)

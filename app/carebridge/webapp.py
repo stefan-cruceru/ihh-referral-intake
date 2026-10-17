@@ -8,6 +8,7 @@ import json
 import mimetypes
 import os
 import re
+import secrets
 import sys
 import threading
 import time
@@ -17,7 +18,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import APP_NAME, __version__, auth, config, drafts, gateway, guard, handout, intake, llm, mail, mcp, phi, resources, rules, staff, store, tracker
+from . import APP_NAME, __version__, auth, config, critical, drafts, gateway, guard, handout, hospital, intake, llm, mail, mcp, phi, resources, rules, staff, store, tracker
 from .pages import load_packet
 from .paths import BUNDLE, DEMO_DIR, FROZEN, load_json, packets_dir
 
@@ -25,6 +26,7 @@ if not FROZEN:
     sys.path.insert(0, str(BUNDLE.parent))  # app/, so `demo` imports in a source checkout
 
 TRACK = tracker.Tracker()
+TRACK.overnight_clock = config.load_settings().get("overnight_clock") or "arrival"
 PACKETS: dict[str, tuple[bytes, str]] = {}  # card id -> (file bytes, filename), in memory only
 REVIEWS: dict[str, intake.Review] = {}  # card id -> running or finished review
 SAMPLES: dict[str, dict] = {}
@@ -226,7 +228,10 @@ def watch_inbox(interval: float = 5.0) -> None:
                             traceback.print_exc()
                         continue
                     case = f"REF-{len(TRACK.cards) + 1:03d}"
-                    fields = {"id": case, "case_no": case, "channel": "fax" if "fax" in f.name.lower() else "email",
+                    low = f.name.lower()
+                    # Aidin referrals saved as a PDF into the same folder (unconfirmed with IHH) keep their channel.
+                    channel = "aidin" if "aidin" in low else "fax" if "fax" in low else "email"
+                    fields = {"id": case, "case_no": case, "channel": channel,
                               "hospital": "unknown", "packet_used": f.name}
                     fields.update(_form_sidecar(f))
                     card = TRACK.add(fields, arrived_at=f.stat().st_mtime)
@@ -236,6 +241,66 @@ def watch_inbox(interval: float = 5.0) -> None:
             time.sleep(interval)
 
     threading.Thread(target=loop, daemon=True).start()
+
+
+# What the person who sent a referral may see on the upload page: the status in their words, nothing
+# from the packet and never "likely no" (m365/referrals-table.md, "Status: what IHH sees").
+PUBLIC_STATUS = {"received": "received", "reviewing": "reviewing", "needs_info": "needs_info",
+                 "clinical_check": "escalated", "likely_no": "escalated", "intake_cleared": "intake_cleared",
+                 "accepted": "accepted", "denied": "not_accepted", "withdrawn": "closed"}
+SOURCES = ("hospital", "snf", "community", "partner")
+
+
+def _field(form: dict, k: str, n: int = 120) -> str:
+    return re.sub(r"\s+", " ", str(form.get(k) or "")).strip()[:n]
+
+
+def send_page_upload(data: bytes, name: str, form: dict) -> dict:
+    """The hospital upload page (IHH's QR-code plan): one front door, a receipt right away.
+    More documents for an open case come in as their own packet, linked to it, and stop the reminders."""
+    threat = guard.scan_file(data, name)
+    if threat["verdict"] == guard.BLOCK:
+        raise guard.Blocked(threat)
+    lang = "es" if form.get("lang") == "es" else "en"
+    parent = TRACK.cards.get(_field(form, "case_code", 24))
+    if parent and not secrets.compare_digest(str(form.get("key") or ""), parent.get("receipt_key") or ""):
+        parent = None  # a case code alone is not enough to add to someone else's referral
+    if parent:
+        case = f"{parent['case_no']}-M{sum(1 for c in TRACK.cards if c.startswith(parent['case_no'] + '-M')) + 1}"
+    else:
+        case = f"REF-{len(TRACK.cards) + 1:03d}"
+    who = ", ".join(x for x in (_field(form, "name"), _field(form, "role")) if x)
+    card = TRACK.add({"id": case, "case_no": case, "channel": "upload_page", "hospital": _field(form, "facility") or "unknown",
+                      "source": form.get("source") if form.get("source") in SOURCES else None,
+                      "case_manager": who or None, "cm_email": _field(form, "email") or None,
+                      "cm_phone": _field(form, "phone", 40) or None, "cm_lang": lang, "packet_used": name,
+                      "more_for": parent["id"] if parent else None, "receipt_key": secrets.token_urlsafe(9)})
+    PACKETS[card["id"]] = (data, name)
+    if parent:
+        TRACK.act(parent["id"], "hospital_replied", "hospital", f"more documents: {case}")
+    hospital.sync(TRACK)
+    if config.get_api_key():
+        start_review(card["id"])
+    receipt = next(m for m in TRACK.cards[case]["hospital_messages"] if m["kind"] == "received")
+    return {"case_code": case, "key": card["receipt_key"], "arrived_at": card["arrived_at"],
+            "deadline": TRACK.view(case)["deadline"], "receipt": {k: receipt[k] for k in ("subject", "body")}}
+
+
+def send_page_status(case: str, key: str, lang: str) -> dict | None:
+    c = TRACK.cards.get(case)
+    if not c or not key or not secrets.compare_digest(key, c.get("receipt_key") or ""):
+        return None
+    st = PUBLIC_STATUS.get(c["status"], "received")
+    if st == "received" and REVIEWS.get(case) is not None:
+        st = "reviewing"
+    msg = hospital.templates()[st]["es" if lang == "es" else "en"]
+    return {"case_code": case, "status": st, "subject": msg["subject"].format(case_code=case)}
+
+
+def send_page_checklist() -> list[dict]:
+    """IHH's own list of documents to include, so the sender can check before sending."""
+    every = rules.all_rules()
+    return [{"id": d, "en": every[d]["text"], "es": drafts.DOC_ES.get(d, every[d]["text"])} for d in rules.checklist_ids()]
 
 
 def card_report(cid: str) -> dict | None:
@@ -305,6 +370,13 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if p in ("/", "/index.html"):
                 return self._static("index.html")
+            if p in ("/send", "/send/"):
+                return self._static("send.html")
+            if p == "/send/checklist":
+                return self._json({"docs": send_page_checklist()})
+            if p == "/send/status":
+                got = send_page_status(q.get("case", [""])[0], q.get("key", [""])[0], q.get("lang", ["en"])[0])
+                return self._json(got) if got else self._json({"error": "not found"}, 404)
             if p.startswith("/static/"):
                 return self._static(p[len("/static/"):])
             if p == "/api/state":
@@ -314,6 +386,7 @@ class Handler(BaseHTTPRequestHandler):
                                    "model": config.model(), "fast_model": config.fast_model(),
                                    "lang": s.get("lang", "en"), "real_packets": real, "provider": config.provider(),
                                    "foundry_resource": config.foundry_resource(), "inbox_dir": config.inbox_dir(), "kipu_url": config.kipu_url(),
+                                   "overnight_clock": TRACK.overnight_clock, "auto_hospital_messages": hospital.auto(),
                                    "db": str(store.db_path())})
             if p == "/api/queue":
                 for c in TRACK.tick():
@@ -325,6 +398,7 @@ class Handler(BaseHTTPRequestHandler):
                     v["review_progress"] = r.progress[-1] if r and r.progress else None
                     v["has_packet"] = v["id"] in PACKETS
                     v.pop("body", None)
+                    v.pop("receipt_key", None)
                 return self._json({"now": TRACK.clock.now(), "speed": TRACK.clock.speed, "cards": q_,
                                    "pending": len(TRACK.pending), "peak": TRACK.peak_warning(),
                                    "report": TRACK.report(), "withdraw_reasons": TRACK.report_withdrawals(),
@@ -336,7 +410,10 @@ class Handler(BaseHTTPRequestHandler):
                     return self._json({"error": "not found"}, 404)
                 if len(parts) == 3:
                     r = REVIEWS.get(cid)
-                    return self._json({"card": TRACK.view(cid), "report": card_report(cid),
+                    rep_ = card_report(cid)
+                    critical.of(rep_)
+                    view = {k: v for k, v in TRACK.view(cid).items() if k != "receipt_key"}
+                    return self._json({"card": view, "report": rep_,
                                        "progress": r.progress if r else [], "error": r.error if r else None,
                                        "audit": [a for a in TRACK.audit if a["card"] == cid]})
                 if parts[3] == "pages" and len(parts) == 5:
@@ -380,9 +457,25 @@ class Handler(BaseHTTPRequestHandler):
             if p == "/api/key/clear":
                 config.clear_api_key()
                 return self._json({"ok": True})
+            if p == "/send/upload":
+                data = self._body()
+                if not data:
+                    return self._json({"error": "empty file"}, 400)
+                name = re.sub(r"[^\w .()-]", "_", Path(self.headers.get("X-Filename") or "packet.pdf").name)[:120]
+                if not name.lower().endswith((".pdf", ".tif", ".tiff")):
+                    return self._json({"error": "pdf_only"}, 400)
+                form = {k: v[0] for k, v in parse_qs(urlparse(self.path).query).items()}
+                return self._json(send_page_upload(data, name, form))
             if p == "/api/settings":
                 b = self._jbody()
-                keys = ("lang", "model", "fast_model", "provider", "foundry_resource", "inbox_dir", "kipu_url")
+                keys = ("lang", "model", "fast_model", "provider", "foundry_resource", "inbox_dir", "kipu_url",
+                        "overnight_clock", "auto_hospital_messages")
+                if "overnight_clock" in b:
+                    if b["overnight_clock"] not in ("arrival", "morning"):
+                        return self._json({"error": "overnight_clock is arrival or morning"}, 400)
+                    TRACK.overnight_clock = b["overnight_clock"]
+                if "auto_hospital_messages" in b:
+                    b["auto_hospital_messages"] = bool(b["auto_hospital_messages"])
                 return self._json(config.save_settings({k: v for k, v in b.items() if k in keys}))
             if p == "/api/demo":
                 b = self._jbody()
@@ -536,6 +629,10 @@ class Handler(BaseHTTPRequestHandler):
         rep = card_report(cid)
         out = {"more_time": drafts.more_time(card, lang), "chase_nudge": drafts.chase(card, "nudge", lang),
                "chase_supervisor": drafts.chase(card, "supervisor", lang)}
+        if card.get("clinical_sent_at"):
+            m = hospital.render("escalated", card, lang)
+            out["escalated"] = {"kind": "escalated", "to": m["to"], "text": f"Subject: {m['subject']}\n\n{m['body']}",
+                                "note": drafts.AI_NOTE[lang]}
         if rep:
             out["missing_items"] = drafts.missing_items(card, rep, lang)
             out["clinical"] = drafts.clinical_handoff(card, rep, lang)
@@ -603,6 +700,7 @@ def notify_loop(interval: float = 10.0) -> None:
         while True:
             try:
                 notify.sync(TRACK)
+                hospital.sync(TRACK)
             except Exception:
                 traceback.print_exc()
             time.sleep(interval)

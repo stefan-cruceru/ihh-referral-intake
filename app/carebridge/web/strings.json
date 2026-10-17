@@ -1378,5 +1378,321 @@
  "not_allowed": {
   "en": "Your role can't do this. Ask your lead.",
   "es": "Su función no permite hacer esto. Pregunte a su líder."
+ },
+ "channel_aidin": {
+  "en": "Aidin",
+  "es": "Aidin"
+ },
+ "channel_upload_page": {
+  "en": "Upload page",
+  "es": "Página para subir"
+ },
+ "source_hospital": {
+  "en": "Hospital",
+  "es": "Hospital"
+ },
+ "source_snf": {
+  "en": "Nursing facility",
+  "es": "Centro de enfermería"
+ },
+ "source_community": {
+  "en": "Community",
+  "es": "Comunidad"
+ },
+ "source_partner": {
+  "en": "Partner",
+  "es": "Socio"
+ },
+ "overnight_chip": {
+  "en": "Came in overnight",
+  "es": "Llegó de noche"
+ },
+ "overnight_tip": {
+  "en": "It came in after 8:30 PM. The morning shift works it.",
+  "es": "Llegó después de las 8:30 PM. El turno de la mañana lo trabaja."
+ },
+ "clock_from_morning": {
+  "en": "2 hours count from {time}",
+  "es": "Las 2 horas cuentan desde {time}"
+ },
+ "more_for": {
+  "en": "more papers for {case}",
+  "es": "más papeles para {case}"
+ },
+ "flow_settings_title": {
+  "en": "Overnight and messages to the hospital",
+  "es": "De noche y mensajes al hospital"
+ },
+ "overnight_help": {
+  "en": "A referral can come in at night. When do its 2 hours start? Ask IHH. Until then, it starts when it arrives.",
+  "es": "Un referido puede llegar de noche. ¿Cuándo empiezan sus 2 horas? Pregunte a IHH. Mientras tanto, empiezan cuando llega."
+ },
+ "overnight_arrival": {
+  "en": "When it arrives",
+  "es": "Cuando llega"
+ },
+ "overnight_morning": {
+  "en": "When the morning shift starts (7:00 AM)",
+  "es": "Cuando empieza el turno de la mañana (7:00 AM)"
+ },
+ "auto_msgs_help": {
+  "en": "The receipt, the reminder and \"escalated\" say only the case code and where it stands. No decision and nothing about the patient. Turn this on only if IHH agrees. In practice nothing is really sent.",
+  "es": "El recibo, el recordatorio y \"en revisión clínica\" solo dicen el código de caso y cómo va. Ninguna decisión y nada del paciente. Actívelo solo si IHH está de acuerdo. En práctica no se envía nada de verdad."
+ },
+ "auto_msgs": {
+  "en": "Send status messages on their own",
+  "es": "Enviar mensajes de estado solos"
+ },
+ "send_page_help": {
+  "en": "The page hospitals use to send a referral (for a QR code):",
+  "es": "La página que usan los hospitales para mandar un referido (para un código QR):"
+ },
+ "h_critical": {
+  "en": "Numbers this patient needs",
+  "es": "Números que necesita este paciente"
+ },
+ "critical_note": {
+  "en": "For each health problem in the packet, the number or record it needs. Found, on a page to check, or not found. Never left out.",
+  "es": "Para cada problema de salud del paquete, el número o registro que necesita. Encontrado, en una página para revisar, o no encontrado. Nunca se omite."
+ },
+ "crit_found": {
+  "en": "Found",
+  "es": "Encontrado"
+ },
+ "crit_on_page": {
+  "en": "On the page, check it",
+  "es": "En la página, revíselo"
+ },
+ "crit_not_found": {
+  "en": "Not found: ask for it",
+  "es": "No encontrado: pídalo"
+ },
+ "crit_because": {
+  "en": "Because the packet says \"{w}\"",
+  "es": "Porque el paquete dice \"{w}\""
+ },
+ "h_clinical": {
+  "en": "Clinical reviewer",
+  "es": "Revisor clínico"
+ },
+ "cr_sent": {
+  "en": "Sent",
+  "es": "Enviado"
+ },
+ "cr_first_note": {
+  "en": "First note",
+  "es": "Primera nota"
+ },
+ "cr_done": {
+  "en": "Done",
+  "es": "Listo"
+ },
+ "cr_took": {
+  "en": "Took {n} min",
+  "es": "Tomó {n} min"
+ },
+ "cr_waiting": {
+  "en": "Waiting {n} min",
+  "es": "Esperando {n} min"
+ },
+ "cr_asks": {
+  "en": "Ask the hospital for:",
+  "es": "Pedir al hospital:"
+ },
+ "cr_note_ph": {
+  "en": "Note, with the page. Example: page 16 shows a wound on the heel.",
+  "es": "Nota, con la página. Ejemplo: la página 16 muestra una herida en el talón."
+ },
+ "cr_add_note": {
+  "en": "Add note",
+  "es": "Agregar nota"
+ },
+ "cr_mark_done": {
+  "en": "My check is done",
+  "es": "Terminé mi revisión"
+ },
+ "cr_ask_ph": {
+  "en": "Something to ask the hospital for",
+  "es": "Algo que pedir al hospital"
+ },
+ "cr_add_ask": {
+  "en": "Add to the list",
+  "es": "Agregar a la lista"
+ },
+ "cr_only": {
+  "en": "Only the clinical reviewer writes here. What you add to the list goes into the \"What's missing\" draft.",
+  "es": "Solo el revisor clínico escribe aquí. Lo que agregue a la lista va al borrador de \"Lo que falta\"."
+ },
+ "cr_type_first": {
+  "en": "Type it first.",
+  "es": "Escríbalo primero."
+ },
+ "cr_stat": {
+  "en": "Clinical check: {n} min (middle), {w} waiting",
+  "es": "Revisión clínica: {n} min (en medio), {w} esperando"
+ },
+ "cr_stat_tip": {
+  "en": "How long the clinical second check takes, from sent to done.",
+  "es": "Cuánto tarda la segunda revisión clínica, de enviada a terminada."
+ },
+ "h_staff_checks": {
+  "en": "Checks a person does",
+  "es": "Revisiones que hace una persona"
+ },
+ "sc_note": {
+  "en": "Do these yourself, outside this app. The app never looks anyone up. It only keeps who did it and when.",
+  "es": "Hágalas usted, fuera de esta app. La app nunca busca a nadie. Solo guarda quién lo hizo y cuándo."
+ },
+ "sc_returning_client": {
+  "en": "Has this person been with IHH before?",
+  "es": "¿Esta persona ya estuvo con IHH?"
+ },
+ "sc_returning_client_how": {
+  "en": "Look in IHH's records. If yes, use their chart. If no, make a new one.",
+  "es": "Busque en los registros de IHH. Si sí, use su expediente. Si no, haga uno nuevo."
+ },
+ "sc_background": {
+  "en": "Background check",
+  "es": "Revisión de antecedentes"
+ },
+ "sc_background_how": {
+  "en": "Superior Court website and the sex offender list. If something comes up, the lead decides how serious it is.",
+  "es": "Sitio de la Corte Superior y la lista de delincuentes sexuales. Si sale algo, el líder decide qué tan grave es."
+ },
+ "sc_r_new": {
+  "en": "New to IHH",
+  "es": "Nuevo en IHH"
+ },
+ "sc_r_returning": {
+  "en": "Been here before",
+  "es": "Ya estuvo aquí"
+ },
+ "sc_r_clear": {
+  "en": "Nothing found",
+  "es": "No salió nada"
+ },
+ "sc_r_look": {
+  "en": "Lead needs to look",
+  "es": "El líder debe revisar"
+ },
+ "h_hospital_msgs": {
+  "en": "What the hospital heard",
+  "es": "Lo que supo el hospital"
+ },
+ "hm_note": {
+  "en": "Only the case code and where it stands. No decision and nothing about the patient.",
+  "es": "Solo el código de caso y cómo va. Ninguna decisión y nada del paciente."
+ },
+ "hm_received": {
+  "en": "Receipt",
+  "es": "Recibo"
+ },
+ "hm_reminder": {
+  "en": "Reminder",
+  "es": "Recordatorio"
+ },
+ "hm_escalated": {
+  "en": "Escalated",
+  "es": "En revisión clínica"
+ },
+ "hm_mode_draft": {
+  "en": "Draft: you send it",
+  "es": "Borrador: usted lo envía"
+ },
+ "hm_mode_would_send": {
+  "en": "Would go out on its own (practice: not sent)",
+  "es": "Saldría solo (práctica: no se envió)"
+ },
+ "d_escalated": {
+  "en": "Escalated",
+  "es": "En revisión clínica"
+ },
+ "send_title": {
+  "en": "Send a referral to Illumination Health + Home",
+  "es": "Mande un referido a Illumination Health + Home"
+ },
+ "send_intro": {
+  "en": "Upload the referral packet here. You get a case code right away. We answer within 2 hours.",
+  "es": "Suba aquí el paquete del referido. Recibe un código de caso enseguida. Respondemos en 2 horas."
+ },
+ "send_docs_title": {
+  "en": "Please include:",
+  "es": "Por favor incluya:"
+ },
+ "send_file": {
+  "en": "Referral packet (PDF)",
+  "es": "Paquete del referido (PDF)"
+ },
+ "send_file_help": {
+  "en": "One PDF with all the pages.",
+  "es": "Un PDF con todas las páginas."
+ },
+ "send_name": {
+  "en": "Your name",
+  "es": "Su nombre"
+ },
+ "send_role": {
+  "en": "Your job",
+  "es": "Su puesto"
+ },
+ "send_email": {
+  "en": "Your email",
+  "es": "Su correo"
+ },
+ "send_phone": {
+  "en": "Your phone",
+  "es": "Su teléfono"
+ },
+ "send_facility": {
+  "en": "Hospital or place",
+  "es": "Hospital o lugar"
+ },
+ "send_source": {
+  "en": "You are sending from a",
+  "es": "Lo manda desde un"
+ },
+ "send_case_code": {
+  "en": "Case code (only if adding papers)",
+  "es": "Código de caso (solo si agrega papeles)"
+ },
+ "send_case_code_help": {
+  "en": "Leave empty for a new referral.",
+  "es": "Déjelo vacío para un referido nuevo."
+ },
+ "send_privacy": {
+  "en": "Only IHH's referral team sees what you send.",
+  "es": "Solo el equipo de referidos de IHH ve lo que manda."
+ },
+ "send_go": {
+  "en": "Send",
+  "es": "Enviar"
+ },
+ "send_got_it": {
+  "en": "We got it. Your case code:",
+  "es": "Lo recibimos. Su código de caso:"
+ },
+ "send_status_now": {
+  "en": "Right now:",
+  "es": "Ahora:"
+ },
+ "send_keep_link": {
+  "en": "Keep this page open, or save the link below, to send more papers for this case.",
+  "es": "Deje esta página abierta, o guarde el enlace de abajo, para mandar más papeles para este caso."
+ },
+ "send_add_more": {
+  "en": "Send more papers for this case",
+  "es": "Mandar más papeles para este caso"
+ },
+ "send_err": {
+  "en": "It didn't go through. Please try again, or fax it.",
+  "es": "No se pudo enviar. Intente otra vez, o mándelo por fax."
+ },
+ "send_err_pdf_only": {
+  "en": "Please send a PDF.",
+  "es": "Por favor mande un PDF."
+ },
+ "send_err_security_block": {
+  "en": "We can't take this file. Please fax it instead.",
+  "es": "No podemos recibir este archivo. Por favor mándelo por fax."
  }
 }

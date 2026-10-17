@@ -8,12 +8,24 @@ on-time wrong one.
 import itertools
 import threading
 import time
+from datetime import datetime, timedelta
 
 from . import store
 
 CLOCK_MIN = 120
 STAGE_BUDGET = {"review": 5, "coordinator": 60, "hospital": 90, "decision": 105}  # minutes after arrival
 LADDER = {"lead_unopened": 60, "clinical_repage": 30, "more_time": 15, "nudge": 30, "supervisor": 60}
+
+# After hours (docs/workflow-and-timing.md, "What the intake director told us"): the team is on site until
+# 8:30 PM, then two people cover by phone and the morning shift works what came in overnight. The morning
+# start is a placeholder. Whether the 2 hours count from arrival or from the morning shift is IHH's call
+# (open question 5), so it is a setting: "arrival" (default) or "morning".
+TEAM_UNTIL = (20, 30)
+MORNING_START = (7, 0)
+
+# Steps only a person does (the director's step-by-step). The tool keeps who did it and when, never what
+# they found: no names, no court records. "look" sends it to the lead to judge, as today.
+STAFF_CHECKS = {"returning_client": ("new", "returning"), "background": ("clear", "look")}
 
 # Why referrals walk, from IHH's own look at withdrawals (docs/workflow-and-timing.md section 4).
 # Match IHH's exact categories once we see them.
@@ -73,9 +85,22 @@ class Clock:
             self.speed = speed
 
 
+def is_overnight(ts: float) -> bool:
+    d = datetime.fromtimestamp(ts)
+    return (d.hour, d.minute) >= TEAM_UNTIL or (d.hour, d.minute) < MORNING_START
+
+
+def morning_after(ts: float) -> float:
+    """The next morning-shift start at or after ts."""
+    d = datetime.fromtimestamp(ts)
+    m = d.replace(hour=MORNING_START[0], minute=MORNING_START[1], second=0, microsecond=0)
+    return (m if m >= d else m + timedelta(days=1)).timestamp()
+
+
 class Tracker:
     def __init__(self):
         self.clock = Clock()
+        self.overnight_clock = "arrival"
         self.cards: dict[str, dict] = {}
         self.staff: list[dict] = [
             {"name": "Lead", "role": "lead", "on_shift": True},
@@ -119,9 +144,11 @@ class Tracker:
                 "withdraw_reason": None, "chase": [], "suggested_route": None, "patient_arrived": None, "kipu_id": None,
                 "override": 0, "override_reason": None, "review_usd": None,
                 "danger": None, "danger_flags": [], "odds": None, "odds_why": [], "illegible_pages": [],
-                "viewers": {}, **card,
+                "viewers": {}, "clinical_notes": [], "clinical_asks": [], "clinical_done_at": None,
+                "staff_checks": {}, "source": None, "hospital_messages": [], **card,
             }
             card["id"] = cid
+            card["overnight"] = is_overnight(card["arrived_at"])
             card["owner"] = card["owner"] or self.assign()
             self.cards[cid] = card
             self.log(cid, "system", "received", f"{card.get('channel', '')} from {card.get('hospital', '')}; owner {card['owner']}")
@@ -179,6 +206,31 @@ class Tracker:
             c["chase"].append({"t": now, "step": reason})
         elif action == "clinical_pickup":
             c["clinical_picked_up"] = True
+        elif action in ("clinical_note", "clinical_ask", "clinical_done"):
+            # The clinical reviewer's notes, kept here instead of a shared Excel sheet and Teams pings.
+            # Only the clinical reviewer writes them. Notes cite pages ("page 16 shows..."), never names.
+            clinical = role == "clinical" if role is not None else who.lower().startswith("clinic")
+            if not clinical:
+                raise ValueError("Only the clinical reviewer writes clinical notes.")
+            if action != "clinical_done" and not reason.strip():
+                raise ValueError("Type the note first.")
+            c["clinical_picked_up"] = True
+            if action == "clinical_note":
+                c["clinical_notes"].append({"t": now, "who": who, "text": reason.strip()[:1000]})
+            elif action == "clinical_ask":
+                c["clinical_asks"].append({"t": now, "who": who, "text": reason.strip()[:200]})
+            else:
+                c["clinical_done_at"] = now
+                if reason.strip():
+                    c["clinical_notes"].append({"t": now, "who": who, "text": reason.strip()[:1000]})
+            # The log keeps that a note was added, not the note itself (it may hold chart details).
+            reason = "" if action != "clinical_ask" else reason.strip()[:200]
+        elif action == "staff_check":
+            # reason is "<check>:<result>", e.g. "background:clear". Nothing else is kept.
+            check, _, result = reason.partition(":")
+            if result not in STAFF_CHECKS.get(check, ()):
+                raise ValueError("Unknown check.")
+            c["staff_checks"][check] = {"result": result, "who": who, "t": now}
         elif action == "intake_cleared":
             c["status"] = "intake_cleared"
         elif action in ("accepted", "denied", "withdrawn"):
@@ -207,11 +259,19 @@ class Tracker:
         return c
 
     # ---- the clock -----------------------------------------------------------------------
+    def clock_start(self, c: dict) -> float:
+        """When the 2 hours start: on arrival, or at the morning shift for an overnight packet if IHH
+        picks that (Settings)."""
+        if self.overnight_clock == "morning" and c.get("overnight"):
+            return morning_after(c["arrived_at"])
+        return c["arrived_at"]
+
     def view(self, cid: str) -> dict:
         c = self.cards[cid]
         now = self.clock.now()
         end = c.get("decided_at") or now
-        elapsed = (end - c["arrived_at"]) / 60
+        start = self.clock_start(c)
+        elapsed = max(0.0, (end - start) / 60)
         left = CLOCK_MIN - elapsed
         color = "done" if c["status"] in CLOSED else "green" if left > 60 else "yellow" if left > 30 else "red"
         alerts = []
@@ -234,8 +294,11 @@ class Tracker:
             silent = round((now - c["info_requested_at"]) / 60)
         real = time.time()
         viewers = sorted(w for w, t in c["viewers"].items() if real - t <= VIEWING_SEC)
+        clinical_min = None
+        if c["clinical_sent_at"]:
+            clinical_min = round(((c["clinical_done_at"] or now) - c["clinical_sent_at"]) / 60)
         return {**c, "elapsed_min": round(elapsed), "left_min": round(left), "color": color,
-                "deadline": c["arrived_at"] + CLOCK_MIN * 60,
+                "clock_start": start, "deadline": start + CLOCK_MIN * 60, "clinical_min": clinical_min,
                 "alerts": alerts, "hospital_silent_min": silent, "viewers": viewers,
                 "withdraw_risk": bool(silent and silent >= LADDER["nudge"])}
 
@@ -292,4 +355,14 @@ class Tracker:
             "decided": len(decided),
             "within_2h": sum(1 for v in decided if v["elapsed_min"] <= CLOCK_MIN),
             "withdrawn": [{"case_no": v["case_no"], "reason": v["withdraw_reason"]} for v in closed if v["status"] == "withdrawn"],
+            "clinical": clinical_turnaround([self.view(cid) for cid in self.cards]),
         }
+
+
+def clinical_turnaround(views: list[dict]) -> dict:
+    """How long the clinical second check takes, from sent to the reviewer's "done". The director said
+    usually 20 to 40 minutes, sometimes 24 hours; this is how IHH would see it for itself."""
+    done = sorted(v["clinical_min"] for v in views if v.get("clinical_done_at") and v.get("clinical_min") is not None)
+    waiting = sum(1 for v in views if v.get("clinical_sent_at") and not v.get("clinical_done_at") and v["status"] not in CLOSED)
+    return {"done": len(done), "waiting": waiting,
+            "median_min": done[len(done) // 2] if done else None, "longest_min": done[-1] if done else None}

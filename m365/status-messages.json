@@ -30,6 +30,16 @@
    "body": "Hola, {submitter_name}:\n\nPara terminar de revisar el referido {case_code}, necesitamos:\n\n{docs_list}\n\nSúbalos con el mismo formulario de referido y escriba {case_code} en \"Código de caso (si agrega documentos)\". Mientras antes lleguen, antes podemos responder.\n\nIllumination Health + Home, admisión de cuidado de recuperación"
   }
  },
+ "reminder": {
+  "en": {
+   "subject": "Referral {case_code}: still waiting on documents",
+   "body": "Hi {submitter_name},\n\nWe are still waiting on the documents we asked for on referral {case_code}. We can't give you an answer until they come in.\n\nPlease upload them with the same referral form and type {case_code} in \"Case code (if adding documents)\", or call the referral coordinator.\n\nIllumination Health + Home, recuperative care intake"
+  },
+  "es": {
+   "subject": "Referido {case_code}: seguimos esperando documentos",
+   "body": "Hola, {submitter_name}:\n\nSeguimos esperando los documentos que pedimos para el referido {case_code}. No podemos darle una respuesta hasta que lleguen.\n\nSúbalos con el mismo formulario de referido y escriba {case_code} en \"Código de caso (si agrega documentos)\", o llame al coordinador de referidos.\n\nIllumination Health + Home, admisión de cuidado de recuperación"
+  }
+ },
  "escalated": {
   "en": {
    "subject": "Referral {case_code}: escalated for clinical review",

@@ -9,7 +9,7 @@ import csv
 import io
 from datetime import datetime
 
-from . import rules
+from . import critical, rules
 
 AI_NOTE = {
     "en": "Draft. Not sent. Check before sending.",
@@ -41,9 +41,12 @@ def _hhmm(ts):
 
 
 def missing_items(card: dict, report: dict, lang: str) -> dict:
-    """One message to the case manager listing everything missing at once."""
+    """One message to the case manager listing everything missing at once: documents, critical values
+    nobody found, the review's questions and what the clinical reviewer asked for."""
     docs = [c["doc_id"] for c in report["checklist"] if c["status"] == "missing"]
-    qs = [q[lang] for q in report["questions"]]
+    qs = [c["label"][lang] for c in critical.missing(report)]
+    qs += [q[lang] for q in report["questions"]]
+    qs += [a["text"] for a in card.get("clinical_asks") or []]
     cm = card.get("case_manager") or UNKNOWN[lang]
     case = card["case_no"]
     if lang == "es":

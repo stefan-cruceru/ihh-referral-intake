@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Send a referral to IHH</title>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+  /* The hospital upload page (IHH's QR-code plan). One file in, a receipt out. Nothing from the packet is shown back. */
+  .send { max-width: 640px; margin: 2rem auto; padding: 0 16px 3rem; }
+  .send h1 { font-size: 1.6rem; margin: .4rem 0 .2rem; }
+  .send form { display: grid; gap: .8rem; margin-top: 1rem; }
+  .send label { display: grid; gap: .25rem; font-weight: 600; }
+  .send label .m, .send .m { font-weight: 400; color: var(--muted); font-size: .92rem; }
+  .send input, .send select { font: inherit; padding: .6rem .7rem; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: inherit; width: 100%; box-sizing: border-box; }
+  .send .two { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+  @media (max-width: 520px) { .send .two { grid-template-columns: 1fr; } }
+  .send .box { border: 1px solid var(--line); border-radius: 14px; padding: 1rem; background: var(--panel); }
+  .send .docs { margin: .4rem 0 0; padding-left: 1.2rem; }
+  .send .receipt pre { white-space: pre-wrap; font: inherit; margin: .6rem 0 0; }
+  .send .code { font-size: 1.4rem; font-weight: 700; letter-spacing: .02em; }
+  .send .langs { display: flex; gap: .4rem; justify-content: flex-end; }
+  .send .langs button { font: inherit; padding: .3rem .7rem; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; color: inherit; }
+  .send .langs button.on { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .send .err { color: var(--red); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<main class="send">
+  <div class="langs"><button data-lang="en">English</button><button data-lang="es">Español</button></div>
+  <h1 data-s="send_title"></h1>
+  <p class="m" data-s="send_intro"></p>
+
+  <div class="box">
+    <b data-s="send_docs_title"></b>
+    <ul class="docs" id="docs"></ul>
+  </div>
+
+  <form id="f">
+    <label><span data-s="send_file"></span><input type="file" id="file" accept=".pdf,.tif,.tiff" required>
+      <span class="m" data-s="send_file_help"></span></label>
+    <div class="two">
+      <label><span data-s="send_name"></span><input name="name" autocomplete="name" required></label>
+      <label><span data-s="send_role"></span><input name="role" autocomplete="organization-title"></label>
+    </div>
+    <div class="two">
+      <label><span data-s="send_email"></span><input name="email" type="email" autocomplete="email" required></label>
+      <label><span data-s="send_phone"></span><input name="phone" type="tel" autocomplete="tel"></label>
+    </div>
+    <div class="two">
+      <label><span data-s="send_facility"></span><input name="facility" autocomplete="organization" required></label>
+      <label><span data-s="send_source"></span><select name="source">
+        <option value="hospital" data-s="source_hospital"></option><option value="snf" data-s="source_snf"></option>
+        <option value="community" data-s="source_community"></option><option value="partner" data-s="source_partner"></option></select></label>
+    </div>
+    <label><span data-s="send_case_code"></span><input name="case_code" id="case-code" autocomplete="off">
+      <span class="m" data-s="send_case_code_help"></span></label>
+    <input type="hidden" name="key" id="key">
+    <p class="m" data-s="send_privacy"></p>
+    <button class="btn primary" id="go" type="submit" data-s="send_go"></button>
+    <p class="err hidden" id="err"></p>
+  </form>
+
+  <div class="box receipt hidden" id="receipt">
+    <div class="m" data-s="send_got_it"></div>
+    <div class="code" id="r-code"></div>
+    <pre id="r-text"></pre>
+    <p class="m"><span data-s="send_status_now"></span> <b id="r-status"></b></p>
+    <p class="m" data-s="send_keep_link"></p>
+    <p><a id="r-more" href="#" data-s="send_add_more"></a></p>
+  </div>
+</main>
+<script>
+"use strict";
+let S = {}, LANG = (navigator.language || "en").startsWith("es") ? "es" : "en";
+const $ = (s) => document.querySelector(s);
+const t = (k) => (S[k] && (S[k][LANG] ?? S[k].en)) ?? k;
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+let DOCS = [], LAST = null;
+
+function paint() {
+  document.documentElement.lang = LANG;
+  document.querySelectorAll("[data-s]").forEach((el) => (el.textContent = t(el.dataset.s)));
+  document.querySelectorAll(".langs button").forEach((b) => b.classList.toggle("on", b.dataset.lang === LANG));
+  $("#docs").innerHTML = DOCS.map((d) => `<li>${esc(d[LANG] || d.en)}</li>`).join("");
+  if (LAST) showReceipt(LAST);
+}
+document.querySelectorAll(".langs button").forEach((b) => b.addEventListener("click", () => { LANG = b.dataset.lang; paint(); }));
+
+async function status() {
+  if (!LAST) return;
+  const r = await fetch(`/send/status?case=${encodeURIComponent(LAST.case_code)}&key=${encodeURIComponent(LAST.key)}&lang=${LANG}`);
+  if (r.ok) $("#r-status").textContent = (await r.json()).subject;
+}
+
+function showReceipt(j) {
+  $("#receipt").classList.remove("hidden");
+  $("#r-code").textContent = j.case_code;
+  $("#r-text").textContent = j.receipt.subject + "\n\n" + j.receipt.body;
+  const more = new URL(location.href);
+  more.search = `?case=${encodeURIComponent(j.case_code)}&key=${encodeURIComponent(j.key)}&lang=${LANG}`;
+  $("#r-more").href = more.toString();
+  status();
+}
+
+$("#f").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const file = $("#file").files[0];
+  if (!file) return;
+  $("#err").classList.add("hidden");
+  $("#go").disabled = true;
+  const params = new URLSearchParams(new FormData($("#f")));
+  params.set("lang", LANG);
+  try {
+    const r = await fetch(`/send/upload?${params}`, { method: "POST", headers: { "X-Filename": file.name }, body: file });
+    const j = await r.json();
+    if (!r.ok) throw new Error(t("send_err_" + j.error) !== "send_err_" + j.error ? t("send_err_" + j.error) : t("send_err"));
+    LAST = j;
+    $("#f").classList.add("hidden");
+    showReceipt(j);
+    setInterval(status, 15000);
+  } catch (err) {
+    $("#err").textContent = err.message;
+    $("#err").classList.remove("hidden");
+  } finally {
+    $("#go").disabled = false;
+  }
+});
+
+(async () => {
+  const q = new URLSearchParams(location.search);
+  if (q.get("lang") === "es" || q.get("lang") === "en") LANG = q.get("lang");
+  if (q.get("case")) { $("#case-code").value = q.get("case"); $("#key").value = q.get("key") || ""; }
+  S = await (await fetch("/static/strings.json")).json();
+  DOCS = (await (await fetch("/send/checklist")).json()).docs;
+  paint();
+})();
+</script>
+</body>
+</html>
