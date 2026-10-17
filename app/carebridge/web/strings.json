@@ -832,8 +832,8 @@
   "es": "Buscar, por ejemplo: wheelchair, insulin, oxygen"
  },
  "key_title": {
-  "en": "Claude API key (for admins)",
-  "es": "Clave de la API de Claude (para administradores)"
+  "en": "Key for reading referrals (admins only)",
+  "es": "Clave para leer referidos (solo administradores)"
  },
  "key_help": {
   "en": "Needed to read new referrals and to write drafts. It is saved only on this computer. Practice mode and the rules work without it.",
@@ -864,8 +864,8 @@
   "es": "Úselo desde Copilot"
  },
  "copilot_help": {
-  "en": "Run \"ihh-care-bridge.exe install\" one time. Then Copilot in VS Code and Claude Desktop can use it. For Microsoft 365 Copilot, IT adds the agent file (see the README).",
-  "es": "Ejecute \"ihh-care-bridge.exe install\" una vez. Así Copilot en VS Code y Claude Desktop lo pueden usar. Para Microsoft 365 Copilot, TI agrega el archivo del agente (vea el README)."
+  "en": "IT sets this up one time. After that, you can ask Lamplight questions from Copilot.",
+  "es": "TI lo prepara una vez. Después, puede hacerle preguntas a Lamplight desde Copilot."
  },
  "privacy_title": {
   "en": "Privacy",
@@ -948,8 +948,8 @@
   "es": "Dónde funciona Claude"
  },
  "provider_anthropic": {
-  "en": "Anthropic API",
-  "es": "API de Anthropic"
+  "en": "Claude (Anthropic)",
+  "es": "Claude (Anthropic)"
  },
  "provider_foundry": {
   "en": "IHH's Microsoft Azure (Foundry)",
@@ -960,8 +960,8 @@
   "es": "Nombre del recurso de Azure"
  },
  "provider_help": {
-  "en": "This is the only thing that leaves this computer. Use one that IHH has a BAA for.",
-  "es": "Esto es lo único que sale de esta computadora. Use uno con el que IHH tenga un BAA."
+  "en": "This is the only thing that leaves this computer. Use only a service IHH has a signed privacy agreement with.",
+  "es": "Esto es lo único que sale de esta computadora. Use solo un servicio con el que IHH tenga un acuerdo de privacidad firmado."
  },
  "for_admins": {
   "en": "For admins",
@@ -1172,8 +1172,8 @@
   "es": "Lo que leyó la IA traía órdenes. Se quitó."
  },
  "sec_pdf_javascript": {
-  "en": "The PDF has JavaScript (code that runs when opened).",
-  "es": "El PDF tiene JavaScript (código que corre al abrirlo)."
+  "en": "The file has a hidden program that runs when you open it.",
+  "es": "El archivo tiene un programa escondido que corre al abrirlo."
  },
  "sec_pdf_launch": {
   "en": "The PDF tries to start a program.",
@@ -1444,8 +1444,8 @@
   "es": "Enlace a Kipu"
  },
  "kipu_settings_help": {
-  "en": "The address of a client record in Kipu, with {kipu_id} where the number goes. Ask IHH IT for it. Until then, the dashboard shows the number without a link.",
-  "es": "La dirección de un expediente en Kipu, con {kipu_id} donde va el número. Pídala a TI de IHH. Mientras tanto, el tablero muestra el número sin enlace."
+  "en": "The web address of a client's page in Kipu. IHH IT fills this in. Until then, the board shows the Kipu number without a link.",
+  "es": "La dirección web de la página de un cliente en Kipu. TI de IHH la pone. Mientras tanto, el tablero muestra el número de Kipu sin enlace."
  },
  "saved": {
   "en": "Saved",
@@ -1864,8 +1864,8 @@
   "es": "Una lámpara encendida sobre un escritorio vacío de noche. La silla está guardada y el trabajo queda listo para la mañana."
  },
  "ob_private": {
-  "en": "This app stays on this computer. Don’t type names, birth dates, phone numbers or ID numbers. If you type one by mistake, the app stops and tells you.",
-  "es": "Esta app se queda en esta computadora. No escriba nombres, fechas de nacimiento, teléfonos ni números de ID. Si escribe uno por error, la app se detiene y le avisa."
+  "en": "Don’t type names, birth dates, phone numbers or ID numbers. If you type one by mistake, the app stops and tells you.",
+  "es": "No escriba nombres, fechas de nacimiento, teléfonos ni números de ID. Si escribe uno por error, la app se detiene y le avisa."
  },
  "ob_role_sub": {
   "en": "We’ll start with the parts that help with your work. You can see everything else anytime.",
@@ -2136,12 +2136,12 @@
   "es": "Nadie tiene ese correo."
  },
  "err_accounts_entra": {
-  "en": "Accounts come from IHH's Microsoft sign-in. Add people in Microsoft Entra.",
-  "es": "Las cuentas vienen del inicio de sesión de Microsoft de IHH. Agregue personas en Microsoft Entra."
+  "en": "Accounts come from IHH's Microsoft sign-in. Ask IT to add the person.",
+  "es": "Las cuentas vienen del inicio de sesión de Microsoft de IHH. Pida a TI que agregue a la persona."
  },
  "err_roles_entra": {
-  "en": "Roles come from IHH's Microsoft Entra. Change them there.",
-  "es": "Los roles vienen de Microsoft Entra de IHH. Cámbielos ahí."
+  "en": "Roles come from IHH's Microsoft sign-in. Ask IT to change them.",
+  "es": "Los roles vienen del inicio de sesión de Microsoft de IHH. Pida a TI que los cambie."
  },
  "err_kipu_off": {
   "en": "Kipu is off. Pick practice or live first.",
@@ -2188,8 +2188,8 @@
   "es": "Claude no respondió. Intente otra vez."
  },
  "err_bad_key": {
-  "en": "That doesn't look like a Claude API key. It starts with sk-ant-.",
-  "es": "Eso no parece una clave de API de Claude. Empieza con sk-ant-."
+  "en": "That key doesn't look right. Copy it again from IT, all of it.",
+  "es": "Esa clave no se ve bien. Cópiela otra vez de TI, completa."
  },
  "err_unknown_rule": {
   "en": "We don't know that rule.",

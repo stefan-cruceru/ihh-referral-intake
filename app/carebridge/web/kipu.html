@@ -123,6 +123,11 @@ const T = {
   th_check: ["Kipu check", "Revisión de Kipu"], th_open: ["Still open", "Pendiente"], ago: ["s ago", "s"],
   st_ok: ["Ready", "Listo"], st_wait: ["Waiting", "Espera"], st_fail: ["Fix first", "Arreglar"],
   load: ["Load from Kipu", "Cargar desde Kipu"],
+  cs_received: ["New", "Nuevo"], cs_reviewing: ["Being checked", "En revisión"], cs_needs_info: ["Need more from hospital", "Falta información"],
+  cs_clinical_check: ["Clinical line checks", "Revisa la línea clínica"], cs_likely_no: ["Maybe no: clinical line checks", "Tal vez no: revisa la línea clínica"],
+  cs_intake_cleared: ["Intake OK. Don't send the patient yet.", "Admisión OK. Todavía no mande al paciente."],
+  cs_accepted: ["Yes. OK to send the patient.", "Sí. Puede mandar al paciente."], cs_denied: ["No", "No"], cs_withdrawn: ["Lost", "Perdido"],
+  r_coordinator: ["Referral coordinator", "Coordinador de referidos"], r_lead: ["Lead", "Líder"], r_clinical: ["Clinical line", "Línea clínica"], r_admin: ["Admin (IT)", "Admin (TI)"],
   load_help: ["Live Kipu has real patient records. We only read it when you click.", "El Kipu real tiene expedientes de pacientes reales. Solo lo leemos cuando usted hace clic."],
   writes_live: ["Only practice Kipu keeps a list of writes.", "Solo el Kipu de práctica guarda una lista de lo que se escribe."],
   bg_log: ["Recent results", "Resultados recientes"], bg_none: ["Nothing on the board yet. Pull referrals from Kipu or start a practice run.", "Todavía no hay nada en el tablero. Traiga referidos de Kipu o empiece una práctica."],
@@ -175,7 +180,7 @@ function paintStatus() {
 async function cards() {
   const q = await api("/api/queue");
   $("#cards").innerHTML = q.cards.map((c) => `<tr><td><b>${esc(c.case_no)}</b><div class="k-m">${esc(c.hospital || "")}</div></td>
-    <td>${esc(c.status)}</td><td>${esc(c.kipu_id || "-")}</td>
+    <td>${esc(T["cs_" + c.status] ? t("cs_" + c.status) : c.status)}</td><td>${esc(c.kipu_id || "-")}</td>
     <td>${["create_chart", "file_documents", "intake_note"].map((s) => `<button class="k-btn" data-step="${s}" data-id="${esc(c.id)}">${esc(t(s))}</button>`).join(" ")}
       <button class="k-btn" data-teams="${esc(c.id)}">${esc(t("teams_card"))}</button></td></tr>`).join("");
   document.querySelectorAll("[data-step]").forEach((b) => b.addEventListener("click", async () => {
@@ -237,7 +242,7 @@ async function bgChecks() {
 
 (async function boot() {
   try { LANG = window.cbLang?.get() || (await api("/api/state")).lang || "en"; } catch (e) {}
-  try { const me = await api("/api/me"); $("#me").textContent = me.name ? `${t("signed")} ${me.name} (${me.role})` : ""; } catch (e) {}
+  try { const me = await api("/api/me"); $("#me").textContent = me.name ? `${t("signed")} ${me.name} (${esc(T["r_" + me.role] ? t("r_" + me.role) : me.role)})` : ""; } catch (e) {}
   words();
   status().catch((e) => ($("#status").textContent = e.message));
   cards(); writes();
