@@ -842,7 +842,8 @@ function renderOnboard() {
   if (OB.step === 0) {
     h += `<h2 id="ob-title">${esc(t("ob_welcome"))} · Bienvenido</h2><p>${esc(t("ob_lang"))}</p>
       <div class="ob-choices"><button data-ob-lang="en" class="${LANG === "en" ? "on" : ""}">English</button><button data-ob-lang="es" class="${LANG === "es" ? "on" : ""}">Español</button></div>
-      <p class="muted">${esc(t("ob_lang_note"))}</p>`;
+      <p class="muted">${esc(t("ob_lang_note"))}</p>
+      <p class="muted">${esc(t("ob_display"))} <button class="btn sm" id="ob-display">${esc(t("ob_display_btn"))}</button></p>`;
   } else if (OB.step === 1) {
     h += `<h2 id="ob-title">${esc(t("ob_role"))}</h2><div class="ob-choices">${OB_ROLES.map((r) => `<button data-ob-role="${r}" class="${OB.role === r ? "on" : ""}">${esc(t("ob_role_" + r))}</button>`).join("")}</div>`;
   } else {
@@ -856,6 +857,8 @@ function renderOnboard() {
   $$("[data-ob-lang]").forEach((b) => b.addEventListener("click", async () => { await setLang(b.dataset.obLang); renderOnboard(); }));
   $$("[data-ob-role]").forEach((b) => b.addEventListener("click", () => { OB.role = b.dataset.obRole; renderOnboard(); }));
   $("#ob-back")?.addEventListener("click", () => { OB.step--; renderOnboard(); });
+  // Opens the Display panel (display.js). Stop the click here so its click-outside check doesn't close it again.
+  $("#ob-display")?.addEventListener("click", (e) => { e.stopPropagation(); $(".disp-btn")?.click(); });
   $("#ob-next").addEventListener("click", () => {
     if (OB.step < 2) { OB.step++; return renderOnboard(); }
     store.set("cb_onboarded", "1");
