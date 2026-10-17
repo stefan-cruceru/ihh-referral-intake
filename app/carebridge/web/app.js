@@ -435,7 +435,7 @@ function renderDetail() {
     if (card.review_state === "running") {
       h += `<div class="panel"><div class="progress"><div class="spinner"></div><b>${esc(t("reviewing"))}</b></div><ul>${progress.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>`;
     } else {
-      h += `<div class="panel">${error ? `<div class="phi">${esc(t(error))}</div>` : ""}
+      h += `<div class="panel" data-permission="review">${error ? `<div class="phi">${esc(t(error))}</div>` : ""}
         ${card.has_packet !== false ? `<button class="btn primary" id="run-review" ${STATE.has_key ? "" : "disabled"}>${esc(t("run_review"))}</button>` : ""}
         ${STATE.has_key ? "" : `<p class="muted">${esc(t("need_key"))}</p>`}</div>`;
     }
@@ -531,9 +531,9 @@ function renderDetail() {
         ${card.clinical_min != null ? `<span class="pill">${esc(t(card.clinical_done_at ? "cr_took" : "cr_waiting", { n: card.clinical_min }))}</span>` : ""}</div>
       ${(card.clinical_notes || []).map((n) => `<div class="flag cant_tell"><span class="muted small">${fmtClock(n.t)} · ${esc(n.who)}</span><div>${esc(n.text)}</div></div>`).join("")}
       ${(card.clinical_asks || []).length ? `<p><b>${esc(t("cr_asks"))}</b></p><ul>${card.clinical_asks.map((a) => `<li>${esc(a.text)}</li>`).join("")}</ul>` : ""}
-      ${["accepted", "denied", "withdrawn"].includes(card.status) ? "" : `<div class="row"><textarea id="cr-note" rows="2" placeholder="${esc(t("cr_note_ph"))}"></textarea></div>
-      <div class="row"><button class="btn" data-cr="clinical_note">${esc(t("cr_add_note"))}</button><button class="btn primary" data-cr="clinical_done">${esc(t("cr_mark_done"))}</button></div>
-      <div class="row"><input id="cr-ask" placeholder="${esc(t("cr_ask_ph"))}"><button class="btn" data-cr="clinical_ask">${esc(t("cr_add_ask"))}</button></div>
+      ${["accepted", "denied", "withdrawn"].includes(card.status) ? "" : `<div data-permission="act:clinical_note"><div class="row"><textarea id="cr-note" rows="2" placeholder="${esc(t("cr_note_ph"))}"></textarea></div>
+      <div class="row"><button class="btn" data-cr="clinical_note">${esc(t("cr_add_note"))}</button><button class="btn primary" data-cr="clinical_done">${esc(t("cr_mark_done"))}</button></div></div>
+      <div class="row" data-permission="act:clinical_ask"><input id="cr-ask" placeholder="${esc(t("cr_ask_ph"))}"><button class="btn" data-cr="clinical_ask">${esc(t("cr_add_ask"))}</button></div>
       <p class="muted small">${esc(t("cr_only"))}</p>`}</div>`;
   }
 
@@ -544,7 +544,7 @@ function renderDetail() {
     return `<div class="flag ${done ? (done.result === "look" ? "cant_tell" : "met") : "not_met"}"><b>${esc(t("sc_" + k))}</b>
       <div class="muted small">${esc(t("sc_" + k + "_how"))}</div>
       ${done ? `<div>${esc(t("sc_r_" + done.result))} · ${esc(done.who)} · ${fmtClock(done.t)}</div>` : ""}
-      <div class="row">${results.map((r) => `<button class="btn sm" data-sc="${k}:${r}">${esc(t("sc_r_" + r))}</button>`).join("")}</div></div>`;
+      <div class="row" data-permission="act:staff_check">${results.map((r) => `<button class="btn sm" data-sc="${k}:${r}">${esc(t("sc_r_" + r))}</button>`).join("")}</div></div>`;
   };
   h += `<div class="panel"><h3>${esc(t("h_staff_checks"))}</h3><p class="muted small">${esc(t("sc_note"))}</p>
     ${checkRow("returning_client", ["new", "returning"])}${checkRow("background", ["clear", "look"])}</div>`;
@@ -578,9 +578,9 @@ function renderDetail() {
   }
 
   // The client's Kipu record, once staff have created it there
-  h += `<div class="panel"><h3>${esc(t("kipu_title"))}</h3><div class="row">
+  h += `<div class="panel"><h3>${esc(t("kipu_title"))}</h3><div class="row" data-permission="act:kipu_id">
     <input id="kipu-id" value="${esc(card.kipu_id || "")}" placeholder="${esc(t("kipu_id_ph"))}" autocomplete="off">
-    <button class="btn" id="kipu-save">${esc(t("save"))}</button>${kipuChip(card)}${kipuCheckChip(card)}</div>
+    <button class="btn" id="kipu-save">${esc(t("save"))}</button></div>${kipuChip(card)}${kipuCheckChip(card)}
     ${kipuCheckList(card)}
     ${card.kipu_id && !(STATE.kipu_url || "").includes("{kipu_id}") ? `<p class="muted small">${esc(t("kipu_no_link"))}</p>` : ""}</div>`;
 
@@ -595,11 +595,12 @@ function renderDetail() {
       <button class="btn" data-act="clinical_pickup">${esc(t("a_clinical_pickup"))}</button>
       <button class="btn" data-act="intake_cleared">${esc(t("a_intake_cleared"))}</button>
       <button class="btn primary" data-act="accepted">${esc(t("a_accepted"))}</button></div>
-      ${["likely_no", "clinical_check", "security_hold"].includes(card.suggested_route) ? `<div class="row"><input id="override-why" placeholder="${esc(t("override_ph"))}"></div>` : ""}
-      <div class="row"><select id="handoff-to">${(LAST_Q?.staff || []).map((s) => `<option ${s.name === card.owner ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select>
+      ${["likely_no", "clinical_check", "security_hold"].includes(card.suggested_route) ? `<div class="row" data-permission="act:accepted"><input id="override-why" placeholder="${esc(t("override_ph"))}"></div>` : ""}
+      <div class="row" data-permission="act:handoff"><select id="handoff-to">${(LAST_Q?.staff || []).map((s) => `<option ${s.name === card.owner ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select>
         <button class="btn" data-act="handoff">${esc(t("hand_off"))}</button></div>
-      <div class="row"><input id="deny-reason" placeholder="${esc(t("deny_reason_ph"))}"><button class="btn danger" data-act="denied">${esc(t("a_denied"))}</button></div>
-      <div class="row"><select id="withdraw-reason">${["left_ama", "other_facility", "someones_home", "hospital_couldnt_wait", "no_reply", "other"].map((w) => `<option value="${w}">${esc(t("w_" + w))}</option>`).join("")}</select>
+      <div class="row" data-permission="act:denied"><input id="deny-reason" placeholder="${esc(t("deny_reason_ph"))}"><button class="btn danger" data-act="denied">${esc(t("a_denied"))}</button></div>
+      <p class="muted small hidden" data-role-note="act:denied">${esc(t("only_clinical_deny"))}</p>
+      <div class="row" data-permission="act:withdrawn"><select id="withdraw-reason">${["left_ama", "other_facility", "someones_home", "hospital_couldnt_wait", "no_reply", "other"].map((w) => `<option value="${w}">${esc(t("w_" + w))}</option>`).join("")}</select>
         <button class="btn" data-act="withdrawn">${esc(t("a_withdrawn"))}</button></div>`;
   } else {
     h += `<p>${statusChip(card.status)} ${esc(card.decision_reason || "")}</p>`;
@@ -1081,14 +1082,10 @@ async function loadCan() {
 
 function applyRoleView() {
   if (!CAN) return;
+  $$("[data-permission]").forEach((el) => el.classList.toggle("hidden", !CAN.has(el.dataset.permission)));
+  $$("[data-role-note]").forEach((el) => el.classList.toggle("hidden", CAN.has(el.dataset.roleNote)));
   $$("[data-act]").forEach((b) => {
-    if (CAN.has("act:" + b.dataset.act)) return;
-    if (b.dataset.act === "denied") {
-      const row = b.closest(".row") || b;
-      row.outerHTML = `<p class="muted small" data-role-note>${esc(t("only_clinical_deny"))}</p>`;
-    } else {
-      b.classList.add("hidden");
-    }
+    b.classList.toggle("hidden", !CAN.has("act:" + b.dataset.act));
   });
   $("#people-settings")?.classList.toggle("hidden", !CAN.has("people_edit"));
 }
