@@ -76,8 +76,8 @@ def _audit_key() -> bytes:
 
 
 def _seal(prev: str, row: dict) -> str:
-    """Each row's seal covers the row and the seal before it, so changing, removing or reordering any
-    row breaks every seal after it. Keyed, so someone editing the file can't just recompute them."""
+    """Link each present row to its predecessor with an HMAC. Changes break subsequent seals;
+    deleting a suffix leaves a valid prefix, so this does not prove the log is complete."""
     body = json.dumps([prev] + [row[f] for f in AUDIT_FIELDS], separators=(",", ":"), ensure_ascii=False)
     return hmac.new(_audit_key(), body.encode(), hashlib.sha256).hexdigest()
 
@@ -111,7 +111,8 @@ def read_audit(case_no: str | None = None, include_practice: bool = True, limit:
 
 
 def verify_audit() -> dict:
-    """Walk the whole log and re-check every seal. `broken_at` is the first row that does not match."""
+    """Check seals of stored rows; `broken_at` is the first mismatch. No trusted external head is
+    recorded, so removal of a valid suffix or the entire log cannot be detected here."""
     with _lock:
         c = conn()
         c.row_factory = sqlite3.Row
