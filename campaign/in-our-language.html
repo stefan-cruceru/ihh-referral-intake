@@ -1,0 +1,534 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>In Our Language</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a letter you read side by side, English left and Spanish right, paragraph by paragraph.
+   Soft peach opener, quiet bands (sage = hospital side, paper = onsite), then the plan, the kit, the huddle. */
+:root {
+  --bg: #FDFCFA;
+  --ink: #1D3840;
+  --muted: #55676C;
+  --line: #DCE3E0;
+  --card: #FFFFFF;
+  --sage: #EAF0EC;
+  --paper: #F7F3EC;
+  --es: #8F4A1F;
+  --accent: #E58F3E;
+  --strike: #77868A;
+  --chip: #EFF3F1;
+  --hero-bg: #FBE6D1;
+  --hero-ink: #1D3840;
+  --hero-soft: #5A5148;
+  --focus: #1F6F86;
+  --font: "Public Sans", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1E22; --ink: #E6EDEA; --muted: #A6B5B2; --line: #2A3E44; --card: #14282D;
+    --sage: #12262A; --paper: #1A2427; --es: #F0B07A; --accent: #F2A65A; --strike: #8D9DA1; --chip: #1B3237;
+    --hero-bg: #2A2119; --hero-ink: #F6E9DA; --hero-soft: #CBB9A6; --focus: #7CC4D8; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1E22; --ink: #E6EDEA; --muted: #A6B5B2; --line: #2A3E44; --card: #14282D;
+  --sage: #12262A; --paper: #1A2427; --es: #F0B07A; --accent: #F2A65A; --strike: #8D9DA1; --chip: #1B3237;
+  --hero-bg: #2A2119; --hero-ink: #F6E9DA; --hero-soft: #CBB9A6; --focus: #7CC4D8; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.6; }
+p, h1, h2, h3, ul, ol { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.band { padding-block: clamp(56px, 9vw, 104px); }
+.band-sage { background: var(--sage); }
+.band-paper { background: var(--paper); }
+.stack { display: flex; flex-direction: column; }
+.eyebrow { font-size: .78rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: .9rem; }
+.h2 { font-size: clamp(1.8rem, 3.8vw, 2.6rem); font-weight: 600; line-height: 1.15; letter-spacing: -.015em; }
+
+/* language */
+.en, .es { display: block; }
+.es { color: var(--es); }
+html[data-show="en"] .es { display: none; }
+html[data-show="es"] .en { display: none; }
+html[data-show="es"] .es { color: inherit; }
+.lab { font-size: .76rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.lab span { display: inline; color: var(--muted); }
+.lab .es::before { content: " · "; }
+html[data-show="es"] .lab .es::before { content: none; }
+
+/* paragraph pairs: English left, Spanish right */
+.pp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 48px; }
+.pp > * { min-width: 0; }
+html[data-show="en"] .pp, html[data-show="es"] .pp { grid-template-columns: 1fr; max-width: 680px; }
+@media (max-width: 820px) { .pp { grid-template-columns: 1fr; gap: 6px; } }
+
+/* top bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); border-bottom: 1px solid var(--line); }
+.bar .wrap { display: flex; align-items: center; gap: 16px; padding-block: 10px; }
+.mark { font-weight: 700; white-space: nowrap; }
+.nav { display: flex; gap: 4px; overflow-x: auto; flex: 1; min-width: 0; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { text-decoration: none; font-size: .9rem; font-weight: 500; color: var(--muted); padding: 6px 10px; border-radius: 8px; white-space: nowrap; }
+.nav a:hover { color: var(--ink); background: var(--chip); }
+.show { display: flex; border: 1.5px solid var(--line); border-radius: 999px; padding: 2px; flex-shrink: 0; }
+.show button { font: inherit; font-size: .82rem; font-weight: 600; border: 0; background: none; color: var(--muted); padding: 5px 11px; border-radius: 999px; cursor: pointer; }
+.show button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+@media (max-width: 640px) { .mark { display: none; } }
+
+/* hero */
+.hero { background: var(--hero-bg); color: var(--hero-ink); }
+.hero .wrap { padding-block: clamp(64px, 10vw, 120px); display: flex; flex-direction: column; gap: 24px; }
+.hero .eyebrow { color: var(--hero-soft); }
+.hero h1 { font-size: clamp(2.8rem, 8vw, 5.6rem); line-height: 1.02; letter-spacing: -.03em; }
+.hero h1 .en { font-weight: 700; }
+.hero h1 .es { font-weight: 400; color: var(--hero-ink); }
+.hero .sub .en { font-size: clamp(1.3rem, 2.6vw, 1.75rem); font-weight: 500; line-height: 1.3; }
+.hero .sub .es { font-size: clamp(1.2rem, 2.4vw, 1.6rem); line-height: 1.3; color: var(--hero-soft); }
+.hero .note { font-size: .9rem; color: var(--hero-soft); max-width: 68ch; }
+
+/* the letter */
+.letter { display: flex; flex-direction: column; gap: 26px; }
+.letter .open .en { font-size: clamp(1.45rem, 2.8vw, 1.95rem); font-weight: 600; line-height: 1.3; }
+.letter .open .es { font-size: clamp(1.3rem, 2.5vw, 1.7rem); line-height: 1.3; }
+.letter .p .en, .letter .p .es { font-size: 1.18rem; line-height: 1.7; }
+.letter .key .en { font-size: 1.32rem; font-weight: 600; line-height: 1.55; }
+.letter .key .es { font-size: 1.25rem; line-height: 1.55; }
+.letter .hope .en { font-size: clamp(1.4rem, 2.6vw, 1.8rem); font-weight: 600; line-height: 1.35; }
+.letter .hope .es { font-size: clamp(1.3rem, 2.4vw, 1.6rem); line-height: 1.35; }
+.letter .sig { border-top: 1px solid var(--line); padding-top: 18px; }
+.ph { background: var(--chip); border-radius: 4px; padding: 0 5px; font-weight: 600; }
+
+/* the person waiting */
+.waiting { border-left: 4px solid var(--accent); padding: 8px 0 8px clamp(18px, 3vw, 32px); display: flex; flex-direction: column; gap: 18px; }
+.waiting .en, .waiting .es { font-size: clamp(1.25rem, 2.4vw, 1.6rem); line-height: 1.5; }
+.waiting .en { font-weight: 500; }
+
+/* campaigns */
+.chead { display: flex; flex-direction: column; gap: 12px; }
+.chead .title .en { font-size: clamp(2rem, 4.6vw, 3.2rem); font-weight: 700; line-height: 1.08; letter-spacing: -.02em; }
+.chead .title .es { font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.1; letter-spacing: -.015em; }
+.chead .sub .en, .chead .sub .es { font-size: 1.2rem; line-height: 1.5; }
+
+.dear { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: clamp(22px, 4vw, 44px); display: flex; flex-direction: column; gap: 22px; }
+.dear .job { font-size: .78rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.dear .to .en { font-size: clamp(1.4rem, 2.8vw, 1.9rem); font-weight: 600; line-height: 1.25; }
+.dear .to .es { font-size: clamp(1.25rem, 2.5vw, 1.65rem); line-height: 1.25; }
+.dear .part { display: flex; flex-direction: column; gap: 8px; padding-top: 18px; border-top: 1px solid var(--line); }
+.dear .part .pp .en, .dear .part .pp .es { font-size: 1.1rem; line-height: 1.65; }
+.dear .hopeline { background: var(--chip); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.dear .hopeline .pp .en { font-size: 1.2rem; font-weight: 600; }
+.dear .hopeline .pp .es { font-size: 1.15rem; }
+.dear .theline { font-size: .95rem; color: var(--muted); }
+.dear .theline b { color: var(--ink); }
+
+.dear.outside { background: transparent; border: 1.5px dashed var(--muted); }
+.across { border: 1.5px dashed var(--line); border-radius: 22px; padding: clamp(22px, 3.5vw, 36px); display: flex; flex-direction: column; gap: 14px; }
+.across .to .en { font-size: 1.35rem; font-weight: 600; line-height: 1.3; }
+.across .to .es { font-size: 1.25rem; line-height: 1.3; }
+.across .pp .en, .across .pp .es { font-size: 1.1rem; }
+
+/* together */
+.steps { list-style: none; padding: 0; display: flex; flex-direction: column; }
+.steps > li { display: grid; grid-template-columns: 64px 1fr; gap: 20px; padding-block: 26px; border-top: 1px solid var(--line); }
+.steps .n { font-size: 2rem; font-weight: 600; line-height: 1.1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.steps .what { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.steps .h .en { font-size: clamp(1.25rem, 2.4vw, 1.55rem); font-weight: 600; line-height: 1.25; }
+.steps .h .es { font-size: clamp(1.15rem, 2.2vw, 1.4rem); line-height: 1.25; }
+.steps .body { max-width: 68ch; }
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 24px; }
+.facts div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.facts b { font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+@media (max-width: 760px) { .facts { grid-template-columns: 1fr; } .steps > li { grid-template-columns: 1fr; gap: 6px; } }
+
+/* kit */
+.pieces { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+.pieces > div { min-width: 0; }
+.spec { font-size: .82rem; color: var(--muted); margin-top: 8px; }
+.softposter { background: var(--hero-bg); color: var(--hero-ink); border-radius: 8px; padding: clamp(26px, 4.5vw, 48px); display: flex; flex-direction: column; gap: 22px; }
+.softposter .es { color: var(--hero-soft); }
+html[data-show="es"] .softposter .es { color: var(--hero-ink); }
+.softposter .a .en { font-size: clamp(1.4rem, 2.8vw, 2rem); font-weight: 700; line-height: 1.2; }
+.softposter .a .es { font-size: clamp(1.25rem, 2.4vw, 1.7rem); line-height: 1.2; }
+.softposter .z .en { font-size: clamp(1.25rem, 2.4vw, 1.6rem); font-weight: 500; line-height: 1.35; }
+.softposter .z .es { font-size: clamp(1.15rem, 2.2vw, 1.45rem); line-height: 1.35; }
+.poster { background: var(--sage); border: 1px solid var(--line); border-radius: 8px; padding: clamp(22px, 4vw, 40px); display: flex; flex-direction: column; gap: 12px; }
+.poster .head .en { font-size: clamp(1.7rem, 3.4vw, 2.4rem); font-weight: 700; line-height: 1.08; letter-spacing: -.02em; }
+.poster .head .es { font-size: clamp(1.45rem, 2.9vw, 2rem); line-height: 1.1; }
+.poster .x { padding-block: 8px; border-top: 1px solid var(--line); text-decoration: line-through; text-decoration-thickness: 2px; color: var(--strike); }
+.poster .x .es { color: var(--strike); }
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.desk { aspect-ratio: 3 / 2; max-width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 22px rgba(29, 56, 64, .07); padding: clamp(18px, 3vw, 30px); display: flex; flex-direction: column; justify-content: space-between; gap: 14px; min-width: 0; }
+.desk .top { display: flex; justify-content: space-between; gap: 10px; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.desk .l .en { font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 700; line-height: 1.15; }
+.desk .l .es { font-size: clamp(1.15rem, 2.2vw, 1.5rem); line-height: 1.2; margin-top: 4px; }
+.desk .fine { font-size: 1rem; border-top: 1px solid var(--line); padding-top: 10px; }
+.desk .fine .en { font-weight: 600; }
+@media (max-width: 760px) { .cards, .pieces { grid-template-columns: 1fr; } .desk { aspect-ratio: auto; } }
+
+/* huddle */
+.shape { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.shape li { border-top: 2px solid var(--accent); padding-top: 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shape li b { font-size: 1.05rem; font-weight: 600; }
+.shape .t { font-size: .78rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
+@media (max-width: 860px) { .shape { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 420px) { .shape { grid-template-columns: 1fr; } }
+.script { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: clamp(20px, 3.5vw, 36px); display: flex; flex-direction: column; gap: 14px; }
+.script .pp .en, .script .pp .es { font-size: 1.12rem; line-height: 1.7; }
+.script .pp .es { color: var(--ink); }
+
+.open { padding-left: 1.2em; display: flex; flex-direction: column; gap: 10px; max-width: 80ch; }
+footer { border-top: 1px solid var(--line); }
+footer .wrap { padding-block: 28px; font-size: .88rem; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+section[id] { scroll-margin-top: 64px; }
+</style>
+
+<div class="bar">
+  <div class="wrap">
+    <span class="mark">In our language</span>
+    <nav class="nav" aria-label="Sections">
+      <a href="#letter">The letter</a>
+      <a href="#hospital">Hospital side</a>
+      <a href="#onsite">Onsite</a>
+      <a href="#everyone">Everyone at IHH</a>
+      <a href="#together">How we’ll do it</a>
+      <a href="#kit">The kit</a>
+      <a href="#huddle">The huddle</a>
+    </nav>
+    <div class="show" role="group" aria-label="Show the campaign in">
+      <button type="button" id="show-both" data-show="both" aria-pressed="true">EN + ES</button>
+      <button type="button" id="show-en" data-show="en" aria-pressed="false">EN</button>
+      <button type="button" id="show-es" data-show="es" aria-pressed="false">ES</button>
+    </div>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Lamplight · A campaign for our team</p>
+    <h1><span class="en">In our language.</span><span class="es">En nuestro idioma.</span></h1>
+    <p class="sub"><span class="en">A campaign that starts by listening.</span><span class="es">Una campaña que empieza por escuchar.</span></p>
+    <p class="note">The Spanish here was drafted with AI. Before anything is printed or read aloud, a bilingual IHH staff member reads every line and makes it sound like us.</p>
+  </div>
+</header>
+
+<main>
+  <section class="band" id="letter" aria-label="A letter to our team">
+    <div class="wrap letter">
+      <p class="lab"><span class="en">A letter to our team</span><span class="es">Una carta para nuestro equipo</span></p>
+      <div class="pp open"><p class="en">Before we show you anything, we want to talk about how this feels.</p><p class="es">Antes de mostrarle cualquier cosa, queremos hablar de cómo se siente esto.</p></div>
+      <div class="pp p"><p class="en">If you’ve felt a knot in your stomach every time someone says “AI,” you’re not the only one. You’ve seen the headlines about machines taking people’s jobs. You’ve given years of your life to this work. It’s fair to wonder where that leaves you.</p><p class="es">Si ha sentido un nudo en el estómago cada vez que alguien dice «IA», no es la única persona. Ha visto las noticias sobre máquinas que les quitan el trabajo a las personas. Le ha dado años de su vida a este trabajo. Es justo preguntarse qué significa eso para usted.</p></div>
+      <div class="pp key"><p class="en">So we want to say it plainly, because you deserve to hear it out loud: we built this to support you, not to replace you. It can’t do your job. It can only help with parts of it.</p><p class="es">Por eso queremos decirlo con claridad, porque usted merece escucharlo en voz alta: hicimos esto para apoyarle, no para reemplazarle. No puede hacer su trabajo. Solo puede ayudarle con algunas partes.</p></div>
+      <div class="pp p"><p class="en">What we are looking for is a way to stop asking so much of you.</p><p class="es">Lo que sí buscamos es una manera de dejar de pedirle tanto.</p></div>
+      <div class="pp p"><p class="en">We know what your days look like. The fax that comes in at four o’clock on a Monday. The packet missing the one page you need. The hospital that stops calling back. The notes written from memory at the end of a long shift. The client you didn’t get to. The list that keeps running in your head on the drive home.</p><p class="es">Sabemos cómo son sus días. El fax que llega a las cuatro de la tarde un lunes. El paquete al que le falta justo la página que necesita. El hospital que deja de devolver las llamadas. Las notas escritas de memoria al final de un turno largo. El cliente al que no alcanzó a atender. La lista que sigue dando vueltas en su cabeza camino a casa.</p></div>
+      <div class="pp p"><p class="en">This work is human, and it’s hard. And there has always been more to do than hands to do it.</p><p class="es">Este trabajo es humano, y es difícil. Y siempre ha habido más trabajo que manos para hacerlo.</p></div>
+      <div class="pp p"><p class="en">We’re a nonprofit. We can’t hire everyone the assistant they deserve. So we built one. It can read the pages, keep track of the follow-ups, and take care of the simple, repetitive parts, so you don’t have to carry all of it yourself.</p><p class="es">Somos una organización sin fines de lucro. No podemos contratarle a cada persona el asistente que merece. Así que hicimos uno. Puede leer las páginas, llevar la cuenta de los pendientes y encargarse de las partes sencillas y repetitivas, para que usted no tenga que cargar con todo.</p></div>
+      <div class="pp key"><p class="en">Thank you for seeing how much this work matters. You know, better than anyone, that every packet, every note and every phone number is a person’s life. That is exactly why people have to stay in every decision, and in the everyday work, too.</p><p class="es">Gracias por ver lo mucho que importa este trabajo. Usted sabe, mejor que nadie, que detrás de cada paquete, cada nota y cada número de teléfono hay una vida. Por eso las personas tienen que estar en cada decisión, y también en el trabajo de todos los días.</p></div>
+      <div class="pp p"><p class="en">It doesn’t make decisions. It’s built to stick to your words. Every yes, every no, every note with your name on it stays yours, and you read it before it goes anywhere.</p><p class="es">No toma decisiones. Está hecho para respetar sus palabras. Cada sí, cada no y cada nota con su nombre siguen siendo suyos, y usted lo lee antes de que vaya a cualquier parte.</p></div>
+      <div class="pp p"><p class="en">And sometimes it will get things wrong. That’s why it shows you where it found what it found, and why you always have the last word.</p><p class="es">Y a veces se va a equivocar. Por eso le muestra dónde encontró lo que encontró, y por eso usted siempre tiene la última palabra.</p></div>
+      <div class="pp p"><p class="en">You don’t have to love it. We’re only asking you to try it once, on a made-up case, and tell us honestly what you think. If it isn’t helping you, we want to know.</p><p class="es">No tiene que encantarle. Solo le pedimos que lo pruebe una vez, con un caso inventado, y que nos diga con honestidad qué piensa. Si no le está ayudando, queremos saberlo.</p></div>
+      <div class="pp p"><p class="en">The reason we’re doing any of this is you, and the people you take care of. Every hour this gives back is an hour for a client, and a little less weight on you.</p><p class="es">La razón de todo esto es usted, y las personas que cuida. Cada hora que esto le devuelve es una hora para un cliente, y un poco menos de peso para usted.</p></div>
+      <div class="pp hope"><p class="en">We hope it helps you go home a little lighter. We hope you sleep a little better.</p><p class="es">Ojalá le ayude a irse a casa con menos peso encima. Ojalá duerma un poco mejor.</p></div>
+      <div class="sig pp"><p class="en">With gratitude,<br><span class="ph">[names of the IHH leaders who will read it]</span></p><p class="es">Con gratitud,<br><span class="ph">[nombres]</span></p></div>
+    </div>
+  </section>
+
+  <section class="band band-paper" aria-label="Who this is for">
+    <div class="wrap stack" style="gap: 20px;">
+      <p class="lab"><span class="en">Who this is really for</span><span class="es">Para quién es esto, de verdad</span></p>
+      <div class="waiting">
+        <div class="pp"><p class="en">Tonight, somewhere, someone in a hospital bed is waiting to hear if there’s a place for them to heal.</p><p class="es">Esta noche, en algún lugar, alguien en una cama de hospital espera saber si hay un lugar donde pueda sanar.</p></div>
+        <div class="pp"><p class="en">When we answer late, they don’t always wait. Some go somewhere else. Some leave the hospital on their own, before we can give them an answer. Too many of the people referred to us are lost that way.</p><p class="es">Cuando respondemos tarde, no siempre esperan. Algunos se van a otro lugar. Otros se van del hospital por su cuenta, antes de que podamos darles una respuesta. Así perdemos a demasiadas de las personas que nos refieren.</p></div>
+        <div class="pp"><p class="en">Every minute this gives back to you is a minute sooner they hear from us.</p><p class="es">Cada minuto que esto le devuelve es un minuto antes en que sabrán de nosotros.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAMPAIGN 1 -->
+  <section class="band band-sage" id="hospital" aria-labelledby="c1-h">
+    <div class="wrap stack" style="gap: 28px;">
+      <div class="chead">
+        <p class="eyebrow">Campaign 1 · Hospital side · The frustration era</p>
+        <h2 class="title" id="c1-h"><span class="en">Ending the frustration era, together.</span><span class="es">Juntos, terminamos la era de la frustración.</span></h2>
+        <div class="pp sub"><p class="en">For the people at the referral desk, on the clinical line and covering intake at night, who race the clock every day for someone they may never meet.</p><p class="es">Para quienes están en el escritorio de referidos, en la línea clínica y cubriendo admisión de noche, y corren contra el reloj cada día por alguien a quien quizás nunca conozcan.</p></div>
+      </div>
+
+      <article class="dear" aria-labelledby="d-coord">
+        <p class="job">Referral coordinator · Coordinador/a de referidos</p>
+        <div class="pp to" id="d-coord"><p class="en">To whoever is standing by the fax at four o’clock on a Monday.</p><p class="es">Para quien está junto al fax a las cuatro de la tarde de un lunes.</p></div>
+        <div class="part"><p class="lab"><span class="en">We know</span><span class="es">Lo sabemos</span></p><div class="pp"><p class="en">Thirty pages just came in, and the clock started before you even saw them. Two more are printing. A hospital still hasn’t called back about yesterday’s. You’re trying to be fast and careful at the same time, and that’s a lot to hold.</p><p class="es">Acaban de llegar treinta páginas, y el reloj empezó antes de que usted las viera. Dos más se están imprimiendo. Un hospital todavía no responde por el de ayer. Usted intenta actuar rápido y con cuidado a la vez, y eso es mucho que sostener.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What might worry you</span><span class="es">Lo que quizás le preocupa</span></p><div class="pp"><p class="en">Maybe you worry it will say yes to someone who isn’t safe here, or no to someone who needed the bed. Maybe you worry you’ll be the one blamed if it gets something wrong. That’s a fair thing to worry about.</p><p class="es">Quizás le preocupa que diga que sí a alguien que no estaría seguro aquí, o que no a alguien que necesitaba la cama. Quizás le preocupa que la culpa caiga sobre usted si se equivoca. Es una preocupación justa.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What it will and won’t do</span><span class="es">Lo que hace y lo que no hace</span></p><div class="pp"><p class="en">It won’t say yes or no. It reads the pages and shows you exactly where it found each thing, so you can check it with your own eyes. It keeps track of what each hospital still owes you. The call is always yours.</p><p class="es">No va a decir que sí ni que no. Lee las páginas y le muestra exactamente dónde encontró cada cosa, para que usted lo compruebe con sus propios ojos. Lleva la cuenta de lo que cada hospital todavía le debe. La decisión siempre es suya.</p></div></div>
+        <div class="hopeline"><p class="lab"><span class="en">What we hope for you</span><span class="es">Lo que deseamos para usted</span></p><div class="pp"><p class="en">That you can stop carrying the follow-ups in your head.</p><p class="es">Que pueda dejar de cargar los pendientes en la cabeza.</p></div><p class="theline"><b>It reads the packet. You make the call.</b> · Lee las páginas. Usted decide.</p></div>
+      </article>
+
+      <article class="dear" aria-labelledby="d-clin">
+        <p class="job">Clinical line · Línea clínica</p>
+        <div class="pp to" id="d-clin"><p class="en">To whoever answers the clinical line in the middle of the night.</p><p class="es">Para quien contesta la línea clínica en medio de la noche.</p></div>
+        <div class="part"><p class="lab"><span class="en">We know</span><span class="es">Lo sabemos</span></p><div class="pp"><p class="en">The hardest calls come to you. Sometimes intake has already told a hospital yes, and you’re the one who has to look again. Saying no to someone who needs care is never easy, at any hour.</p><p class="es">Las llamadas más difíciles llegan a usted. A veces admisión ya le dijo que sí a un hospital, y usted es quien tiene que volver a mirar. Decirle que no a alguien que necesita cuidado nunca es fácil, a ninguna hora.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What might worry you</span><span class="es">Lo que quizás le preocupa</span></p><div class="pp"><p class="en">Maybe you worry this will start making those calls for you, or push you to decide faster than feels right.</p><p class="es">Quizás le preocupa que esto empiece a tomar esas decisiones por usted, o que le empuje a decidir más rápido de lo que se siente correcto.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What it will and won’t do</span><span class="es">Lo que hace y lo que no hace</span></p><div class="pp"><p class="en">It can’t turn anyone away. Only you can. What it can do is bring you the hard ones earlier, with the pages and the exact words already in front of you.</p><p class="es">No puede rechazar a nadie. Solo usted puede. Lo que sí puede hacer es traerle los casos difíciles más temprano, con las páginas y las palabras exactas frente a usted.</p></div></div>
+        <div class="hopeline"><p class="lab"><span class="en">What we hope for you</span><span class="es">Lo que deseamos para usted</span></p><div class="pp"><p class="en">That those nights get a little shorter.</p><p class="es">Que esas noches se hagan un poco más cortas.</p></div><p class="theline"><b>Only you can say no.</b> · Solo usted puede decir que no.</p></div>
+      </article>
+
+      <article class="dear" aria-labelledby="d-night">
+        <p class="job">After-hours intake · Admisión de noche</p>
+        <div class="pp to" id="d-night"><p class="en">To whoever covers intake after everyone else has gone home.</p><p class="es">Para quien cubre admisión cuando todos los demás ya se fueron a casa.</p></div>
+        <div class="part"><p class="lab"><span class="en">We know</span><span class="es">Lo sabemos</span></p><div class="pp"><p class="en">When the office empties out, the fax keeps coming, and you’re the one who answers it. You lead people all day, and then at night you do the work yourself, on your own, with the same 2-hour clock.</p><p class="es">Cuando la oficina se vacía, el fax sigue llegando, y usted es quien contesta. Dirige a otras personas todo el día, y de noche hace el trabajo en persona, por su cuenta, con el mismo reloj de 2 horas.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What might worry you</span><span class="es">Lo que quizás le preocupa</span></p><div class="pp"><p class="en">Maybe you worry about being asked to stand behind something new while you’re still learning it yourself. Maybe you worry that if it gets something wrong at three in the morning, it’s on you.</p><p class="es">Quizás le preocupa que le pidan respaldar algo nuevo mientras usted todavía lo está aprendiendo. Quizás le preocupa que, si se equivoca a las tres de la mañana, la responsabilidad sea suya.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What it will and won’t do</span><span class="es">Lo que hace y lo que no hace</span></p><div class="pp"><p class="en">It won’t make the call for you, at night or any other time. It reads the pages, shows you where it found each thing, and keeps the clock and the open items on one card. When the morning shift comes in, they can see where each referral stands, and you can hand it over without retyping a word.</p><p class="es">No va a decidir por usted, ni de noche ni a ninguna hora. Lee las páginas, le muestra dónde encontró cada cosa y mantiene el reloj y los pendientes en una sola tarjeta. Cuando llega el turno de la mañana, pueden ver cómo va cada referido, y usted puede pasárselo sin volver a escribir nada.</p></div></div>
+        <div class="hopeline"><p class="lab"><span class="en">What we hope for you</span><span class="es">Lo que deseamos para usted</span></p><div class="pp"><p class="en">That a night on intake doesn’t follow you into the next day.</p><p class="es">Que una noche en admisión no le persiga hasta el día siguiente.</p></div><p class="theline"><b>You keep the light on. It keeps the list.</b> · Usted mantiene la luz encendida. La herramienta lleva la lista.</p></div>
+      </article>
+
+      <div class="across">
+        <p class="lab"><span class="en">Who feels it on the other side</span><span class="es">Quién lo siente del otro lado</span></p>
+        <div class="pp to"><p class="en">To the hospital case manager trying to find somewhere safe for someone to go.</p><p class="es">Para el administrador de casos del hospital que busca un lugar seguro adonde alguien pueda ir.</p></div>
+        <div class="pp"><p class="en">We’ll ask for everything we need at once, so you’re not chased three times. We’ll tell you clearly where things stand. And a person at IHH will always be the one who answers you.</p><p class="es">Le pediremos todo lo que necesitamos de una sola vez, para no perseguirle tres veces. Le diremos con claridad cómo va todo. Y siempre será una persona de IHH quien le responda.</p></div>
+      </div>
+
+      <article class="dear outside" aria-labelledby="d-hsup">
+        <p class="job">Hospital supervisors · outside IHH</p>
+        <div class="pp to" id="d-hsup"><p class="en">To whoever supervises case management at the hospital and gets a reminder from us.</p><p class="es">Para quien supervisa la administración de casos en el hospital y recibe un recordatorio de nosotros.</p></div>
+        <div class="part"><p class="lab"><span class="en">We know</span><span class="es">Lo sabemos</span></p><div class="pp"><p class="en">Your team is juggling discharges all day, with pressure coming from every direction. When an email from us lands in your inbox, it’s one more thing on a day that was already full.</p><p class="es">Su equipo hace malabares con las altas todo el día, con presión que llega de todas partes. Cuando un correo nuestro llega a su bandeja, es una cosa más en un día que ya estaba lleno.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What might worry you</span><span class="es">Lo que quizás le preocupa</span></p><div class="pp"><p class="en">Maybe you worry it reads like a complaint about your team, or like the start of a lot more email.</p><p class="es">Quizás le preocupa que parezca una queja sobre su equipo, o el comienzo de muchos correos más.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What it will and won’t do</span><span class="es">Lo que hace y lo que no hace</span></p><div class="pp"><p class="en">It isn’t a complaint. It’s one patient who is waiting, and the exact items we still need to give an answer. Our reminders go to your case manager first, and a person at IHH reads every message before it’s sent. When we have what we need, you hear back from us with a clear yes, or no with the reason.</p><p class="es">No es una queja. Es un paciente que está esperando, y los documentos exactos que todavía necesitamos para dar una respuesta. Nuestros recordatorios van primero a su administrador de casos, y una persona de IHH lee cada mensaje antes de enviarlo. Cuando tenemos lo que necesitamos, le respondemos con un sí claro, o un no con el motivo.</p></div></div>
+        <div class="hopeline"><p class="lab"><span class="en">What we hope for you</span><span class="es">Lo que deseamos para usted</span></p><div class="pp"><p class="en">That your patient gets somewhere safe to heal, with one short email instead of a long chain.</p><p class="es">Que su paciente llegue a un lugar seguro para sanar, con un correo corto en vez de una larga cadena.</p></div><p class="theline"><b>One patient. One list. One clear answer.</b> · Un paciente. Una lista. Una respuesta clara.</p></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- CAMPAIGN 2 -->
+  <section class="band band-paper" id="onsite" aria-labelledby="c2-h">
+    <div class="wrap stack" style="gap: 28px;">
+      <div class="chead">
+        <p class="eyebrow">Campaign 2 · Onsite at IHH · Nursing and case management</p>
+        <h2 class="title" id="c2-h"><span class="en">More time with clients.</span><span class="es">Más tiempo con los clientes.</span></h2>
+        <div class="pp sub"><p class="en">For the nurses, medical assistants, case managers and site teams who came into this work for the people, not the paperwork.</p><p class="es">Para el personal de enfermería, los asistentes médicos, los administradores de casos y los equipos de cada sitio que llegaron a este trabajo por la gente, no por el papeleo.</p></div>
+      </div>
+
+      <article class="dear" aria-labelledby="d-lvn">
+        <p class="job">LVN or medical assistant · LVN o asistente médico</p>
+        <div class="pp to" id="d-lvn"><p class="en">To whoever is writing notes from memory at the end of a long shift.</p><p class="es">Para quien escribe notas de memoria al final de un turno largo.</p></div>
+        <div class="part"><p class="lab"><span class="en">We know</span><span class="es">Lo sabemos</span></p><div class="pp"><p class="en">You saw every client today. The sugars, the dressings, the vitals, the questions no one else had time to listen to. Now the notes, from memory, knowing the health plan will read every word.</p><p class="es">Hoy vio a cada cliente. El azúcar, las curaciones, los signos vitales, las preguntas que nadie más tuvo tiempo de escuchar. Ahora las notas, de memoria, sabiendo que el plan de salud va a leer cada palabra.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What might worry you</span><span class="es">Lo que quizás le preocupa</span></p><div class="pp"><p class="en">Maybe you worry about a client’s information going somewhere it shouldn’t. Maybe you worry about a note with your name on it saying something that never happened.</p><p class="es">Quizás le preocupa que la información de un cliente llegue a donde no debe. Quizás le preocupa que una nota con su nombre diga algo que nunca pasó.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What it will and won’t do</span><span class="es">Lo que hace y lo que no hace</span></p><div class="pp"><p class="en">It’s built to stick to what you jotted down, and it marks anything it can’t trace back to your words. Read it the way you’d read anyone else’s draft. You can practice on made-up clients first and see exactly what was sent and what it cost. Nothing goes in the chart unless you put it there.</p><p class="es">Está hecho para basarse solo en lo que usted apuntó, y marca todo lo que no puede relacionar con sus palabras. Léalo como leería el borrador de cualquier otra persona. Puede practicar primero con clientes inventados y ver exactamente qué se envió y cuánto costó. Nada entra al expediente si usted no lo pone.</p></div></div>
+        <div class="hopeline"><p class="lab"><span class="en">What we hope for you</span><span class="es">Lo que deseamos para usted</span></p><div class="pp"><p class="en">That the note gets done during your shift, while the day is still fresh.</p><p class="es">Que la nota quede lista durante su turno, mientras el día todavía está fresco.</p></div><p class="theline"><b>Your note. Your name. Your words.</b> · Su nota. Su nombre. Sus palabras.</p></div>
+      </article>
+
+      <article class="dear" aria-labelledby="d-cm">
+        <p class="job">Case manager · Administrador/a de casos</p>
+        <div class="pp to" id="d-cm"><p class="en">To whoever has called a number for a client and heard that it doesn’t work anymore.</p><p class="es">Para quien ha llamado a un número para un cliente y ha escuchado que ya no funciona.</p></div>
+        <div class="part"><p class="lab"><span class="en">We know</span><span class="es">Lo sabemos</span></p><div class="pp"><p class="en">You do so much finding: housing, benefits, an ID, a ride, a plan for the day they leave. And it hurts when the shelter has closed or the number has changed, and the client finds out at the door.</p><p class="es">Usted busca tantas cosas: vivienda, beneficios, una identificación, transporte, un plan para el día en que se van. Y duele cuando el albergue ya cerró o el número cambió, y el cliente se entera en la puerta.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What might worry you</span><span class="es">Lo que quizás le preocupa</span></p><div class="pp"><p class="en">Maybe you worry it will sound sure about something that’s out of date.</p><p class="es">Quizás le preocupa que hable con seguridad de algo que ya no está al día.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What it will and won’t do</span><span class="es">Lo que hace y lo que no hace</span></p><div class="pp"><p class="en">It’s built not to guess. It picks from a list someone has checked, and phone numbers and hours come from that list, not from the AI. Lists go out of date, so it shows you when each one was last checked, and you can call ahead if the date looks old. You’re still the one who sits with them and walks them through it.</p><p class="es">Está hecho para no adivinar. Elige de una lista que alguien revisó, y los teléfonos y horarios vienen de esa lista, no de la IA. Las listas se desactualizan, por eso le muestra cuándo se revisó cada recurso, y usted puede llamar antes si la fecha es antigua. Usted sigue siendo quien se sienta con el cliente y lo acompaña.</p></div></div>
+        <div class="hopeline"><p class="lab"><span class="en">What we hope for you</span><span class="es">Lo que deseamos para usted</span></p><div class="pp"><p class="en">That more of your time goes to the client in front of you.</p><p class="es">Que más de su tiempo sea para el cliente que tiene enfrente.</p></div><p class="theline"><b>It finds the door. You walk them through it.</b> · Encuentra la puerta. Usted los acompaña.</p></div>
+      </article>
+
+      <article class="dear" aria-labelledby="d-ops">
+        <p class="job">Site operations · Operaciones de los sitios</p>
+        <div class="pp to" id="d-ops"><p class="en">To whoever reads the email that says someone new is on the way.</p><p class="es">Para quien lee el correo que dice que alguien nuevo viene en camino.</p></div>
+        <div class="part"><p class="lab"><span class="en">We know</span><span class="es">Lo sabemos</span></p><div class="pp"><p class="en">You get word that someone new is coming, and suddenly there’s a bed to get ready and a hundred small things to think about before they walk in. The details don’t always arrive all at once.</p><p class="es">Le avisan que viene alguien nuevo, y de pronto hay una cama que preparar y cien pequeñas cosas que pensar antes de que llegue. Los detalles no siempre llegan todos juntos.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What might worry you</span><span class="es">Lo que quizás le preocupa</span></p><div class="pp"><p class="en">Maybe you worry this changes how you get word, or that something important will get lost between the referral desk and your site.</p><p class="es">Quizás le preocupa que esto cambie la forma en que le avisan, o que algo importante se pierda entre el escritorio de referidos y su sitio.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What it will and won’t do</span><span class="es">Lo que hace y lo que no hace</span></p><div class="pp"><p class="en">The email still comes from a person at the referral desk, to the same list. The difference is that it’s drafted from the same card the desk used to decide, so the details match, and it includes the language the person prefers, so you can be ready to greet them in it.</p><p class="es">El correo sigue llegando de una persona del escritorio de referidos, a la misma lista. La diferencia es que se prepara a partir de la misma tarjeta que el escritorio usó para decidir, así que los datos coinciden, e incluye el idioma que prefiere la persona, para que pueda recibirla en su idioma.</p></div></div>
+        <div class="hopeline"><p class="lab"><span class="en">What we hope for you</span><span class="es">Lo que deseamos para usted</span></p><div class="pp"><p class="en">That everyone who walks through your door is met by someone who was ready for them.</p><p class="es">Que cada persona que cruza su puerta encuentre a alguien que ya la esperaba.</p></div><p class="theline"><b>Ready before they walk in.</b> · Listos antes de que lleguen.</p></div>
+      </article>
+
+      <div class="across">
+        <p class="lab"><span class="en">Who feels it on the other side</span><span class="es">Quién lo siente del otro lado</span></p>
+        <div class="pp to"><p class="en">To the person getting ready to leave our care.</p><p class="es">Para la persona que se prepara para dejar nuestro cuidado.</p></div>
+        <div class="pp"><p class="en">Your next steps, written plainly, in your language, and handed to you by someone who knows you.</p><p class="es">Sus próximos pasos, escritos con palabras sencillas, en su idioma, y entregados por alguien que lo conoce.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="everyone" aria-labelledby="ev-h">
+    <div class="wrap stack" style="gap: 28px;">
+      <div class="chead">
+        <p class="eyebrow">And for everyone else at IHH</p>
+        <h2 class="title" id="ev-h"><span class="en">Nobody should hear about it from a rumor.</span><span class="es">Nadie debería enterarse por un rumor.</span></h2>
+        <div class="pp sub"><p class="en">For the people who keep every site running, whether or not they ever open the app.</p><p class="es">Para las personas que mantienen cada sitio funcionando, abran o no la aplicación.</p></div>
+      </div>
+
+      <article class="dear" aria-labelledby="d-all">
+        <p class="job">Everyone at IHH · Todos en IHH</p>
+        <div class="pp to" id="d-all"><p class="en">To everyone at IHH who may never open this app.</p><p class="es">Para todos en IHH que quizás nunca abran esta aplicación.</p></div>
+        <div class="part"><p class="lab"><span class="en">We know</span><span class="es">Lo sabemos</span></p><div class="pp"><p class="en">By now you’ve probably heard the word “AI” somewhere around here, in the break room or from a coworker who wasn’t sure what it meant for any of us. Whatever your job is, you keep these sites running, and the people we care for know your face.</p><p class="es">Seguramente ya escuchó la palabra «IA» por aquí, en la sala de descanso o de algún compañero que no sabía bien qué significaba para todos nosotros. Sea cual sea su trabajo, usted mantiene estos sitios funcionando, y las personas que cuidamos conocen su cara.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What might worry you</span><span class="es">Lo que quizás le preocupa</span></p><div class="pp"><p class="en">Maybe you’re wondering whether this is the first step toward needing fewer people. That’s a fair question, and you deserve a straight answer.</p><p class="es">Quizás se pregunta si esto es el primer paso para necesitar menos personas. Es una pregunta justa, y usted merece una respuesta directa.</p></div></div>
+        <div class="part"><p class="lab"><span class="en">What it will and won’t do</span><span class="es">Lo que hace y lo que no hace</span></p><div class="pp"><p class="en">This tool helps with paperwork: reading hospital referrals, drafting notes, and finding resources for clients. It doesn’t do your work, and it wasn’t built to replace anyone. If you hear something that worries you, come ask us. We’d rather answer a hard question than have you carry it alone.</p><p class="es">Esta herramienta ayuda con el papeleo: leer los referidos de los hospitales, preparar borradores de notas y encontrar recursos para los clientes. No hace su trabajo, y no se hizo para reemplazar a nadie. Si escucha algo que le preocupa, venga a preguntarnos. Preferimos responder una pregunta difícil a que usted cargue con ella sin ayuda.</p></div></div>
+        <div class="hopeline"><p class="lab"><span class="en">What we hope for you</span><span class="es">Lo que deseamos para usted</span></p><div class="pp"><p class="en">That you hear about this from us first, not from a rumor. And that you know how much the people here count on you.</p><p class="es">Que se entere de esto por nosotros primero, no por un rumor. Y que sepa cuánto cuentan con usted las personas de aquí.</p></div><p class="theline"><b>Whatever your job, you’re part of this.</b> · Sea cual sea su trabajo, usted es parte de esto.</p></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- TOGETHER -->
+  <section class="band" id="together" aria-labelledby="tg-h">
+    <div class="wrap stack" style="gap: 24px;">
+      <div class="stack" style="gap: 12px;">
+        <p class="eyebrow">How we’ll do this, together</p>
+        <h2 class="h2" id="tg-h"><span class="en">Slowly, gently, and with you.</span><span class="es" style="font-weight: 400;">Despacio, con calma y con ustedes.</span></h2>
+        <p class="muted" style="max-width: 64ch;">Nobody touches a real referral or a real client until IHH’s compliance team has signed off, and until they’ve heard the letter, tried a made-up case, and had a chance to say what they think.</p>
+      </div>
+      <ol class="steps">
+        <li><span class="n">1</span><div class="what">
+          <p class="h"><span class="en">We’ll start by listening.</span><span class="es">Vamos a empezar por escuchar.</span></p>
+          <p class="body muted">Before anyone sees the app, a leader sits with each team, including the teams who will never use it, reads the letter, and asks one question: what worries you about this? Then just listens, and writes the answers down.</p>
+          <div class="facts"><div><b>Who</b><span>IHH leadership</span></div><div><b>When</b><span>Before launch</span></div><div><b>Needs</b><span>The letter, printed</span></div></div>
+        </div></li>
+        <li><span class="n">2</span><div class="what">
+          <p class="h"><span class="en">We’ll say it in your words.</span><span class="es">Lo diremos con sus palabras.</span></p>
+          <p class="body muted">A bilingual IHH staff member reads every line in the app, on the cards and in the letter, and changes anything that sounds like a translation instead of like us.</p>
+          <div class="facts"><div><b>Who</b><span>A bilingual staff member <span class="ph">[name]</span></span></div><div><b>When</b><span>Before launch</span></div><div><b>Needs</b><span>This page and the app’s word list</span></div></div>
+        </div></li>
+        <li><span class="n">3</span><div class="what">
+          <p class="h"><span class="en">Someone you work with will show you.</span><span class="es">Alguien de su equipo se lo va a mostrar.</span></p>
+          <p class="body muted">One person from each team tries it first: a coordinator, someone from the clinical line, an LVN or MA, a case manager. They show their own team, in their own way.</p>
+          <div class="facts"><div><b>Who</b><span>Four peers <span class="ph">[names]</span></span></div><div><b>When</b><span>The week before launch</span></div><div><b>Needs</b><span>Practice mode, half an hour each</span></div></div>
+        </div></li>
+        <li><span class="n">4</span><div class="what">
+          <p class="h"><span class="en">We’ll begin where it’s quiet.</span><span class="es">Empezaremos donde hay calma.</span></p>
+          <p class="body muted">The referral desk starts on a weekend shift, when the fax is calmer, so nobody is learning something new in the middle of the Monday rush. Made-up cases first, always.</p>
+          <div class="facts"><div><b>Who</b><span>Coordinators and the clinical line</span></div><div><b>When</b><span>Week 1 <span class="ph">[date]</span></span></div><div><b>Needs</b><span>Desk cards, the huddle</span></div></div>
+        </div></li>
+        <li><span class="n">5</span><div class="what">
+          <p class="h"><span class="en">We’ll go site by site.</span><span class="es">Iremos sitio por sitio.</span></p>
+          <p class="body muted">Nurses and medical assistants get a full week of practice with made-up clients before any real note. Case managers start with the “Your next steps” sheet, because it’s the part clients feel first.</p>
+          <div class="facts"><div><b>Who</b><span>Site supervisors and their teams</span></div><div><b>When</b><span>Weeks 2 and 3 <span class="ph">[first site]</span></span></div><div><b>Needs</b><span>Desk cards, the break-room poster</span></div></div>
+        </div></li>
+        <li><span class="n">6</span><div class="what">
+          <p class="h"><span class="en">We’ll tell the hospitals when you’re ready.</span><span class="es">Les contaremos a los hospitales cuando ustedes estén listos.</span></p>
+          <p class="body muted">Not before. When our own teams trust it, the referral lead adds a few minutes to the in-services already given to hospital case managers and social workers, and sends their supervisors a short letter.</p>
+          <div class="facts"><div><b>Who</b><span>The referral lead</span></div><div><b>When</b><span>Week 4 or later</span></div><div><b>Needs</b><span>The half-page sheet</span></div></div>
+        </div></li>
+        <li><span class="n">7</span><div class="what">
+          <p class="h"><span class="en">We’ll keep asking how you’re doing.</span><span class="es">Seguiremos preguntando cómo están.</span></p>
+          <p class="body muted">Every month, two questions for every team: “Is your shift feeling any lighter?” and “What should we change?” If it isn’t helping, we change it. Alongside that, we watch the number IHH cares about most: fewer people lost before we can answer.</p>
+          <div class="facts"><div><b>Who</b><span>Team leads, with HR</span></div><div><b>When</b><span>Monthly</span></div><div><b>Needs</b><span>Two questions; HR sets how they’re asked</span></div></div>
+        </div></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- KIT -->
+  <section class="band band-sage" id="kit" aria-labelledby="kit-h">
+    <div class="wrap stack" style="gap: 28px;">
+      <div class="stack" style="gap: 12px;">
+        <p class="eyebrow">The kit</p>
+        <h2 class="h2" id="kit-h">Small things people will see every day.</h2>
+        <p class="muted" style="max-width: 64ch;">Both languages on the same side, so nobody has to turn a card over to find theirs.</p>
+      </div>
+      <div class="pieces">
+        <div>
+          <div class="softposter">
+            <p class="eyebrow" style="color: var(--hero-soft);">Break room</p>
+            <p class="a"><span class="en">It stays up, so you don’t have to.</span><span class="es">La luz se queda encendida, para que usted pueda descansar.</span></p>
+            <p class="z"><span class="en">We hope you sleep a little better.</span><span class="es">Ojalá duerma un poco mejor.</span></p>
+          </div>
+          <p class="spec">18 × 24 in poster · every break room</p>
+        </div>
+        <div>
+          <div class="poster">
+            <p class="eyebrow">Referral office</p>
+            <p class="head"><span class="en">Ending the frustration era, together.</span><span class="es">Juntos, terminamos la era de la frustración.</span></p>
+            <div>
+              <p class="x"><span class="en">Whoever’s by the fax takes it.</span><span class="es">Lo toma quien esté junto al fax.</span></p>
+              <p class="x"><span class="en">The hospital that stops answering.</span><span class="es">El hospital que deja de contestar.</span></p>
+              <p class="x"><span class="en">The same facts, typed three times.</span><span class="es">Los mismos datos, escritos tres veces.</span></p>
+            </div>
+          </div>
+          <p class="spec">11 × 17 in poster · the referral office</p>
+        </div>
+      </div>
+      <div class="cards">
+        <div>
+          <div class="desk"><div class="top"><span>Fax desk</span><span>Lamplight</span></div><p class="l"><span class="en">It reads the packet. You make the call.</span><span class="es">Lee las páginas. Usted decide.</span></p><p class="fine"><span class="en">You don’t have to remember everything anymore.</span><span class="es">Ya no tiene que acordarse de todo.</span></p></div>
+          <p class="spec">6 × 4 in desk card</p>
+        </div>
+        <div>
+          <div class="desk"><div class="top"><span>Clinical line</span><span>Lamplight</span></div><p class="l"><span class="en">Only you can say no.</span><span class="es">Solo usted puede decir que no.</span></p><p class="fine"><span class="en">The page and the words come with it.</span><span class="es">La página y las palabras vienen incluidas.</span></p></div>
+          <p class="spec">6 × 4 in desk card</p>
+        </div>
+        <div>
+          <div class="desk"><div class="top"><span>Nursing station</span><span>Lamplight</span></div><p class="l"><span class="en">Your note. Your name. Your words.</span><span class="es">Su nota. Su nombre. Sus palabras.</span></p><p class="fine"><span class="en">It sticks to your words. You read every line.</span><span class="es">Se basa en sus palabras. Usted lee cada línea.</span></p></div>
+          <p class="spec">6 × 4 in desk card · one per site</p>
+        </div>
+        <div>
+          <div class="desk"><div class="top"><span>Case management</span><span>Lamplight</span></div><p class="l"><span class="en">It finds the door. You walk them through it.</span><span class="es">Encuentra la puerta. Usted los acompaña.</span></p><p class="fine"><span class="en">It shows when each one was last checked.</span><span class="es">Muestra cuándo se revisó cada uno.</span></p></div>
+          <p class="spec">6 × 4 in desk card</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HUDDLE -->
+  <section class="band" id="huddle" aria-labelledby="hud-h">
+    <div class="wrap stack" style="gap: 28px;">
+      <div class="stack" style="gap: 12px;">
+        <p class="eyebrow">The huddle</p>
+        <h2 class="h2" id="hud-h">Five minutes, mostly listening.</h2>
+        <p class="muted" style="max-width: 64ch;">Hold it in whatever language the room speaks. If the room is Spanish-first, read the Spanish and switch the app to Español.</p>
+      </div>
+      <ol class="shape">
+        <li><span class="t">1 min</span><b>Start with how it feels</b><span class="muted small">Read the opener. Ask how people feel about AI. Just listen.</span></li>
+        <li><span class="t">1 min</span><b>Read their letter</b><span class="muted small">The one written to their job, from this page.</span></li>
+        <li><span class="t">2 min</span><b>Try it together</b><span class="muted small">A made-up case, on their own screen, at their own pace.</span></li>
+        <li><span class="t">1 min</span><b>Ask, and listen</b><span class="muted small">“What would make this easier for you? What would stop you trusting it?”</span></li>
+      </ol>
+      <div class="script">
+        <p class="lab"><span class="en">The opener</span><span class="es">Para empezar</span></p>
+        <div class="pp"><p class="en">Before we show you anything, we want to talk about how this feels. A lot of people are worried AI will take their jobs. If you’ve felt that, it makes sense. We want you to hear it from us: we built this to support you, not to replace you. We built this because we know how much you’re carrying, and we can’t afford to hire everyone the help they deserve. You know this work touches people’s lives. That’s why people stay in every decision. It reads, it reminds, and it takes care of the simple parts. You make every decision. Try it once with us, on a made-up case, and tell us honestly what you think.</p><p class="es">Antes de mostrarles nada, queremos hablar de cómo se siente esto. Mucha gente tiene miedo de que la IA le quite el trabajo. Si usted lo ha sentido, tiene sentido. Queremos que lo escuche de nosotros: hicimos esto para apoyarle, no para reemplazarle. Hicimos esto porque sabemos todo lo que carga, y no podemos contratarle a cada persona la ayuda que merece. Usted sabe que este trabajo toca vidas. Por eso las personas siguen en cada decisión. Lee, le recuerda y se encarga de las partes sencillas. Usted toma cada decisión. Pruébelo una vez con nosotros, con un caso inventado, y díganos con honestidad qué piensa.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band band-paper" aria-labelledby="open-h">
+    <div class="wrap stack" style="gap: 16px;">
+      <p class="eyebrow">Still to settle with IHH</p>
+      <ul class="open">
+        <li id="open-h"><b>Sign-off from IHH’s HR, compliance and counsel</b> before anything is posted or launched. That includes the business associate agreement for the AI service, any health-plan contract rules about outside vendors, whether California’s AI disclosure rule for patient messages applies, and whether any staff are represented by a union.</li>
+        <li><b>The Spanish,</b> read and reworded by a bilingual IHH staff member.</li>
+        <li><b>Who signs the letter.</b> It should come from leaders the team knows by name.</li>
+        <li><b>Do yeses also get a clinical check?</b> Staff told us both ways. If they do, the clinical line’s letter changes.</li>
+        <li><b>The four peers, the first site and the dates.</b> <span class="ph">[names]</span> <span class="ph">[site]</span> <span class="ph">[dates]</span></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><b>In our language · En nuestro idioma</b> · the staff campaign for Lamplight.</span>
+    <span>Built at the OC Claude Impact Lab, October 17, 2026. Lamplight is a prototype (its code is still called Care Bridge). It needs IHH’s own review before it is used with real referrals or clients. No patient information is on this page.</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var buttons = document.querySelectorAll('.show button');
+  function apply(mode) {
+    if (mode === 'both') root.removeAttribute('data-show'); else root.setAttribute('data-show', mode);
+    buttons.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.show === mode ? 'true' : 'false'); });
+  }
+  var saved = null;
+  try { saved = localStorage.getItem('iol-show'); } catch (e) {}
+  if (saved === 'en' || saved === 'es' || saved === 'both') apply(saved);
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      apply(b.dataset.show);
+      try { localStorage.setItem('iol-show', b.dataset.show); } catch (e) {}
+    });
+  });
+})();
+</script>
