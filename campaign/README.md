@@ -63,6 +63,13 @@ decision, and go home.
 | 18 "Every packet. Every note. Every phone number.", for hallways | 11 × 17 in |
 | 19 Huddle announcement, with lines for when, where and who leads it | 11 × 17 in |
 | 20 "Your note. Your name. Your words.", for the nursing station | 11 × 17 in |
+| 21 "Questions people are afraid to ask" FAQ. Fill in every [bracket] with IHH's real answer | Letter |
+| 22 Leader kit: go first at the huddle, a 30-second video script, thanking the champions | Letter |
+| 23 "In their words" quote card, with a box for permission to share | 5.5 × 8.5 in |
+| 24 "In their words" poster, for real quotes shared with permission | 11 × 17 in |
+| 25 Lamplight champion badges, 12 per sheet | Letter |
+| 26 Thank-you card for champions, signed in pen | 7 × 5 in |
+| 27 "Thank you for the work you do every day" in 8 languages. A native speaker checks each line first | 11 × 17 in |
 
 Every handout has English on the front and Spanish on the back. Blanks are for names and phone
 numbers written by hand.
