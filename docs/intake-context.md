@@ -400,3 +400,6 @@ credits are $100 per person, API only, claimed with a Console Org ID.
 - Team repo: this folder is a clone of `travcjohnson/claude-impact-lab-oc` with `origin` pointing
   at the template. We need our own public repo and must repoint `origin`.
 - Confirm the stack and the team split.
+- IHH staff input from the day (two-step approval, email intake, short staffing, the 2-hour
+  tracker) and the questions still open for them: `docs/workflow-and-timing.md`. Its section 9
+  lists the real numbers we still need.
