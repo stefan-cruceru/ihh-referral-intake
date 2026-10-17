@@ -1,7 +1,9 @@
 """Settings and the Claude API key.
 
 The key is asked for once and kept in Windows Credential Manager (via keyring), never in the
-exe, the repo or a plain file. ANTHROPIC_API_KEY in the environment wins when set.
+exe or the repo. ANTHROPIC_API_KEY in the environment wins when set. Where there is no credential
+store (the Docker container), the key goes in a file only this user can read, inside the app's
+own data folder (the Docker volume), so staff can still add it from Settings.
 """
 
 import json
@@ -71,15 +73,33 @@ def get_api_key() -> str | None:
     try:
         import keyring
 
-        return keyring.get_password(SERVICE, KEY_NAME)
+        key = keyring.get_password(SERVICE, KEY_NAME)
+        if key:
+            return key
     except Exception:
+        pass
+    try:
+        return _key_file().read_text(encoding="utf-8").strip() or None
+    except OSError:
         return None
 
 
-def set_api_key(key: str) -> None:
-    import keyring
+def _key_file():
+    return user_dir() / "api-key"
 
-    keyring.set_password(SERVICE, KEY_NAME, key.strip())
+
+def set_api_key(key: str) -> None:
+    try:
+        import keyring
+
+        keyring.set_password(SERVICE, KEY_NAME, key.strip())
+        return
+    except Exception:
+        pass  # no credential store here (the Docker container): fall back to the private file
+    f = _key_file()
+    f.touch(mode=0o600, exist_ok=True)
+    os.chmod(f, 0o600)
+    f.write_text(key.strip(), encoding="utf-8")
 
 
 def clear_api_key() -> None:
@@ -88,4 +108,8 @@ def clear_api_key() -> None:
 
         keyring.delete_password(SERVICE, KEY_NAME)
     except Exception:
+        pass
+    try:
+        _key_file().unlink()
+    except OSError:
         pass
