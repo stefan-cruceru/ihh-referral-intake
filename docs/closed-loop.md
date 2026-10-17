@@ -10,14 +10,17 @@ model call is the only thing that leaves.
 
 One app, start to finish:
 
-1. **In.** A referral lands, as a fax PDF or an email, in a folder or inbox the app watches. The
-   2-hour clock starts on arrival.
+1. **In.** A referral lands as a fax PDF, an email, an Aidin export, or an upload through a
+   hospital upload page (IHH's own QR-code plan), in a folder or inbox the app watches. The 2-hour
+   clock starts on arrival, and the sender gets a receipt.
 2. **Read.** Claude reads the packet: page pass, the two gates, the rule pass, the checklist, form
-   vs. chart, then the verifier (`docs/intake-context.md` section 6).
-3. **Route.** The referral gets an owner. A likely "no" goes to the clinical line at the same time
-   (`docs/workflow-and-timing.md` sections 3 and 5).
-4. **Chase.** Missing items are drafted to the case manager on arrival, with a chase ladder if they
-   go quiet (section 4).
+   vs. chart, then the verifier (`docs/intake-context.md` section 6). Staff do the returning-client
+   check and the court background check by hand; the tool only shows them as checklist items.
+3. **Route.** The referral gets an owner. A likely "no" goes to the clinical reviewer at the same
+   time, who works in the app instead of a shared Excel sheet (`docs/workflow-and-timing.md`
+   sections 3 and 5).
+4. **Chase.** Missing items are drafted to the case manager on arrival, with reminders while it is
+   pending and a chase ladder if they go quiet (section 4).
 5. **Decide.** A person decides. Only a clinician can deny.
 6. **Hand off.** The Kipu fields, census row and ops email are drafted in one click (section 7).
 7. **Track.** The outcome is logged: accepted, declined or withdrawn, the withdrawal reason, and
@@ -44,6 +47,9 @@ Then back to step 1. No step depends on a system outside IHH.
   service. A person copies drafts into Outlook, the census row is a CSV, and the Kipu fields are a
   list to copy. So it can run on day one without IT work. Power Automate can feed the watched inbox
   later, inside IHH's Microsoft setup (`docs/workflow-and-timing.md` section 8).
+- **The upload page has to be reachable by hospitals,** so in a pilot it would be hosted inside
+  IHH's own environment, for example its Microsoft setup, not on an outside service. How is open.
+  In the prototype it is a local page.
 - **No partner tools or third-party services.** No outside AI tools, analytics, trackers or hosted
   databases.
 - **IHH owns it.** MIT license: IHH's code, prompts, word lists and eval. IHH can change it without
@@ -66,6 +72,10 @@ Then back to step 1. No step depends on a system outside IHH.
 
 - **Logs stay local.** Nothing about a referral is sent anywhere except the model call that reads
   it.
+- **Only a receipt and reminders could ever send themselves,** and only if IHH agrees. They carry
+  no decision and no clinical detail. In the prototype they are mocked like everything else
+  (`docs/workflow-and-timing.md`, "Where sources disagree").
+- **The tool never looks anyone up.** No court, CRM or registry searches. Those stay with staff.
 - **The model endpoint is one setting**, read from the environment, never hard-coded. API keys stay
   in environment variables, as today.
 - **The outcome log** keeps, per referral: an internal case number, arrival time, owner, decision,

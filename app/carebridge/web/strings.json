@@ -1082,5 +1082,181 @@
  "transcript": {
   "en": "Typed by the AI. Check it against the page.",
   "es": "Escrito por la IA. Compárelo con la página."
+ },
+ "tab_outbox": {
+  "en": "Alerts",
+  "es": "Avisos"
+ },
+ "tab_people": {
+  "en": "People",
+  "es": "Personas"
+ },
+ "outbox_title": {
+  "en": "Alerts for staff",
+  "es": "Avisos para el personal"
+ },
+ "outbox_sub": {
+  "en": "Who needs to look at which referral, and how urgent it is. These go to IHH staff only, never to patients or hospitals. The app never sends them: open one in Outlook or Teams and press send.",
+  "es": "Quién tiene que revisar qué referido y qué tan urgente es. Son solo para el personal de IHH, nunca para pacientes ni hospitales. La app nunca los envía: ábralo en Outlook o Teams y presione enviar."
+ },
+ "outbox_person": {
+  "en": "Show alerts for",
+  "es": "Mostrar avisos de"
+ },
+ "outbox_all": {
+  "en": "Everyone",
+  "es": "Todos"
+ },
+ "outbox_show_done": {
+  "en": "Show ones already sent",
+  "es": "Mostrar los ya enviados"
+ },
+ "outbox_empty": {
+  "en": "No alerts to send right now.",
+  "es": "No hay avisos por enviar ahora."
+ },
+ "notify_urgent": {
+  "en": "Urgent",
+  "es": "Urgente"
+ },
+ "notify_soon": {
+  "en": "Soon",
+  "es": "Pronto"
+ },
+ "notify_info": {
+  "en": "FYI",
+  "es": "Aviso"
+ },
+ "notify_email": {
+  "en": "Email",
+  "es": "Correo"
+ },
+ "notify_teams": {
+  "en": "Teams message",
+  "es": "Mensaje de Teams"
+ },
+ "notify_to": {
+  "en": "To",
+  "es": "Para"
+ },
+ "outbox_open_email": {
+  "en": "Open in Outlook",
+  "es": "Abrir en Outlook"
+ },
+ "outbox_open_teams": {
+  "en": "Open in Teams",
+  "es": "Abrir en Teams"
+ },
+ "outbox_mark_sent": {
+  "en": "Mark sent",
+  "es": "Marcar como enviado"
+ },
+ "outbox_not_needed": {
+  "en": "Not needed",
+  "es": "No hace falta"
+ },
+ "outbox_reopen": {
+  "en": "Back to the list",
+  "es": "Volver a la lista"
+ },
+ "outbox_was_sent": {
+  "en": "Sent by {who}",
+  "es": "Enviado por {who}"
+ },
+ "outbox_was_dismissed": {
+  "en": "Marked not needed",
+  "es": "Marcado como no necesario"
+ },
+ "outbox_no_address": {
+  "en": "Add this person's address under People to open it.",
+  "es": "Agregue la dirección de esta persona en Personas para abrirlo."
+ },
+ "outbox_card_file": {
+  "en": "Download the Teams message as a file",
+  "es": "Descargar el mensaje de Teams como archivo"
+ },
+ "outbox_open_ref": {
+  "en": "Open the referral",
+  "es": "Abrir el referido"
+ },
+ "outbox_after_open": {
+  "en": "Pressed send? Mark it sent.",
+  "es": "¿Ya lo envió? Márquelo como enviado."
+ },
+ "people_title": {
+  "en": "Who gets alerts",
+  "es": "Quién recibe avisos"
+ },
+ "people_sub": {
+  "en": "Choose how each person hears about their referrals, and in which language. Type addresses yourself: the app never guesses them.",
+  "es": "Elija cómo se entera cada persona de sus referidos y en qué idioma. Escriba las direcciones usted: la app nunca las adivina."
+ },
+ "people_name": {
+  "en": "Name",
+  "es": "Nombre"
+ },
+ "people_role": {
+  "en": "Role",
+  "es": "Función"
+ },
+ "people_role_coordinator": {
+  "en": "Referral coordinator",
+  "es": "Coordinador de referidos"
+ },
+ "people_role_lead": {
+  "en": "Lead",
+  "es": "Líder"
+ },
+ "people_role_clinical": {
+  "en": "Clinical line",
+  "es": "Línea clínica"
+ },
+ "people_channel": {
+  "en": "How they hear",
+  "es": "Cómo se entera"
+ },
+ "people_ch_both": {
+  "en": "Email and Teams",
+  "es": "Correo y Teams"
+ },
+ "people_ch_email": {
+  "en": "Email only",
+  "es": "Solo correo"
+ },
+ "people_ch_teams": {
+  "en": "Teams only",
+  "es": "Solo Teams"
+ },
+ "people_ch_none": {
+  "en": "No alerts",
+  "es": "Sin avisos"
+ },
+ "people_lang": {
+  "en": "Language",
+  "es": "Idioma"
+ },
+ "people_email": {
+  "en": "Work email",
+  "es": "Correo del trabajo"
+ },
+ "people_teams": {
+  "en": "Teams sign-in (usually the work email)",
+  "es": "Usuario de Teams (casi siempre el correo del trabajo)"
+ },
+ "people_add": {
+  "en": "Add a person",
+  "es": "Agregar una persona"
+ },
+ "people_save": {
+  "en": "Save",
+  "es": "Guardar"
+ },
+ "people_saved": {
+  "en": "Saved",
+  "es": "Guardado"
+ },
+ "people_unknown": {
+  "en": "unknown",
+  "es": "desconocido"
  }
 }
