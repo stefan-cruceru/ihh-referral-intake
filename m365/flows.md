@@ -53,6 +53,10 @@ referral row.
 3. Send from the shared intake mailbox to `submitter_email`. Subject and body from the template.
 4. Set `last_email_status`.
 
+Staff alerts (coordinator, lead, clinical line) are a separate set of drafts, documented in
+[docs/notifications.md section 5](../docs/notifications.md#5-after-the-event-sending-inside-ihhs-own-microsoft-365).
+In the prototype every message, to staff or to a hospital, is a draft a person sends.
+
 **Never in an email:** the patient's name, birth date, record numbers, diagnoses, or the
 reader's findings. The case code is how both sides refer to the patient.
 
@@ -62,3 +66,17 @@ A scheduled flow every 15 minutes: for each referral in `needs_info` with no new
 the submitter at 30 minutes and alert the owner at 60, as in `docs/workflow-and-timing.md`
 section 4. New uploads from the hospital come through the same form with the case code typed in
 a "Case code (if adding documents)" field, which flow 1 attaches to the existing row.
+
+## Feeding the Care Bridge dashboard
+
+While IHH runs the local Care Bridge app, flow 1 can also save the packet into the app's watched
+inbox folder (a OneDrive or SharePoint folder synced to that PC), with the form's details next
+to it as `<same name>.json`:
+
+```json
+{"case_code": "REF-2026-0412", "hospital": "…", "submitter_name": "…", "submitter_role": "…",
+ "submitter_email": "…", "submitter_phone": "…", "submitter_lang": "en"}
+```
+
+Write the `.json` first, then the packet. The dashboard shows the referral under its case code,
+with who sent it and how to reach them. Missing fields show as unknown.
