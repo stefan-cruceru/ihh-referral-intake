@@ -1,5 +1,9 @@
 # In our language · En nuestro idioma
 
+> **Draft proposal from a hackathon team. IHH has not approved it.** The name "Lamplight" is a
+> suggestion. The letters are drafts for IHH leaders to change or throw out. They are not
+> statements by IHH.
+
 The staff campaign for **Lamplight**, the adopted name staff will see for the app in `app/`.
 The internal `carebridge` package name remains for compatibility. The app's first-run welcome uses
 this campaign's design and words.

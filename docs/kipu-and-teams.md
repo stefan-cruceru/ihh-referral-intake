@@ -4,9 +4,11 @@ How Care Bridge works with IHH's Kipu and signs staff in with their Teams accoun
 against a **practice Kipu** with made-up patients and a **practice sign-in**. Nothing touches
 IHH's real Kipu or Microsoft until IHH IT turns it on.
 
-> **Event rule.** The event says not to connect to any IHH system. Our user chose to build the
-> connector anyway, switched off, so IHH can turn it on after the event. In the demo it only talks
-> to the practice Kipu on this computer.
+> **Event rule.** The event's "prototype only" rule (`CLAUDE.md`) says not to connect to any IHH
+> system. Our team chose to build the live Kipu connector and Teams sign-in anyway. This goes past
+> that rule. Both are off by default (`CAREBRIDGE_KIPU_MODE` and `CAREBRIDGE_AUTH`), and need IHH IT
+> and a BAA before anyone turns them on. In the demo the app only talks to the practice Kipu on
+> this computer.
 
 ## What it does
 

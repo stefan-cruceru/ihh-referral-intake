@@ -37,7 +37,8 @@ Then back to step 1. No step depends on a system outside IHH.
 - **IHH's data stays on IHH's systems.** Packets, the queue, decisions, outcomes and logs live in
   one place IHH controls: a local database file and a folder on IHH's machine or its Microsoft 365
   storage. Nothing is stored anywhere else.
-- **The model is the only outside call**, and only to an endpoint IHH has under a BAA. One setting
+- **By default, the model is the only outside call**, and only to an endpoint IHH has under a BAA
+  (section 3 lists what is built but off). One setting
   picks it:
   - **Claude through IHH's own Microsoft Azure** (Microsoft Foundry), billed through IHH's
     Microsoft account. The Anthropic Python SDK has a client for it (`AnthropicFoundry`). Unknown:
@@ -66,8 +67,18 @@ Then back to step 1. No step depends on a system outside IHH.
 
 - **One local store** for all state (for example a SQLite file). No cloud database, no hosted
   service.
-- **No network calls except the model endpoint.** Turn off Streamlit's usage statistics in
-  `.streamlit/config.toml`:
+- **No network calls except the model endpoint, by default.** Three things are built but off, as a
+  team choice. Each needs IHH IT and a BAA before anyone turns it on:
+  - **Live Kipu** (`CAREBRIDGE_KIPU_MODE=live`) calls IHH's Kipu. Writes also need
+    `CAREBRIDGE_KIPU_WRITE`. The default is a practice Kipu on the same computer.
+  - **Teams sign-in** (`CAREBRIDGE_AUTH=teams`) calls Microsoft Entra ID to sign staff in. The
+    default is a practice sign-in.
+  - **Production mode** (`CAREBRIDGE_PRODUCTION=1`) adds no calls, but it is for real, named
+    referrals instead of blacked-out ones.
+
+  Why: so IHH can use them after the event without a rebuild. They go past the event's
+  "prototype only" rule (`CLAUDE.md`). See `docs/kipu-and-teams.md`.
+- Turn off Streamlit's usage statistics in `.streamlit/config.toml`:
 
   ```toml
   [browser]

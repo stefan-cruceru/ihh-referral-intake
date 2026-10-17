@@ -1,5 +1,7 @@
 # Using Lamplight from Copilot
 
+> **Prototype from a one-day event. Do not install at IHH without IHH IT and compliance sign-off.**
+
 Lamplight works three ways. Pick the one your team uses.
 
 ## 1. GitHub Copilot in VS Code
