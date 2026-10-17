@@ -28,7 +28,7 @@ GITHUB = "https://github.com/stefan-cruceru/ihh-referral-intake/blob/main/"
 # The code, plus every data file paths.py names with _data(..., "<repo path>"), so a new one ships too.
 INCLUDE = ["app/carebridge", "demo/pages/bridge.py", "challenges", "m365", "copilot"]
 DATA = re.findall(r'_data\(\s*"[^"]*"\s*,\s*"([^"]+)"\s*\)', (REPO / "app/carebridge/paths.py").read_text(encoding="utf-8"))
-SKIP_DIRS = {"__pycache__", "packets", "media", "pages", "recording"}
+SKIP_DIRS = {"__pycache__", "packets"}
 # The demo folder ships its practice data, not the site itself or the video (those are copied separately).
 SKIP_PREFIXES = ("demo/media/", "demo/pages/", "demo/recording/")
 # Rendered docs, in the order the landing page lists them: (repo path, page name).

@@ -19,12 +19,15 @@ def export(output: Path) -> None:
             ("image/svg+xml", REPO / "campaign/logo/lamplight-logo.svg"),
     }
     for reference, (mime, path) in assets.items():
-        if reference not in source:
-            raise ValueError(f"Canonical asset reference changed: {reference}")
         encoded = base64.b64encode(path.read_bytes()).decode("ascii")
-        source = source.replace(reference, f"data:{mime};base64,{encoded}")
-    license_text = (REPO / "app/carebridge/web/fonts/OFL.txt").read_text(encoding="utf-8")
-    source += '\n<pre hidden data-license="Public Sans SIL Open Font License">' + html.escape(license_text) + "</pre>\n"
+        embedded = f"data:{mime};base64,{encoded}"
+        if reference in source:
+            source = source.replace(reference, embedded)
+        elif embedded not in source:
+            raise ValueError(f"Canonical asset reference changed: {reference}")
+    if 'data-license="Public Sans SIL Open Font License"' not in source:
+        license_text = (REPO / "app/carebridge/web/fonts/OFL.txt").read_text(encoding="utf-8")
+        source += '\n<pre hidden data-license="Public Sans SIL Open Font License">' + html.escape(license_text) + "</pre>\n"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(source, encoding="utf-8")
     print(output)

@@ -23,16 +23,22 @@
       "start": 46,
       "end": 60,
       "title_en": "Evidence, with limits",
-      "title_es": "Evidencia, con límites"
+      "title_es": "Evidencia, con l?mites"
     },
     {
       "start": 60,
-      "end": 76,
+      "end": 68.5,
       "title_en": "One draft for the missing pieces",
       "title_es": "Un borrador con lo que falta"
     },
     {
-      "start": 76,
+      "start": 68.5,
+      "end": 77.5,
+      "title_en": "A clear plan to take away.",
+      "title_es": "Un plan claro para llevar."
+    },
+    {
+      "start": 77.5,
       "end": 92,
       "title_en": "The same work, in Spanish",
       "title_es": "El mismo trabajo, en español"
@@ -47,25 +53,25 @@
       "start": 107,
       "end": 120,
       "title_en": "It never says yes or no. You do.",
-      "title_es": "Nunca dice sí o no. Usted decide."
+      "title_es": "Nunca dice s? o no. Usted decide."
     }
   ],
   "cues": [
     {
       "start": 0.25,
-      "end": 4.881,
-      "en": "At Illumination Health and Home, coordinators work toward a two-hour response goal.",
-      "es": "En Illumination Health and Home, quienes coordinan trabajan con una meta de respuesta de dos horas."
+      "end": 4.224,
+      "en": "Lamplight helps IHH coordinators work toward their two-hour response goal.",
+      "es": "Lamplight ayuda al equipo de IHH a trabajar para alcanzar su meta de respuesta de dos horas."
     },
     {
-      "start": 4.881,
-      "end": 10.425,
+      "start": 4.224,
+      "end": 9.983,
       "en": "For the coordinator, that means faxed pages, missing records, and another hospital to call.",
       "es": "Para quien coordina, hay páginas de fax, expedientes pendientes y otro hospital al que llamar."
     },
     {
-      "start": 10.425,
-      "end": 14.6,
+      "start": 9.983,
+      "end": 14.321,
       "en": "Lamplight brings the evidence and the next step into one place.",
       "es": "Lamplight reúne la evidencia y el próximo paso en un solo lugar."
     },
@@ -137,45 +143,51 @@
     },
     {
       "start": 60.25,
-      "end": 62.664,
-      "en": "Now open the referral missing records.",
-      "es": "Ahora abrimos el referido con expedientes pendientes."
+      "end": 63.013,
+      "en": "Missing records become one clear draft.",
+      "es": "Los expedientes pendientes se re?nen en un borrador claro."
     },
     {
-      "start": 62.664,
-      "end": 67.528,
-      "en": "The app gathers what the hospital must send or clarify into one draft.",
-      "es": "La app reúne en un borrador lo que el hospital debe enviar o aclarar."
+      "start": 63.013,
+      "end": 65.376,
+      "en": "Staff review and send it.",
+      "es": "El personal lo revisa y lo env?a."
     },
     {
-      "start": 67.528,
-      "end": 73.021,
-      "en": "Follow-up reminders are ready too. Staff review and send them. Lamplight sends nothing.",
-      "es": "También prepara recordatorios. El personal los revisa y envía. Lamplight no envía nada."
+      "start": 65.376,
+      "end": 66.937,
+      "en": "Lamplight sends nothing.",
+      "es": "Lamplight no env?a nada."
     },
     {
-      "start": 76.25,
-      "end": 80.411,
-      "en": "The same referral card and follow-up draft, in English.",
-      "es": "La misma tarjeta y el mismo borrador de seguimiento, en inglés."
+      "start": 68.75,
+      "end": 74.137,
+      "en": "For clients, staff can review local resources and print a clear PDF handout to take away.",
+      "es": "Para los clientes, el personal puede revisar recursos locales e imprimir una gu?a clara en PDF para llevar."
     },
     {
-      "start": 80.411,
-      "end": 84.816,
-      "en": "Switch to Español: labels, summaries, questions, and drafts translate.",
-      "es": "Cambiamos a Español: se traducen las etiquetas, los resúmenes, las preguntas y los borradores."
+      "start": 77.75,
+      "end": 81.041,
+      "en": "The same referral and draft, in English.",
+      "es": "El mismo referido y borrador, en ingl?s."
     },
     {
-      "start": 84.816,
-      "end": 86.815,
-      "en": "Evidence quotes stay original.",
+      "start": 81.041,
+      "end": 85.737,
+      "en": "Switch to Espa?ol: labels, summaries, questions, and drafts translate.",
+      "es": "Cambiamos a Espa?ol: se traducen las etiquetas, los res?menes, las preguntas y los borradores."
+    },
+    {
+      "start": 85.737,
+      "end": 87.302,
+      "en": "Quotes stay original.",
       "es": "Las citas conservan el idioma original."
     },
     {
-      "start": 86.815,
-      "end": 91.629,
-      "en": "Staff check AI translations. IHH bilingual review is still pending.",
-      "es": "El personal revisa las traducciones de IA. Sigue pendiente la revisión bilingüe de IHH."
+      "start": 87.302,
+      "end": 91.637,
+      "en": "Staff check AI translations. IHH bilingual review is pending.",
+      "es": "El personal revisa las traducciones de IA. Sigue pendiente la revisi?n biling?e de IHH."
     },
     {
       "start": 94.25,

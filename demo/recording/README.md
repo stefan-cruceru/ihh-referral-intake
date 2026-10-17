@@ -1,12 +1,13 @@
 # Lamplight presentation demo
 
 [Watch or download the two-minute demo](https://github.com/stefan-cruceru/ihh-referral-intake/releases/tag/demo-lamplight-2026-10-17).
-The release includes the 1080p film, 720p copy, cover, English and Spanish subtitles, source credits,
-logo exports and a standalone interactive architecture map. These sources recreate its artwork,
+The release includes the 1080p film, 720p copy, cover, optional English and Spanish subtitles, source credits,
+logo exports, a [sample resource handout PDF](../media/resource-handout.pdf) and a standalone interactive architecture map. These sources recreate its artwork,
 practice-app recording and compositor.
 
-**Recorded application revision:** `a8e52e5db69955a8a15ed3ceed6ac09f96a4fa02`.
-This records the synthetic practice workflow available at that revision. The film follows
+**Referral-workflow recording revision:** `a8e52e5db69955a8a15ed3ceed6ac09f96a4fa02`.
+The resource-plan/PDF insert uses the later `95e22a9d8b9a45806fce4b443b530679858e67f3` application.
+Both recordings use synthetic practice workflows. The film follows
 [project rules](../../CLAUDE.md), [bilingual requirements](../../docs/bilingual.md), and
 [workflow and timing](../../docs/workflow-and-timing.md), with Sam’s Lamplight campaign and Public Sans.
 The original event [submission](https://github.com/stefan-cruceru/ihh-referral-intake/blob/d4b772170dfca3cfcd2f90533f2cd41ba3f840c6/docs/submission.md),
@@ -91,12 +92,12 @@ media URL or downloaded narration manifest is required.
 
 ```powershell
 gh release download demo-lamplight-2026-10-17 --repo stefan-cruceru/ihh-referral-intake --pattern "Lamplight-Demo-1080p.mp4" --dir "$demoScratch"
-python demo/recording/render_lamplight.py --raw "$demoScratch/lamplight-raw.webm" --audio "$demoScratch/Lamplight-Demo-1080p.mp4" --timeline demo/recording/lamplight-timeline.json --scratch "$demoScratch" --video-offset 0 --cover-time 3 --output "$demoScratch/Lamplight - Remade.mp4"
+python demo/recording/render_lamplight.py --raw "$demoScratch/lamplight-raw.webm" --audio "$demoScratch/Lamplight-Demo-1080p.mp4" --timeline demo/recording/lamplight-timeline.json --scratch "$demoScratch" --video-offset 0 --resources-raw "$demoScratch/lamplight-resources.webm" --resources-offset 0 --cover-time 3 --output "$demoScratch/Lamplight - Remade.mp4"
 python demo/recording/encode_lamplight_share.py --source "$demoScratch/Lamplight - Remade.mp4" --output "$demoScratch/Lamplight - Remade (720p).mp4"
 ```
 
 Replace `--video-offset 0` with the reported value. The result is exactly 120 seconds at
-1920 × 1080, 30 fps, H.264/AAC, with bilingual burned-in captions and a cover PNG. Rendering
+1920 × 1080, 30 fps, H.264/AAC, with optional bilingual subtitle files and a cover PNG. Narration captions are not baked into the picture. Enable a single subtitle track in your player when needed. Rendering
 removes its own temporary overlays and subtitle files. After viewing the whole result, check the
 source page reveal, language switch, staff decision, caption timing and audio, then remove unused
 scratch artifacts and stop the practice app. Browser load times may change between machines, so

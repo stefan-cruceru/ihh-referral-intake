@@ -1,13 +1,13 @@
 ﻿1
-00:00:00,250 --> 00:00:04,881
-At Illumination Health and Home, coordinators work toward a two-hour response goal.
+00:00:00,250 --> 00:00:04,224
+Lamplight helps IHH coordinators work toward their two-hour response goal.
 
 2
-00:00:04,881 --> 00:00:10,425
+00:00:04,224 --> 00:00:09,983
 For the coordinator, that means faxed pages, missing records, and another hospital to call.
 
 3
-00:00:10,425 --> 00:00:14,600
+00:00:09,983 --> 00:00:14,321
 Lamplight brings the evidence and the next step into one place.
 
 4
@@ -55,61 +55,65 @@ Rules that need elapsed hours remain can't tell when dates are removed.
 Only the clinical reviewer can deny.
 
 15
-00:01:00,250 --> 00:01:02,664
-Now open the referral missing records.
+00:01:00,250 --> 00:01:03,013
+Missing records become one clear draft.
 
 16
-00:01:02,664 --> 00:01:07,528
-The app gathers what the hospital must send or clarify into one draft.
+00:01:03,013 --> 00:01:05,376
+Staff review and send it.
 
 17
-00:01:07,528 --> 00:01:13,021
-Follow-up reminders are ready too. Staff review and send them. Lamplight sends nothing.
+00:01:05,376 --> 00:01:06,937
+Lamplight sends nothing.
 
 18
-00:01:16,250 --> 00:01:20,411
-The same referral card and follow-up draft, in English.
+00:01:08,750 --> 00:01:14,137
+For clients, staff can review local resources and print a clear PDF handout to take away.
 
 19
-00:01:20,411 --> 00:01:24,816
-Switch to Español: labels, summaries, questions, and drafts translate.
+00:01:17,750 --> 00:01:21,041
+The same referral and draft, in English.
 
 20
-00:01:24,816 --> 00:01:26,815
-Evidence quotes stay original.
+00:01:21,041 --> 00:01:25,737
+Switch to Espa?ol: labels, summaries, questions, and drafts translate.
 
 21
-00:01:26,815 --> 00:01:31,629
-Staff check AI translations. IHH bilingual review is still pending.
+00:01:25,737 --> 00:01:27,302
+Quotes stay original.
 
 22
+00:01:27,302 --> 00:01:31,637
+Staff check AI translations. IHH bilingual review is pending.
+
+23
 00:01:34,250 --> 00:01:36,830
 Staff resolve questions and record acceptance.
 
-23
+24
 00:01:36,830 --> 00:01:38,812
 Handoff drafts follow: chart fields,
 
-24
+25
 00:01:38,812 --> 00:01:41,879
 the census row, and the site email.
 
-25
+26
 00:01:41,879 --> 00:01:45,581
 An admin can review who did what and when.
 
-26
+27
 00:01:47,250 --> 00:01:50,877
 It never says yes or no. You do.
 
-27
+28
 00:01:50,877 --> 00:01:54,541
 This local prototype connects to no real IHH systems.
 
-28
+29
 00:01:54,541 --> 00:01:57,464
 Staff must validate accuracy before a pilot.
 
-29
+30
 00:01:57,464 --> 00:01:59,648
 The goal: fewer lost referrals.

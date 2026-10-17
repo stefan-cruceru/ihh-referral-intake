@@ -1,13 +1,13 @@
 ﻿1
-00:00:00,250 --> 00:00:04,881
-En Illumination Health and Home, quienes coordinan trabajan con una meta de respuesta de dos horas.
+00:00:00,250 --> 00:00:04,224
+Lamplight ayuda al equipo de IHH a trabajar para alcanzar su meta de respuesta de dos horas.
 
 2
-00:00:04,881 --> 00:00:10,425
+00:00:04,224 --> 00:00:09,983
 Para quien coordina, hay páginas de fax, expedientes pendientes y otro hospital al que llamar.
 
 3
-00:00:10,425 --> 00:00:14,600
+00:00:09,983 --> 00:00:14,321
 Lamplight reúne la evidencia y el próximo paso en un solo lugar.
 
 4
@@ -55,61 +55,65 @@ Las reglas que requieren contar horas quedan sin determinar cuando se eliminan l
 Solo la persona encargada de la revisión clínica puede denegar.
 
 15
-00:01:00,250 --> 00:01:02,664
-Ahora abrimos el referido con expedientes pendientes.
+00:01:00,250 --> 00:01:03,013
+Los expedientes pendientes se re?nen en un borrador claro.
 
 16
-00:01:02,664 --> 00:01:07,528
-La app reúne en un borrador lo que el hospital debe enviar o aclarar.
+00:01:03,013 --> 00:01:05,376
+El personal lo revisa y lo env?a.
 
 17
-00:01:07,528 --> 00:01:13,021
-También prepara recordatorios. El personal los revisa y envía. Lamplight no envía nada.
+00:01:05,376 --> 00:01:06,937
+Lamplight no env?a nada.
 
 18
-00:01:16,250 --> 00:01:20,411
-La misma tarjeta y el mismo borrador de seguimiento, en inglés.
+00:01:08,750 --> 00:01:14,137
+Para los clientes, el personal puede revisar recursos locales e imprimir una gu?a clara en PDF para llevar.
 
 19
-00:01:20,411 --> 00:01:24,816
-Cambiamos a Español: se traducen las etiquetas, los resúmenes, las preguntas y los borradores.
+00:01:17,750 --> 00:01:21,041
+El mismo referido y borrador, en ingl?s.
 
 20
-00:01:24,816 --> 00:01:26,815
-Las citas conservan el idioma original.
+00:01:21,041 --> 00:01:25,737
+Cambiamos a Espa?ol: se traducen las etiquetas, los res?menes, las preguntas y los borradores.
 
 21
-00:01:26,815 --> 00:01:31,629
-El personal revisa las traducciones de IA. Sigue pendiente la revisión bilingüe de IHH.
+00:01:25,737 --> 00:01:27,302
+Las citas conservan el idioma original.
 
 22
+00:01:27,302 --> 00:01:31,637
+El personal revisa las traducciones de IA. Sigue pendiente la revisi?n biling?e de IHH.
+
+23
 00:01:34,250 --> 00:01:36,830
 El personal aclara las dudas y registra la aceptación.
 
-23
+24
 00:01:36,830 --> 00:01:38,812
 Siguen los borradores de entrega: los campos del expediente,
 
-24
+25
 00:01:38,812 --> 00:01:41,879
 la fila del censo y el correo al centro.
 
-25
+26
 00:01:41,879 --> 00:01:45,581
 Un admin puede revisar quién hizo qué y cuándo.
 
-26
+27
 00:01:47,250 --> 00:01:50,877
 Nunca dice sí o no. Usted decide.
 
-27
+28
 00:01:50,877 --> 00:01:54,541
 Este prototipo local no conecta con sistemas reales de IHH.
 
-28
+29
 00:01:54,541 --> 00:01:57,464
 El personal debe validar la precisión antes de una prueba piloto.
 
-29
+30
 00:01:57,464 --> 00:01:59,648
 La meta: perder menos referidos.

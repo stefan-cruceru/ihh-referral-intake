@@ -1,7 +1,8 @@
 """Render the bilingual Lamplight demo from a real application recording.
 
 Requires Pillow and imageio-ffmpeg. The default output is exactly 120 seconds,
-1920 x 1080, 30 fps, H.264 / AAC, with burned-in English and Spanish captions.
+1920 x 1080, 30 fps, H.264 / AAC. Narration captions remain optional sidecar
+files; only chapter labels are composited into the branded header.
 No network requests are made. All intermediates live in the supplied scratch
 directory (required via --scratch) and are removed.
 
@@ -25,7 +26,6 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
-import textwrap
 from typing import Any
 
 import imageio_ffmpeg
@@ -33,14 +33,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 WIDTH, HEIGHT, FPS = 1920, 1080, 30
-VIDEO_X, VIDEO_Y, VIDEO_W, VIDEO_H = 80, 66, 1760, 836
+VIDEO_X, VIDEO_Y, VIDEO_W, VIDEO_H = 0, 84, 1920, 912
 CREAM = "#FFF8F0"
 INK = "#3B2B22"
 SPANISH = "#A0461F"
 AMBER = "#E39235"
 SAND = "#F4EADB"
 LINE = "#E2CDB8"
-MAX_CAPTION_CHARS = 118
 
 
 def fonts(regular: Path, bold: Path) -> tuple[Path, Path]:
@@ -139,7 +138,6 @@ def make_frame(path: Path, font_path: Path, bold_path: Path, logo_path: Path) ->
               anchor="ra", fill=INK)
     draw.text((1840, 35), "Prototipo · Pacientes ficticios", font=disclosure_es,
               anchor="ra", fill=SPANISH)
-    draw.line((80, 920, 1840, 920), fill=LINE, width=1)
     draw.rectangle((0, HEIGHT - 5, WIDTH, HEIGHT), fill=SAND)
     image.save(path)
 
@@ -156,34 +154,8 @@ def ass_escape(text: str) -> str:
     return text.replace("\\", "\\\\").replace("{", "\\{").replace("}", "\\}")
 
 
-def wrap_caption(text: str, font_path: Path, size: int) -> list[str]:
-    """Bound both line length and rendered width; never silently omit text."""
-    if not text.strip():
-        return []
-    font = ImageFont.truetype(str(font_path), size)
-    output = []
-    for paragraph in text.splitlines():
-        for line in textwrap.wrap(paragraph, width=MAX_CAPTION_CHARS,
-                                  break_long_words=False, break_on_hyphens=False):
-            words, current = line.split(), ""
-            for word in words:
-                candidate = f"{current} {word}".strip()
-                if current and font.getlength(candidate) > 1740:
-                    output.append(current)
-                    current = word
-                else:
-                    current = candidate
-            if current:
-                output.append(current)
-    if len(output) > 2:
-        raise ValueError(
-            f"Caption needs {len(output)} lines at {size}px; split it into shorter "
-            f"timeline cues (maximum two lines per language): {text!r}")
-    return output
-
-
-def write_ass(path: Path, scenes: list[dict], cues: list[dict],
-              font_path: Path, bold_path: Path) -> None:
+def write_chapters(path: Path, scenes: list[dict],
+                   font_path: Path, bold_path: Path) -> None:
     family = "Public Sans"
     header = f"""[Script Info]
 ScriptType: v4.00+
@@ -197,8 +169,6 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
 Style: Chapter,{family},23,&H00222B3B,&H00222B3B,&H00F0F8FF,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,0,0,0,1
 Style: ChapterES,{family},18,&H001F46A0,&H001F46A0,&H00F0F8FF,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,0,0,0,1
 Style: Number,{family},23,&H003592E3,&H003592E3,&H00F0F8FF,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,0,0,0,1
-Style: English,{family},23,&H00222B3B,&H00222B3B,&H00F0F8FF,&H00000000,0,0,0,0,100,100,0,0,1,0,0,8,0,0,0,1
-Style: Spanish,{family},21,&H001F46A0,&H001F46A0,&H00F0F8FF,&H00000000,0,0,0,0,100,100,0,0,1,0,0,8,0,0,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -228,22 +198,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
               rf"\pos(392,7)\fs{en_size}\fad(250,0)")
         event(start, end, "ChapterES", ass_escape(str(scene["title_es"])),
               rf"\pos(392,36)\fs{es_size}\fad(250,0)")
-    for cue in cues:
-        english = wrap_caption(caption_text(cue, "en"), font_path, 23)
-        spanish = wrap_caption(caption_text(cue, "es"), font_path, 21)
-        block_height = len(english) * 29 + len(spanish) * 27
-        if english and spanish:
-            block_height += 9
-        top = 930 + max(0, (130 - block_height) / 2)
-        if english:
-            text = r"\N".join(ass_escape(line) for line in english)
-            event(cue["start"], cue["end"], "English", text,
-                  rf"\pos(960,{top:.1f})\fad(100,80)")
-        if spanish:
-            text = r"\N".join(ass_escape(line) for line in spanish)
-            es_top = top + len(english) * 29 + (9 if english else 0)
-            event(cue["start"], cue["end"], "Spanish", text,
-                  rf"\pos(960,{es_top:.1f})\fad(100,80)")
     path.write_text("".join(lines), encoding="utf-8")
 
 
@@ -275,15 +229,40 @@ def render(args: argparse.Namespace) -> None:
         shutil.copy2(regular, font_dir / regular.name)
         shutil.copy2(bold, font_dir / bold.name)
         make_frame(stage / "frame.png", regular, bold, args.brand_logo)
-        write_ass(stage / "captions.ass", scenes, cues, regular, bold)
-        filters = (
+        write_chapters(stage / "chapters.ass", scenes, regular, bold)
+        stage_filters = (
             f"[0:v]trim=start={args.video_offset},setpts=PTS-STARTPTS,fps={FPS},"
             f"scale={VIDEO_W}:{VIDEO_H}:flags=lanczos,setsar=1,"
-            f"tpad=stop_mode=clone:stop_duration={duration},trim=duration={duration},"
-            f"pad={WIDTH}:{HEIGHT}:{VIDEO_X}:{VIDEO_Y}:color={CREAM}[video];"
+            f"tpad=stop_mode=clone:stop_duration={duration},trim=duration={duration}[base];"
+        )
+        insert_inputs = []
+        if args.resources_raw:
+            if not args.resources_raw.is_file():
+                raise FileNotFoundError(args.resources_raw)
+            if not (0 <= args.resources_start < args.resources_end < duration):
+                raise ValueError("Resource insert must be inside the video duration.")
+            if args.resources_offset < 0 or not math.isfinite(args.resources_offset):
+                raise ValueError("Resource offset must be finite and nonnegative.")
+            insert_duration = args.resources_end - args.resources_start
+            insert_inputs = ["-i", str(args.resources_raw.resolve())]
+            stage_filters += (
+                "[base]split=2[before][after];"
+                f"[before]trim=end={args.resources_start},setpts=PTS-STARTPTS[pre];"
+                f"[after]trim=start={args.resources_end},setpts=PTS-STARTPTS[post];"
+                f"[4:v]trim=start={args.resources_offset}:duration={insert_duration},"
+                f"setpts=PTS-STARTPTS,fps={FPS},"
+                f"scale={VIDEO_W}:{VIDEO_H}:flags=lanczos,setsar=1,"
+                f"tpad=stop_mode=clone:stop_duration={insert_duration},"
+                f"trim=duration={insert_duration}[insert];"
+                "[pre][insert][post]concat=n=3:v=1:a=0[stage];"
+            )
+        else:
+            stage_filters += "[base]null[stage];"
+        filters = stage_filters + (
+            f"[stage]pad={WIDTH}:{HEIGHT}:{VIDEO_X}:{VIDEO_Y}:color={CREAM}[video];"
             "[video][2:v]overlay=0:0:format=auto[framed];"
-            "[framed]ass=filename=captions.ass:fontsdir=fonts[subtitled];"
-            f"[subtitled][3:v]overlay=x='-W+W*min(t/{duration},1)':"
+            "[framed]ass=filename=chapters.ass:fontsdir=fonts[labeled];"
+            f"[labeled][3:v]overlay=x='-W+W*min(t/{duration},1)':"
             f"y={HEIGHT - 5}:eval=frame:shortest=1,format=yuv420p[outv];"
             f"[1:a]asetpts=PTS-STARTPTS,apad,atrim=duration={duration}[outa]"
         )
@@ -292,13 +271,14 @@ def render(args: argparse.Namespace) -> None:
             "-i", str(args.raw.resolve()), "-i", str(args.audio.resolve()),
             "-loop", "1", "-framerate", str(FPS), "-i", "frame.png",
             "-f", "lavfi", "-i", f"color=c={AMBER}:s={WIDTH}x6:r={FPS}",
+            *insert_inputs,
             "-filter_complex", filters, "-map", "[outv]", "-map", "[outa]",
             "-c:v", "libx264", "-preset", args.preset, "-crf", str(args.crf),
             "-pix_fmt", "yuv420p", "-r", str(FPS), "-frames:v", str(round(duration * FPS)),
             "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
             "-t", f"{duration:.6f}", "-movflags", "+faststart",
             "-metadata", "title=Lamplight | It never says yes or no. You do.",
-            "-metadata", "comment=Prototype demonstration. Fictional patients. English and Spanish captions.",
+            "-metadata", "comment=Prototype demonstration. Fictional patients. Optional English and Spanish caption files.",
             str(args.output.resolve()),
         ]
         print(f"Rendering {duration:g}s / {round(duration * FPS)} frames -> {args.output}", flush=True)
@@ -317,6 +297,11 @@ def main() -> None:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--raw", type=Path, required=True)
     parser.add_argument("--audio", type=Path, required=True)
+    parser.add_argument("--resources-raw", type=Path,
+                        help="Optional separately recorded client-resource PDF workflow.")
+    parser.add_argument("--resources-offset", type=float, default=0)
+    parser.add_argument("--resources-start", type=float, default=68.5)
+    parser.add_argument("--resources-end", type=float, default=77.5)
     parser.add_argument("--timeline", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--scratch", type=Path, required=True)
