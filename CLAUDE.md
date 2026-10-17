@@ -21,10 +21,15 @@ designers, and healthcare and nonprofit people. Some have never used a terminal.
   "unknown".
 - **No medical, legal or immigration advice** in anything client-facing. Point to staff.
 - **No secrets in git.** API keys go in environment variables. `.env` is ignored.
+- **Standalone project.** This is a community build donated to IHH. No company names, product
+  branding or commercial pitches in the repo, the demo, commit messages or anything shared with
+  IHH.
 
 ## Where things are
 
 - `docs/intake-context.md`: our team's Challenge 1 working brief. Read it first in any new session.
+- `docs/workflow-and-timing.md`: what IHH staff told us on the day (two-step approval, email intake,
+  2-hour clock, short staffing), the tracker design, gaps, liability guardrails and open questions.
 
 - `docs/ground-rules.md`: the event rules in full.
 - `docs/background.md`, `docs/glossary.md`: what recuperative care is and what the terms mean.
