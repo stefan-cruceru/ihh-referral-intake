@@ -1,7 +1,8 @@
 # In our language · En nuestro idioma
 
 The staff campaign for **Lamplight**, the adopted name staff will see for the app in `app/`.
-The internal `carebridge` package name remains for compatibility.
+The internal `carebridge` package name remains for compatibility. The app's first-run welcome uses
+this campaign's design and words.
 
 **Status: draft.** Before anything in this folder is printed, posted or read aloud:
 

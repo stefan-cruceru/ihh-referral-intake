@@ -192,6 +192,7 @@ first step never opens `eval/decisions.json`.
 | Outcome log and weekly report | Working, local SQLite. Practice runs are marked and can be left out |
 | Client resources | Working. Sourced seed list from the event repo, checked 2026-10-13 |
 | Staff practice | Working on invented examples |
+| Voice notes for LVNs and MAs | Future feature, not built. Say quick jottings out loud after a visit; the same note helper turns them into a draft that points to what was said. Needs IHH's compliance review first, since it records audio about care |
 | GitHub Copilot / Claude Desktop (MCP) | Working (stdio tested). Agent dropdown entry, `/` commands with pick lists, and a skill |
 | Microsoft 365 Copilot agent | Package builds; not yet validated or uploaded in a tenant. Knows the rules, does not run the packet checker |
 | Azure Foundry endpoint | Setting is there; not tested at the event |
@@ -225,6 +226,7 @@ first step never opens `eval/decisions.json`.
 - Pilot inside IHH's Microsoft setup: Claude through IHH's Azure under its BAA, Power Automate
   feeding the inbox folder, the engine reachable from the Microsoft 365 Copilot agent.
 - A bilingual IHH staff member reviews the Spanish word list and draft templates.
+- **Voice notes (future feature).** LVNs and medical assistants say their quick jottings about a visit out loud instead of typing them, and the same note helper turns them into a draft. Same rules as typed notes: no names, and the person reads every line before it goes in the chart. It needs IHH's compliance review first, and it should work alongside Kipu's transcription, which IHH is already rolling out.
 
 ## Data and privacy
 
