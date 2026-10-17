@@ -3,8 +3,8 @@
 > For IHH's referral team, nurses and case managers: one app on your own computer that reads hospital
 > referrals, keeps the 2-hour clock, follows up with hospitals, and helps clients find what's next.
 
-**Team:** _to fill in_
-**Members:** _to fill in_
+**Team:** Stefan Cruceru and Samantha Rubinchik
+**Members:** Stefan Cruceru, Samantha Rubinchik
 **Challenge:** All three, as one tool. 1 Referral intake is the core. 2 Finding the right resource
 and 3 Make AI approachable are built in.
 **Built at:** Orange County | Claude Impact Lab, October 17, 2026, with Illumination Health + Home

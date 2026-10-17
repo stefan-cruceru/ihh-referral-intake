@@ -162,6 +162,16 @@ def test_clinical_ask_text_stays_out_of_the_audit_log():
     assert "heel" not in str(t.audit)
 
 
+def test_kipu_record_number_stays_out_of_the_audit_log():
+    t = tracker.Tracker()
+    c = t.add({"case_no": "CMP-K"})
+    t.act(c["id"], "kipu_id", "Bea", "K-4471", role="coordinator")
+    assert c["kipu_id"] == "K-4471"
+    rows = [r for r in store.read_audit(c["id"]) if r["what"] == "kipu_id"]
+    assert rows and rows[0]["detail"] == ""
+    assert "4471" not in str(t.audit)
+
+
 @pytest.mark.parametrize("action,role", [("accepted", "coordinator"), ("withdrawn", "coordinator"), ("denied", "clinical")])
 def test_reason_with_an_identifier_is_refused(action, role):
     t = tracker.Tracker()
