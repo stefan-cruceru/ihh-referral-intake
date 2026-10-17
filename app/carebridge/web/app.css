@@ -1,19 +1,21 @@
 /* Care Bridge: calm, plain and friendly. A front desk, not a dashboard.
-   White paper, evergreen for actions, lamplight yellow used sparingly. Always light, even when
-   the computer is set to dark mode.
+   White paper, evergreen for actions, lamplight yellow used sparingly. Light by default, even when
+   the computer is set to dark mode. Dark, colorblind-safe and easy-to-see looks are opt-in from
+   the Display button (display.js sets data-theme / data-colors / data-easy on <html>).
    Fonts are system fonts on purpose: the app makes no network calls. */
 :root {
   --bg: #ffffff; --panel: #ffffff; --ink: #23302d; --muted: #5d6b67; --line: #dbe3dc;
   --brand: #2f6b4f; --brand-ink: #ffffff; --brand-soft: #e3eee6; --lamp: #f2b43a; --lamp-soft: #fdf3dc;
   --green: #2e7d4f; --green-soft: #e3f2e8; --yellow: #8a5a00; --yellow-soft: #fbefd5;
   --red: #b3261e; --red-soft: #fbe7e4; --blue-soft: #e7eef4; --gray-soft: #edf1ed;
+  --amber: #b7791f; --on-strong: #ffffff; --scrim: rgba(20,30,27,.4); --shadow: rgba(0,0,0,.08);
   --radius: 18px; --radius-sm: 12px;
   color-scheme: light;
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Roboto, sans-serif;
   color: var(--ink); background: var(--bg);
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); font-size: 17px; line-height: 1.55; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-size: 1.0625rem; line-height: 1.55; }
 h1, h2 { font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif; font-weight: 600; letter-spacing: -.01em; }
 h1 { font-size: 1.85rem; line-height: 1.2; margin: 0 0 .5rem; }
 h2 { font-size: 1.35rem; margin: 0 0 .6rem; }
@@ -39,7 +41,7 @@ details > summary { cursor: pointer; }
 .right { margin-left: auto; display: flex; gap: .6rem; align-items: center; }
 .lang { display: flex; background: var(--gray-soft); border-radius: 999px; padding: 3px; }
 .lang button { border: 0; background: none; padding: .4rem .95rem; cursor: pointer; border-radius: 999px; color: var(--muted); font-weight: 600; }
-.lang button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.lang button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px var(--shadow); }
 .icon { border: 0; background: var(--gray-soft); border-radius: 50%; width: 42px; height: 42px; display: grid; place-items: center; cursor: pointer; color: var(--muted); }
 .icon:hover { color: var(--ink); }
 .icon svg { width: 21px; height: 21px; }
@@ -90,8 +92,8 @@ main { padding: 1.6rem 1.5rem 3rem; max-width: 1180px; margin: 0 auto; }
 .sim h3 { margin-top: 0; }
 .sim-row { display: grid; grid-template-columns: 150px 1fr; gap: .9rem; align-items: center; margin: .5rem 0; }
 .sim-track { position: relative; height: 32px; background: var(--gray-soft); border-radius: 999px; }
-.sim-bar { position: absolute; top: 4px; height: 24px; border-radius: 999px; font-size: .74rem; color: #fff; display: flex; align-items: center; padding: 0 .5rem; white-space: nowrap; overflow: hidden; }
-.sim-bar.ok { background: var(--green); } .sim-bar.miss { background: #b7791f; } .sim-bar.walk { background: var(--red); }
+.sim-bar { position: absolute; top: 4px; height: 24px; border-radius: 999px; font-size: .74rem; color: var(--on-strong); display: flex; align-items: center; padding: 0 .5rem; white-space: nowrap; overflow: hidden; }
+.sim-bar.ok { background: var(--green); } .sim-bar.miss { background: var(--amber); } .sim-bar.walk { background: var(--red); }
 .sim-limit { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--ink); opacity: .35; }
 
 .board-head { display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 .8rem; gap: 1rem; flex-wrap: wrap; }
@@ -111,7 +113,7 @@ main { padding: 1.6rem 1.5rem 3rem; max-width: 1180px; margin: 0 auto; }
   background: radial-gradient(closest-side, var(--panel) 80%, transparent 81%), conic-gradient(var(--ring) calc(var(--pct, 1) * 100%), var(--gray-soft) 0); }
 .timer b { font-size: 1.45rem; display: block; line-height: 1; font-weight: 600; color: var(--ring); }
 .timer span { font-size: .72rem; color: var(--muted); line-height: 1.2; }
-.c-yellow .timer { --ring: #b7791f; } .c-yellow .timer b { color: var(--yellow); }
+.c-yellow .timer { --ring: var(--amber); } .c-yellow .timer b { color: var(--yellow); }
 .c-red .timer { --ring: var(--red); }
 .c-done .timer { --ring: var(--muted); --pct: 1; }
 .card .title { font-weight: 600; font-size: 1.08rem; }
@@ -128,7 +130,7 @@ button.chip:hover { background: var(--brand-soft); color: var(--brand); }
 .card .side { text-align: right; font-size: .88rem; color: var(--muted); }
 
 /* ---- one referral, opened ---- */
-.drawer { position: fixed; inset: 0; background: rgba(20,30,27,.4); z-index: 20; display: flex; justify-content: flex-end; }
+.drawer { position: fixed; inset: 0; background: var(--scrim); z-index: 20; display: flex; justify-content: flex-end; }
 .drawer-inner { width: min(920px, 100%); height: 100%; overflow-y: auto; background: var(--bg); padding: 1.5rem 1.7rem 3rem; box-shadow: -8px 0 30px rgba(0,0,0,.15); }
 .d-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
 .route { border-radius: var(--radius); padding: 1.1rem 1.3rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--gray-soft); }
@@ -136,7 +138,7 @@ button.chip:hover { background: var(--brand-soft); color: var(--brand); }
 .route.likely_no, .route.security_hold { background: var(--red-soft); } .route.clinical_check, .route.needs_info { background: var(--yellow-soft); } .route.likely_yes { background: var(--green-soft); }
 .gates { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
 .gate { background: var(--panel); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.2rem; }
-.gate.met { border-color: color-mix(in srgb, var(--green) 55%, var(--line)); } .gate.not_met { border-color: color-mix(in srgb, var(--red) 55%, var(--line)); } .gate.cant_tell { border-color: color-mix(in srgb, #b7791f 55%, var(--line)); }
+.gate.met { border-color: color-mix(in srgb, var(--green) 55%, var(--line)); } .gate.not_met { border-color: color-mix(in srgb, var(--red) 55%, var(--line)); } .gate.cant_tell { border-color: color-mix(in srgb, var(--amber) 55%, var(--line)); }
 .gate .g-status { font-size: 1.35rem; font-weight: 600; margin-bottom: .3rem; }
 .gate.met .g-status { color: var(--green); } .gate.not_met .g-status { color: var(--red); } .gate.cant_tell .g-status { color: var(--yellow); }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.3rem; margin: .9rem 0; }
@@ -176,7 +178,7 @@ table.kv td:first-child { color: var(--muted); width: 40%; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
 .phi { background: var(--red-soft); color: var(--red); border-radius: var(--radius-sm); padding: .7rem .9rem; margin: .5rem 0; font-size: .95rem; }
-.stop { background: var(--red); color: #fff; border-radius: var(--radius-sm); padding: .9rem 1.1rem; font-weight: 600; margin: .7rem 0; }
+.stop { background: var(--red); color: var(--on-strong); border-radius: var(--radius-sm); padding: .9rem 1.1rem; font-weight: 600; margin: .7rem 0; }
 .badge { display: inline-block; font-size: .82rem; padding: .2rem .65rem; border-radius: 999px; background: var(--panel); }
 /* Costs, counts and settings people who run the app care about. Folded away for everyone else. */
 details.admin { margin-top: .9rem; color: var(--muted); font-size: .88rem; }
@@ -202,14 +204,14 @@ details.admin p { margin: .4rem 0; }
 .whoami select { width: auto; padding: .4rem .7rem; }
 .seg { display: flex; background: var(--gray-soft); border-radius: 999px; padding: 3px; }
 .seg button { border: 0; background: none; padding: .35rem .85rem; cursor: pointer; border-radius: 999px; color: var(--muted); font-weight: 600; }
-.seg button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
-.chip.danger-red { background: var(--red); color: var(--brand-ink); font-weight: 700; }
+.seg button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px var(--shadow); }
+.chip.danger-red { background: var(--red); color: var(--on-strong); font-weight: 700; }
 .chip.danger-amber { background: var(--yellow-soft); color: var(--yellow); font-weight: 600; }
 .chip.viewing { background: var(--blue-soft); }
 .chip.handwriting { background: var(--yellow-soft); color: var(--yellow); }
 .odds { font-size: .8rem; color: var(--muted); margin-top: .3rem; }
 .countdown { font-variant-numeric: tabular-nums; }
-.modal { position: fixed; inset: 0; background: rgba(20,30,27,.45); z-index: 25; display: grid; place-items: center; padding: 1rem; }
+.modal { position: fixed; inset: 0; background: var(--scrim); z-index: 25; display: grid; place-items: center; padding: 1rem; }
 .modal-inner { background: var(--panel); border-radius: 22px; padding: 1.6rem 1.7rem; width: min(620px, 100%); max-height: 90vh; overflow-y: auto; }
 .toast { position: fixed; bottom: 1.4rem; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: .7rem 1.2rem; border-radius: 999px; z-index: 40; }
 
@@ -266,7 +268,7 @@ details.admin p { margin: .4rem 0; }
 }
 
 /* ---- staff alerts and people ---- */
-.tabs .count { margin-left: .35rem; min-width: 1.4rem; padding: 0 .4rem; border-radius: 999px; background: var(--red); color: var(--brand-ink); font-size: .78rem; font-weight: 600; text-align: center; }
+.tabs .count { margin-left: .35rem; min-width: 1.4rem; padding: 0 .4rem; border-radius: 999px; background: var(--red); color: var(--on-strong); font-size: .78rem; font-weight: 600; text-align: center; }
 .alert-item .alert-subject { font-weight: 600; margin: .5rem 0 .2rem; }
 .alert-item.done { opacity: .7; }
 .person-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .2rem 1rem; align-items: end; }
@@ -286,3 +288,91 @@ details.admin p { margin: .4rem 0; }
 .stage-h .muted { font-weight: 400; }
 .chip.kipu { background: var(--brand-soft); color: var(--brand); font-weight: 600; text-decoration: none; }
 a.chip.kipu:hover { text-decoration: underline; }
+
+/* ==== Display choices (display.js). Opt-in only; light is the default. ==== */
+
+/* Dark: warm charcoal, not pure black. Status colors are lighter so text on dark stays readable. */
+:root[data-theme="dark"] {
+  --bg: #121816; --panel: #1b2321; --ink: #e8eeeb; --muted: #a9b7b2; --line: #34423e;
+  --brand: #7fcca4; --brand-ink: #0f1714; --brand-soft: #1e3329; --lamp: #f2b43a; --lamp-soft: #362c18;
+  --green: #74d39b; --green-soft: #17342a; --yellow: #f1c25e; --yellow-soft: #372c14;
+  --red: #ff8f85; --red-soft: #3e1f1d; --blue-soft: #1c2a35; --gray-soft: #26302d;
+  --amber: #e5a947; --on-strong: #10140f; --scrim: rgba(0,0,0,.6); --shadow: rgba(0,0,0,.4);
+  color-scheme: dark;
+}
+
+/* Colorblind-safe: "good" is blue, "bad" is orange, "can't tell / waiting" is gray-violet.
+   These stay apart for red-green and blue-yellow color blindness. Every status also gets a
+   symbol, so nothing depends on color alone. */
+:root[data-colors="cvd"] {
+  --green: #0a5fa8; --green-soft: #e1edf8; --red: #b04a00; --red-soft: #fbeadc;
+  --yellow: #5e4b8b; --yellow-soft: #ece8f5; --amber: #7a6aa8;
+}
+:root[data-colors="cvd"][data-theme="dark"] {
+  --green: #7ab8f0; --green-soft: #15293d; --red: #ffa25c; --red-soft: #3c2412;
+  --yellow: #c3b3f0; --yellow-soft: #2a2540; --amber: #a796dc;
+}
+:root[data-colors="cvd"] .status.met::before, :root[data-colors="cvd"] .status.present::before,
+:root[data-colors="cvd"] .gate.met .g-status::before, :root[data-colors="cvd"] .route.likely_yes b::before,
+:root[data-colors="cvd"] .chip.st-accepted::before, :root[data-colors="cvd"] .chip.st-intake_cleared::before { content: "✓ "; }
+:root[data-colors="cvd"] .status.not_met::before, :root[data-colors="cvd"] .status.missing::before,
+:root[data-colors="cvd"] .gate.not_met .g-status::before, :root[data-colors="cvd"] .route.likely_no b::before,
+:root[data-colors="cvd"] .route.security_hold b::before,
+:root[data-colors="cvd"] .chip.st-likely_no::before, :root[data-colors="cvd"] .chip.st-denied::before { content: "✕ "; }
+:root[data-colors="cvd"] .status.cant_tell::before, :root[data-colors="cvd"] .gate.cant_tell .g-status::before,
+:root[data-colors="cvd"] .route.needs_info b::before, :root[data-colors="cvd"] .route.clinical_check b::before,
+:root[data-colors="cvd"] .chip.st-needs_info::before, :root[data-colors="cvd"] .chip.st-clinical_check::before { content: "? "; }
+/* Gate cards and late timeline bars also differ by line style, not just color. */
+:root[data-colors="cvd"] .gate.not_met { border-width: 3px; }
+:root[data-colors="cvd"] .gate.cant_tell { border-style: dashed; }
+:root[data-colors="cvd"] .sim-bar.miss { background-image: repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,255,255,.28) 6px 9px); }
+:root[data-colors="cvd"] .sim-bar.walk { background-image: repeating-linear-gradient(-45deg, transparent 0 3px, rgba(255,255,255,.35) 3px 6px); }
+:root[data-colors="cvd"] .c-red .timer b::after { content: " !"; }
+:root[data-colors="cvd"] .pp-flag.not_met { border-left-width: 7px; }
+:root[data-colors="cvd"] .pp-flag.cant_tell { border-left-style: dashed; }
+
+/* Easy to see: for low vision, shaky hands, dyslexia and anyone tired at the end of a shift.
+   Bigger text, darker gray text, stronger lines, bigger click targets, no italics, nothing moving. */
+:root[data-easy="on"] { font-size: 125%; --muted: #3d4a46; --line: #7d8d87; }
+:root[data-easy="on"][data-theme="dark"] { --muted: #d0dad6; --line: #6f807a; }
+/* The default light green and amber are a hair under 4.5:1 in two spots; darken them here. */
+:root[data-easy="on"]:not([data-theme="dark"]):not([data-colors="cvd"]) { --green: #256b42; --amber: #8f5e14; }
+:root[data-easy="on"] body { line-height: 1.7; letter-spacing: .012em; word-spacing: .06em; }
+:root[data-easy="on"] :focus-visible { outline: 4px solid var(--lamp); outline-offset: 3px; box-shadow: 0 0 0 7px var(--ink); }
+:root[data-easy="on"] a { text-decoration: underline; text-underline-offset: .18em; }
+:root[data-easy="on"] .tabs a.tab-link { text-decoration: none; }
+:root[data-easy="on"] .btn, :root[data-easy="on"] .chip, :root[data-easy="on"] .seg button,
+:root[data-easy="on"] .lang button, :root[data-easy="on"] .tabs button, :root[data-easy="on"] .stages button,
+:root[data-easy="on"] .k-btn, :root[data-easy="on"] .pp-btn { min-height: 48px; }
+:root[data-easy="on"] .icon { width: 52px; height: 52px; }
+:root[data-easy="on"] input, :root[data-easy="on"] select, :root[data-easy="on"] textarea,
+:root[data-easy="on"] .btn, :root[data-easy="on"] .card, :root[data-easy="on"] .gate, :root[data-easy="on"] .panel { border-width: 2px; }
+:root[data-easy="on"] .small, :root[data-easy="on"] .rid, :root[data-easy="on"] .timer span,
+:root[data-easy="on"] .odds, :root[data-easy="on"] .sim-bar { font-size: .95rem; }
+:root[data-easy="on"] .quote q, :root[data-easy="on"] .note { font-style: normal; }
+:root[data-easy="on"] .btn:disabled { opacity: .65; }
+:root[data-easy="on"] .tabs button.on { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: .35em; }
+:root[data-easy="on"] *, :root[data-easy="on"] *::before, :root[data-easy="on"] *::after {
+  animation-duration: 0s !important; animation-iteration-count: 1 !important; transition: none !important; scroll-behavior: auto !important; }
+:root[data-easy="on"] .spinner { border-top-color: var(--line); border-right-color: var(--brand); border-bottom-color: var(--brand); }
+
+/* The Display button's panel, and a skip link that only shows when you Tab to it. */
+.disp-panel { position: fixed; top: 4.6rem; right: 1rem; z-index: 35; width: min(380px, calc(100vw - 2rem)); max-height: calc(100vh - 6rem); overflow-y: auto;
+  background: var(--panel); color: var(--ink); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.2rem; box-shadow: 0 10px 30px var(--shadow); }
+.disp-panel h2 { font-size: 1.25rem; }
+.disp-group { margin: .9rem 0; }
+.disp-label { font-weight: 600; margin-bottom: .35rem; }
+/* Its own class, not .seg: app.js resets .on on every .seg button when the queue redraws. */
+.disp-seg { display: inline-flex; background: var(--gray-soft); border-radius: 999px; padding: 3px; }
+.disp-seg button { border: 0; background: none; padding: .4rem 1rem; cursor: pointer; border-radius: 999px; color: var(--muted); font-weight: 600; }
+.disp-seg button:hover { color: var(--ink); }
+.disp-seg button[aria-pressed="true"] { background: var(--brand); color: var(--brand-ink); }
+.disp-seg button { white-space: nowrap; }
+:root[data-easy="on"] .disp-seg button { min-height: 48px; }
+:root[data-easy="on"] .disp-panel { width: min(460px, calc(100vw - 2rem)); top: 5.6rem; }
+.disp-group p { margin: .35rem 0 0; }
+header > .disp-btn { flex: none; }
+.skip-link { position: absolute; left: 1rem; top: -4rem; z-index: 50; background: var(--brand); color: var(--brand-ink); padding: .7rem 1.1rem; border-radius: var(--radius-sm); font-weight: 600; }
+.skip-link:focus { top: 1rem; }
+main:focus { outline: none; }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; border-right-color: var(--brand); } }

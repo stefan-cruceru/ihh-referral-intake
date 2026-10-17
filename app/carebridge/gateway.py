@@ -72,7 +72,7 @@ def allowed(h, path: str) -> bool:
 
 def _page(h, title: str, body: str, code: int = 200, extra: dict | None = None):
     html = f"""<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{escape(title)}</title><link rel="stylesheet" href="/static/app.css">
+<title>{escape(title)}</title><link rel="stylesheet" href="/static/app.css"><script src="/static/display.js"></script>
 <style>.gw{{max-width:560px;margin:3rem auto;padding:1.5rem;background:var(--panel);border:1px solid var(--line);border-radius:16px}}
 .gw h1{{font-size:1.5rem;margin:0 0 .6rem}}.gw .who{{display:grid;gap:.5rem;margin:1rem 0}}
 .gw button,.gw a.b{{font:inherit;font-weight:600;padding:.8rem 1rem;border-radius:10px;border:1px solid var(--line);background:var(--panel);cursor:pointer;text-align:left;color:inherit;text-decoration:none;display:block}}

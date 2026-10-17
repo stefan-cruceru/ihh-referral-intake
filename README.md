@@ -21,7 +21,8 @@ puede cuidarse solo y si está tranquilo y seguro. Cada punto muestra la página
 exactas, y la app vuelve a revisar cada cita. Escribe borradores para el hospital, pero nunca envía
 nada. Nunca dice sí o no: una persona decide, y solo la línea clínica puede decir que no. También
 ayuda a buscar recursos para clientes y deja que el personal practique con ejemplos inventados.
-Todo está en inglés y en español, en palabras sencillas. Si un paquete trae texto que intenta dar
+Todo está en inglés y en español, en palabras sencillas. El botón Pantalla permite un fondo
+oscuro, colores para daltónicos y un modo fácil de ver con letras y botones más grandes. Si un paquete trae texto que intenta dar
 órdenes a la IA, o un archivo con partes ocultas, la app aparta esas páginas y retiene el referido
 para que una persona lo revise.
 
@@ -86,6 +87,10 @@ Plus:
   4th-grade reading level. Quotes stay word for word.
 - **First-run walkthrough.** Pick a language, pick your job, three short "how it works" and "keep
   it private" points, then it opens the right screen.
+- **Display button (on every page).** Light is the default. Dark background, colorblind-safe
+  colors (blue for yes, orange for no, plus ✓ ✕ ? marks so nothing depends on color), and an
+  easy-to-see mode (bigger words and buttons, darker lines, no italics, nothing that moves). The
+  choice is saved on that computer. There is also a "skip to the main part" link for keyboard users.
 - **Copilot plugin.** The same exe is an MCP server for GitHub Copilot in VS Code and Claude
   Desktop. In Copilot Chat, pick **IHH Care Bridge** in the agent dropdown, or type `/` and pick
   a command such as `check_referral`: a pick list offers the practice patients, and the whole

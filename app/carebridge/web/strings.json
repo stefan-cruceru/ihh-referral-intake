@@ -3,6 +3,58 @@
   "en": "From the hospital to a bed to what's next",
   "es": "Del hospital a una cama y a lo que sigue"
  },
+ "disp_title": {
+  "en": "Display",
+  "es": "Pantalla"
+ },
+ "disp_theme": {
+  "en": "Background",
+  "es": "Fondo"
+ },
+ "disp_light": {
+  "en": "Light",
+  "es": "Claro"
+ },
+ "disp_dark": {
+  "en": "Dark",
+  "es": "Oscuro"
+ },
+ "disp_colors": {
+  "en": "Colors",
+  "es": "Colores"
+ },
+ "disp_std": {
+  "en": "Standard",
+  "es": "Normales"
+ },
+ "disp_cvd": {
+  "en": "Colorblind safe",
+  "es": "Para daltónicos"
+ },
+ "disp_colors_help": {
+  "en": "Uses blue for yes and orange for no, and adds ✓ ✕ ? marks. Good if red and green look alike to you.",
+  "es": "Usa azul para sí y naranja para no, y agrega las marcas ✓ ✕ ?. Útil si el rojo y el verde se ven iguales para usted."
+ },
+ "disp_easy": {
+  "en": "Easy to see",
+  "es": "Fácil de ver"
+ },
+ "disp_easy_help": {
+  "en": "Bigger words, darker lines, bigger buttons, and nothing that moves.",
+  "es": "Letras más grandes, líneas más oscuras, botones más grandes y nada que se mueva."
+ },
+ "disp_off": {
+  "en": "Off",
+  "es": "No"
+ },
+ "disp_on": {
+  "en": "On",
+  "es": "Sí"
+ },
+ "skip_main": {
+  "en": "Skip to the main part",
+  "es": "Ir a la parte principal"
+ },
  "privacy": {
   "en": "This app stays on this computer. Do not type names, birth dates or ID numbers. It never sends anything. You send it.",
   "es": "Esta app se queda en esta computadora. No escriba nombres, fechas de nacimiento ni números de ID. La app nunca envía nada. Usted lo envía."
