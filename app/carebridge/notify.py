@@ -132,10 +132,14 @@ def render(person: dict, event: str, card: dict, detail_by_lang: dict, app_url: 
     link = f"{app_url.rstrip('/')}/#card={quote(card['id'])}"
     body = f"{line}\n\n{OPEN[lang]}: {link}\n\n{NOTE[lang]}"
     channels = {"both": ["email", "teams"], "email": ["email"], "teams": ["teams"], "none": []}[person["channel"]]
+    # What the alert was about, kept so a waiting draft can be redrawn when the person's address or
+    # language changes. Only the fields above: still nothing about the patient.
+    ctx = {"card": {k: card.get(k) for k in ("id", "case_no", "hospital", "left_min", "practice")}, "detail": detail_by_lang}
     out = []
     for ch in channels:
         row = {"case_no": case, "card_id": card["id"], "event": event, "person": person["name"], "channel": ch,
-               "lang": lang, "urgency": urgency, "subject": subject, "body": body, "practice": bool(card.get("practice"))}
+               "lang": lang, "urgency": urgency, "subject": subject, "body": body, "practice": bool(card.get("practice")),
+               "ctx": ctx}
         if ch == "email":
             row["to"] = person["email"] or NO_ADDRESS[lang]
             row["ready"] = bool(person["email"])
@@ -239,12 +243,29 @@ def sync(track, app_url: str | None = None) -> int:
     return added
 
 
-def outbox(person: str | None = None, include_done: bool = False, include_practice: bool = True) -> list[dict]:
-    rows = store.list_notifications(person, include_done, include_practice)
-    for r in rows:
-        if r.get("card"):
-            r["card"] = json.loads(r["card"])
+def _fresh(r: dict, now: dict) -> dict:
+    """A draft still waiting follows the person's current address and language."""
+    for k in ("card", "ctx"):
+        if isinstance(r.get(k), str):
+            r[k] = json.loads(r[k])
+    if r["status"] == "draft" and r.get("ctx") and r["person"] in now:
+        fresh = render({**now[r["person"]], "channel": r["channel"]}, r["event"], r["ctx"]["card"], r["ctx"]["detail"], APP_URL)
+        if fresh:
+            r.update({k: fresh[0].get(k) for k in ("lang", "subject", "body", "to", "ready", "card", "teams_link")})
+    r.pop("ctx", None)
+    return r
+
+
+def outbox(person: str | None = None, include_done: bool = False, include_practice: bool = True,
+           staff: list[dict] | None = None) -> list[dict]:
+    now = {p["name"]: p for p in people(staff)}
+    rows = [_fresh(r, now) for r in store.list_notifications(person, include_done, include_practice)]
     return sorted(rows, key=lambda r: (r["status"] != "draft", -URGENCY[r["urgency"]], -r["t"]))
+
+
+def get(nid: int, staff: list[dict] | None = None) -> dict | None:
+    r = store.get_notification(nid)
+    return _fresh(r, {p["name"]: p for p in people(staff)}) if r else None
 
 
 def mark(nid: int, status: str, who: str = "") -> None:

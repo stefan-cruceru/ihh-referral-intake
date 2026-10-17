@@ -38,6 +38,10 @@ this person's address under People".
 
 ## 3. What a person does with a draft
 
+In the app: the **Alerts** tab lists drafts, most urgent first, filtered by person. The **People** tab
+sets each person's channel, language and addresses. A draft still waiting is redrawn when its
+person's address or language changes.
+
 - **Outlook:** download the `.eml`. It opens in Outlook as a new message ready to send (`X-Unsent`),
   with high importance when urgent.
 - **Teams:** click the link. Teams opens the chat with that person, the message already typed. Or

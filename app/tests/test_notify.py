@@ -79,3 +79,15 @@ def test_marking_sent_takes_it_out_of_the_outbox():
     notify.sync(t)
     notify.mark(notify.outbox()[0]["id"], "sent_by_person", "Coordinator 2")
     assert notify.outbox() == [] and len(notify.outbox(include_done=True)) == 1
+
+
+def test_waiting_draft_follows_a_newly_saved_address_and_language():
+    t = _setup()
+    t.add({"case_no": "T-7", "owner": "Clinical line"})
+    notify.sync(t)
+    before = next(r for r in notify.outbox() if r["channel"] == "email")
+    assert not before["ready"] and before["lang"] == "en"
+    notify.save_person({"name": "Clinical line", "role": "clinical", "email": "clin@example.org", "channel": "email", "lang": "es"})
+    after = notify.get(before["id"])
+    assert after["ready"] and after["to"] == "clin@example.org" and after["lang"] == "es"
+    assert email.message_from_bytes(notify.eml(after))["To"] == "clin@example.org"

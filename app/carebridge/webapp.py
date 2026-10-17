@@ -465,17 +465,18 @@ class Handler(BaseHTTPRequestHandler):
         notify.APP_URL = self._app_url()
         if p == "/api/notify/outbox":
             notify.sync(TRACK)
-            return self._json({"outbox": notify.outbox(q.get("person", [None])[0], q.get("done", ["0"])[0] == "1")})
+            return self._json({"outbox": notify.outbox(q.get("person", [None])[0], q.get("done", ["0"])[0] == "1",
+                                                        staff=TRACK.staff)})
         parts = p.strip("/").split("/")
         if len(parts) >= 3 and parts[2].split(".")[0].isdigit():
-            row = store.get_notification(int(parts[2].split(".")[0]))
+            row = notify.get(int(parts[2].split(".")[0]), TRACK.staff)
             if not row:
                 return self._json({"error": "not found"}, 404)
             if parts[2].endswith(".eml") and row["channel"] == "email":
                 return self._send(200, notify.eml(row), "message/rfc822",
                                   {"Content-Disposition": f'attachment; filename="{row["case_no"]}-{row["event"]}.eml"'})
             if len(parts) == 4 and parts[3] == "card.json" and row["channel"] == "teams":
-                return self._send(200, (row["card"] or "{}").encode("utf-8"), "application/json; charset=utf-8",
+                return self._send(200, json.dumps(row["card"] or {}, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8",
                                   {"Content-Disposition": f'attachment; filename="{row["case_no"]}-{row["event"]}.json"'})
         return self._json({"error": "not found"}, 404)
 

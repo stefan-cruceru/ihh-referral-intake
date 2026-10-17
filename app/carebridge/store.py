@@ -22,7 +22,7 @@ FIELDS = ["case_no", "channel", "arrived_at", "owner", "suggested_route", "statu
 
 # Staff alerts (notify.py). Drafts only: the status says whether a person sent it, never the app.
 NOTE_FIELDS = ["case_no", "card_id", "event", "person", "channel", "lang", "urgency", "to", "subject", "body",
-               "card", "teams_link", "ready", "practice"]
+               "card", "teams_link", "ready", "practice", "ctx"]
 
 
 def db_path() -> Path:
@@ -105,7 +105,7 @@ def save_person(p: dict) -> None:
 
 def add_notification(key: str, row: dict) -> bool:
     """False when this alert was already drafted."""
-    vals = [json.dumps(row[f]) if f == "card" and row.get(f) else row.get(f) for f in NOTE_FIELDS]
+    vals = [json.dumps(row[f]) if f in ("card", "ctx") and row.get(f) else row.get(f) for f in NOTE_FIELDS]
     vals[NOTE_FIELDS.index("ready")] = 1 if row.get("ready") else 0
     vals[NOTE_FIELDS.index("practice")] = 1 if row.get("practice") else 0
     cols = ", ".join(f'"{f}"' for f in NOTE_FIELDS)
