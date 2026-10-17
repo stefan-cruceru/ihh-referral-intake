@@ -20,7 +20,7 @@ PAGES = {1: {"page": 1, "page_type": "ihh_referral_form", "rotation": 0, "mostly
              "language": "en", "possible_unredacted_identifier": False, "duplicate_of": None, "blank": False}}
 
 
-def _qc(statuses, handwriting="none"):
+def _qc(statuses, handwriting="none", confidence=95, transcript="Pt ambulates [illegible] ft"):
     facts = [{"id": "F1", "page": 1, "topic": "adl", "statement": "s", "statement_es": "s", "quote": "q", "verify": "found"}]
     assessment = {
         "reason_for_referral": "x", "reason_for_referral_es": "x", "wheelchair_dependent": "no", "preferred_language": "",
@@ -29,18 +29,94 @@ def _qc(statuses, handwriting="none"):
         "diagnoses": [], "checklist": [{"doc_id": d, "status": "present", "pages": [1]} for d in rules.checklist_ids()],
         "conflicts": [], "questions": [], "summary": "", "summary_es": "",
     }
-    text = {1: {"transcript": "Pt ambulates [illegible] ft", "handwriting": handwriting}}
+    text = {1: {"transcript": transcript, "handwriting": handwriting, "ocr_confidence": confidence}}
     return intake.quality_control(assessment, facts, PAGES, {}, text)
 
 
 def test_illegible_handwriting_goes_to_a_person():
-    clean = _qc(all_met())
+    clean = _qc(all_met(), transcript="Pt ambulates 150 ft")
     assert clean["recommendation"]["code"] != "clinical_check"
     rep = _qc(all_met(), handwriting="partly_illegible")
     assert rep["recommendation"]["code"] == "clinical_check"
     assert rep["recommendation"]["illegible_pages"] == [1] == rep["flags"]["illegible_pages"]
     assert rep["pages"][0]["transcript"].endswith("[illegible] ft")
     assert rep["recommendation"]["odds"] < clean["recommendation"]["odds"]
+
+
+def test_ocr_under_80_percent_goes_to_a_person():
+    """Hard gate: a page read under 80% sure goes to a person, and a missing or broken score fails closed."""
+    ok = "Pt ambulates 150 ft"
+    assert intake.OCR_GATE == 80
+    assert _qc(all_met(), confidence=80, transcript=ok)["recommendation"]["code"] != "clinical_check"
+    for bad in (79, 0, None, "high", True, -5):
+        rep = _qc(all_met(), confidence=bad, transcript=ok)
+        assert rep["recommendation"]["code"] == "clinical_check", bad
+        assert rep["recommendation"]["route_clinical"]
+        assert rep["flags"]["illegible_pages"] == [1] == rep["flags"]["low_confidence_pages"]
+        assert rep["pages"][0]["needs_reader"] == ["low_confidence"]
+    assert _qc(all_met(), confidence=79, transcript=ok)["pages"][0]["ocr_confidence"] == 79
+    assert _qc(all_met(), confidence=250, transcript=ok)["pages"][0]["ocr_confidence"] == 100
+    # The gate never turns a "likely no" into anything softer.
+    assert _qc(all_met(**{"ADL-2": "not_met"}), confidence=40, transcript=ok)["recommendation"]["code"] == "likely_no"
+
+
+def test_full_review_carries_the_ocr_score_to_the_route(monkeypatch):
+    """The whole pipeline with a fake Claude: page 2 is read 55% sure, so the packet goes to a person."""
+    from carebridge import llm
+    from carebridge.pages import Page
+    score = {1: 95, 2: 55}
+
+    def fake(system, content, schema, **kw):
+        nums = [int(x["text"].split()[1].rstrip(":")) for x in content if x["type"] == "text" and x["text"].startswith("Page ")]
+        if system == intake.SORT_PROMPT:
+            return {"pages": [{**PAGES[1], "page": n, "instructions_to_ai": False} for n in nums]}
+        if system == intake.READ_PROMPT:
+            return {"pages": [{"page": n, "summary": "s", "transcript": "Pt walks 150 ft", "handwriting": "none",
+                               "ocr_confidence": score[n], "facts": [{"topic": "adl", "statement": "s",
+                                                                      "statement_es": "s", "quote": f"walks {n}"}]}
+                              for n in nums]}
+        if system == intake.RULES_PROMPT:
+            return {"reason_for_referral": "x", "reason_for_referral_es": "x", "wheelchair_dependent": "no",
+                    "preferred_language": "", "diagnoses": [], "conflicts": [], "questions": [], "summary": "",
+                    "summary_es": "", "checklist": [{"doc_id": d, "status": "present", "pages": [1]} for d in rules.checklist_ids()],
+                    "rules": [{"rule_id": r, "status": st, "fact_ids": ["F1"] if st in ("met", "not_met") else [],
+                               "explanation": "", "explanation_es": ""} for r, st in all_met().items()]}
+        return {"checks": [{"fact_id": "F1", "verdict": "found"}, {"fact_id": "F2", "verdict": "found"}]}
+
+    monkeypatch.setattr(llm, "call_json", fake)
+    pages = [Page(n, Image.new("L", (200, 260), 255)) for n in (1, 2)]
+    pages[1].image.paste(0, (0, 0, 120, 120))  # not a duplicate of page 1
+    review = intake.Review(pages, "unsure.pdf")
+    rep = intake.run(review, workers=1)
+    assert rep["flags"]["low_confidence_pages"] == [2] == rep["recommendation"]["illegible_pages"]
+    assert rep["recommendation"]["code"] == "clinical_check"
+    assert [p["ocr_confidence"] for p in rep["pages"]] == [95, 55]
+    assert any("under 80% sure on page(s) [2]" in m for m in review.progress)
+
+
+def test_illegible_mark_beats_a_readable_label():
+    """Claude said "readable" but typed [illegible]: plain code believes the transcript."""
+    rep = _qc(all_met(), handwriting="readable", confidence=99)
+    assert rep["recommendation"]["code"] == "clinical_check"
+    assert rep["pages"][0]["needs_reader"] == ["handwriting"] and rep["flags"]["low_confidence_pages"] == []
+
+
+def test_accept_is_blocked_until_the_clinical_line_reads_unsure_pages():
+    t = tracker.Tracker()
+    cid = t.add({"hospital": "H", "channel": "fax"})["id"]
+    t.attach_review(cid, _qc(all_met(), confidence=60, transcript="Pt ambulates 150 ft"))
+    try:
+        t.act(cid, "accepted", who="Coordinator A", role="coordinator")
+        raise AssertionError("a coordinator accepted a page nobody read")
+    except ValueError as e:
+        assert "page(s) 1" in str(e)
+    assert t.cards[cid]["status"] != "accepted"
+    t.act(cid, "clinical_done", who="Clinical B", role="clinical")
+    assert t.act(cid, "accepted", who="Coordinator A", role="coordinator")["status"] == "accepted"
+    # A clean read needs no clinical pass first.
+    cid2 = t.add({"hospital": "H", "channel": "fax"})["id"]
+    t.attach_review(cid2, _qc(all_met(), confidence=95, transcript="Pt ambulates 150 ft"))
+    assert t.act(cid2, "accepted", who="Coordinator A", role="coordinator")["status"] == "accepted"
 
 
 def test_danger_comes_only_from_cited_chart_facts():

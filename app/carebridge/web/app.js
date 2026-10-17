@@ -514,7 +514,7 @@ function renderDetail() {
         ${rec.odds != null ? `<p>${esc(t("odds_label"))} ${rec.odds}/100. ${esc(t("odds_tip"))}${(rec.odds_why || []).length ? ` ${rec.odds_why.map((w) => `${esc(t("odds_" + w.code))} ×${w.count} (${w.points})`).join(" · ")}` : ""}</p>` : ""}
         ${rep.cost ? `<p>${esc(t("cost"))}: $${Number(rep.cost.usd).toFixed(2)} · ${rep.cost.calls} calls · ${rep.cost.input_tokens.toLocaleString()} in / ${rep.cost.output_tokens.toLocaleString()} out · ${esc(rep.model || "")}</p>` : ""}</details>` : ""}
       <h3>${esc(t("h_pages"))}</h3><div class="thumbs">${rep.pages
-        .map((p) => `<button data-page="${p.page}" class="${p.duplicate_of ? "dup" : ""} ${p.blank ? "blank" : ""}" title="${esc(p.summary || "")}">${p.page}: ${esc(p.page_type.replaceAll("_", " "))}${p.rotation ? ` ↻${p.rotation}°` : ""}${p.duplicate_of ? ` = ${p.duplicate_of}` : ""}${["partly_illegible", "illegible"].includes(p.handwriting) ? " ✎?" : ""}</button>`)
+        .map((p) => `<button data-page="${p.page}" class="${p.duplicate_of ? "dup" : ""} ${p.blank ? "blank" : ""}" title="${esc(p.summary || "")}">${p.page}: ${esc(p.page_type.replaceAll("_", " "))}${p.rotation ? ` ↻${p.rotation}°` : ""}${p.duplicate_of ? ` = ${p.duplicate_of}` : ""}${(p.needs_reader || []).length || ["partly_illegible", "illegible"].includes(p.handwriting) ? " ✎?" : ""}${p.ocr_confidence != null ? ` · ${p.ocr_confidence}%` : ""}</button>`)
         .join("")}</div></div>`;
 
     h += `<div class="panel"><h3>${esc(t("h_all_rules"))}</h3><details><summary class="muted">${rep.rules.length}</summary>${rep.rules

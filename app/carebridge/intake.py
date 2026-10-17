@@ -46,6 +46,27 @@ STATUSES = ["met", "not_met", "cant_tell", "not_applicable"]
 # none: no handwriting. partly_illegible / illegible: a person must read the page; Claude never guesses.
 HANDWRITING = ["none", "readable", "partly_illegible", "illegible"]
 ILLEGIBLE = {"partly_illegible", "illegible"}
+# Hard gate: a page the AI is less than this sure it read right (0-100) goes to a person. No score counts as 0.
+OCR_GATE = 80
+
+
+def ocr_confidence(t: dict) -> int:
+    """The page's read score, 0-100. Missing or not a number is 0, so a broken answer never passes the gate."""
+    c = t.get("ocr_confidence")
+    if isinstance(c, bool) or not isinstance(c, (int, float)):
+        return 0
+    return max(0, min(100, int(c)))
+
+
+def needs_reader(t: dict) -> list[str]:
+    """Why a person must read this page, from plain code. Empty means the read can stand."""
+    why = []
+    # An [illegible] in the typed page counts even if the label says "readable".
+    if t.get("handwriting") in ILLEGIBLE or "[illegible]" in (t.get("transcript") or ""):
+        why.append("handwriting")
+    if ocr_confidence(t) < OCR_GATE:
+        why.append("low_confidence")
+    return why
 
 # Safety flags for the queue, from rule results that cite verified chart facts. Plain code, not a clinical
 # judgment: a flag says "the chart shows this, on these pages", and a person decides what it means.
@@ -79,6 +100,7 @@ READ_SCHEMA = S({"type": "object", "properties": {"pages": {"type": "array", "it
     "summary": {"type": "string"},
     "transcript": {"type": "string"},
     "handwriting": {"type": "string", "enum": HANDWRITING},
+    "ocr_confidence": {"type": "integer"},
     "facts": {"type": "array", "items": {"type": "object", "properties": {
         "topic": {"type": "string", "enum": TOPICS},
         "statement": {"type": "string"},
@@ -164,6 +186,9 @@ For each page:
   with confidence. Never guess a word, a number or a dose: [illegible] is always the right answer when unsure.
 - handwriting: none (no handwriting), readable (all of it read with confidence), partly_illegible (some
   [illegible]), illegible (the handwriting cannot be read).
+- ocr_confidence: 0 to 100, how sure you are that every word, number and dose in your transcript of this page
+  is right, printed and handwritten. Score it lower for faint or blurry fax, cut-off edges, stamps over text
+  and handwriting. Be honest, not kind: under 80 sends the page to a person, and that is the safe answer.
 
 For each fact:
 - quote: copy the words EXACTLY as written on the page, in the page's own language, 3 to 25 words. Never fix
@@ -318,7 +343,8 @@ def run(review: Review, workers: int = 6) -> dict:
                 if pg["page"] not in by_num:
                     continue
                 page_summaries[pg["page"]] = pg["summary"]
-                page_text[pg["page"]] = {"transcript": pg.get("transcript", ""), "handwriting": pg.get("handwriting", "none")}
+                page_text[pg["page"]] = {"transcript": pg.get("transcript", ""), "handwriting": pg.get("handwriting", "none"),
+                                         "ocr_confidence": pg.get("ocr_confidence")}
                 for f in pg["facts"]:
                     if f["quote"].strip():
                         facts.append({"page": pg["page"], **f})
@@ -342,9 +368,12 @@ def run(review: Review, workers: int = 6) -> dict:
         facts = [f for f in facts if f["page"] not in isolated]
         page_summaries = {n: t for n, t in page_summaries.items() if n not in isolated}
         page_text = {n: t for n, t in page_text.items() if n not in isolated}
-        illegible = sorted(n for n, t in page_text.items() if t["handwriting"] in ILLEGIBLE)
+        illegible = sorted(n for n, t in page_text.items() if "handwriting" in needs_reader(t))
         if illegible:
             review.log(f"Handwriting a person must read on page(s) {illegible}")
+        unsure = sorted(n for n, t in page_text.items() if "low_confidence" in needs_reader(t))
+        if unsure:
+            review.log(f"Read under {OCR_GATE}% sure on page(s) {unsure}: a person must read them")
         facts.sort(key=lambda f: f["page"])
         for i, f in enumerate(facts, 1):
             f["id"] = f"F{i}"
@@ -525,12 +554,18 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
     conditions = [r for r in out_rules if r["rule_id"] in rules.CONDITIONAL and r["status"] != "not_applicable"]
     conditions += [d for d in diagnoses if d["rule_id"] in rules.CONDITIONAL]
 
-    illegible = sorted(n for n, t in page_text.items() if t.get("handwriting") in ILLEGIBLE)
+    # illegible_pages is every page a person must read: unreadable handwriting or under the OCR gate.
+    reader = {n: needs_reader(t) for n, t in page_text.items()}
+    illegible = sorted(n for n, why in reader.items() if why)
+    low_confidence = sorted(n for n, why in reader.items() if "low_confidence" in why)
     recommendation = route(out_rules, diagnoses, checklist, gates, illegible)
+    recommendation["low_confidence_pages"] = low_confidence
     report = {
         "pages": [{**sorted_pages[n], "summary": page_summaries.get(n, ""),
                    "transcript": page_text.get(n, {}).get("transcript", ""),
-                   "handwriting": page_text.get(n, {}).get("handwriting", "none")} for n in sorted(sorted_pages)],
+                   "handwriting": page_text.get(n, {}).get("handwriting", "none"),
+                   "ocr_confidence": ocr_confidence(page_text[n]) if n in page_text else None,
+                   "needs_reader": reader.get(n, [])} for n in sorted(sorted_pages)],
         "facts": facts,
         "reason_for_referral": assessment["reason_for_referral"],
         "reason_for_referral_es": assessment["reason_for_referral_es"],
@@ -547,7 +582,8 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
         "summary_es": assessment["summary_es"],
         "recommendation": recommendation,
         "danger": danger(out_rules, diagnoses, fact_by_id),
-        "flags": {"no_referral_form": checklist[0]["status"] == "missing", "illegible_pages": illegible},
+        "flags": {"no_referral_form": checklist[0]["status"] == "missing", "illegible_pages": illegible,
+                  "low_confidence_pages": low_confidence, "ocr_gate": OCR_GATE},
         "qc": {"facts": len(facts),
                "verified": sum(1 for f in facts if f["verify"] == "found"),
                "paraphrase": sum(1 for f in facts if f["verify"] == "paraphrase"),
@@ -646,7 +682,7 @@ def route(out_rules, diagnoses, checklist, gates, illegible=()) -> dict:
     if blockers:
         code = "likely_no"
     elif gate_unclear or human or illegible:
-        # Handwriting nobody could read may hold the deciding fact, so a person reads it before any yes.
+        # A page nobody could read for sure may hold the deciding fact, so a person reads it before any yes.
         code = "clinical_check"
     elif missing_docs or open_items:
         code = "needs_info"
