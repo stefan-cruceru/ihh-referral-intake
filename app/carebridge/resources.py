@@ -76,6 +76,28 @@ GROUP_WORDS = {
 }
 
 
+# Words in a situation -> needs in the resource list, for the match without an API key. English and
+# Spanish, since staff may type either. Plain substring match: a hint, never a decision.
+NEED_WORDS = {
+    "shelter": ["unhoused", "homeless", "sleeps outdoors", "shelter", " car ", "street", "sin hogar", "refugio",
+                "duerme en la calle", "en su carro"],
+    "housing-navigation": ["unhoused", "homeless", "housing", "sin hogar", "vivienda"],
+    "id-documents": [" id ", "identification", "lost his id", "lost her id", "no id", "identificación", "identificacion"],
+    "benefits": ["medi-cal", "calfresh", "benefits", "income", "general relief", "beneficios", "ingreso"],
+    "food": ["food", "meals", "hungry", "diabetes", "glucose", "comida", "hambre"],
+    "transportation": ["bus", "ride", "transport", "appointment", "follow-up", "follow up", "clinic", "transporte",
+                       "cita", "clínica", "clinica"],
+    "behavioral-health": ["depress", "anxiety", "psychiatr", "suicid", "alcohol", "substance", "detox", "ansiedad",
+                          "psiquiatr", "drogas"],
+    "phone-internet": ["no phone", "phone", "teléfono", "telefono"],
+}
+
+
+def needs_from_text(text: str) -> list[str]:
+    low = f" {text.lower()} "
+    return [n for n, words in NEED_WORDS.items() if any(w in low for w in words)]
+
+
 def offline_match(needs: list[str], limit: int = 6, situation: str = "") -> list[dict]:
     """No-AI fallback: match by category and tags, leaving out programs for a group the situation
     doesn't mention (a families-only program for a single adult, for example)."""
@@ -106,7 +128,9 @@ def find(situation: str, lang: str = "en", needs_hint: list[str] | None = None, 
     result = {"blocked": False, "danger": danger, "safety": safety_cards() if danger else [],
               "disclaimer": disclaimer(), "ai": False}
     if not use_ai:
-        result.update(needs=needs_hint or [], cards=offline_match(needs_hint or [], situation=situation), plan_today="", ask_staff=[])
+        # Without a key, typed words still find a match: the needs come from the words themselves.
+        needs = needs_hint or needs_from_text(situation)
+        result.update(needs=needs, cards=offline_match(needs, situation=situation), plan_today="", ask_staff=[])
         return result
     listing = "\n".join(
         f"{r['id']} | {r['category']} | {r['name']} | tags: {', '.join(r.get('tags', []))} | eligibility: {r.get('eligibility')} "
