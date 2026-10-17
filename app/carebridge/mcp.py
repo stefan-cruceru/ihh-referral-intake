@@ -70,9 +70,12 @@ TOOLS = [
      "inputSchema": _schema({"situation": {"type": "string"}, "language": LANG}, ["situation"])},
     {"name": "make_client_handout",
      "description": "Make a large-print PDF of next steps for an IHH client to take home: each step with phone, "
-                    "address and hours from the sourced list, how to get there, what to bring, and boxes to tick. "
+                    "address and hours from the sourced list, boxes to tick, a notes box under each step for staff "
+                    "to write in, how to get there and what to bring. One or two pages, in color or black and white. "
                     "Saves it to Documents\\IHH Care Bridge\\handouts and returns the path. No identifiers.",
-     "inputSchema": _schema({"situation": {"type": "string"}, "language": LANG}, ["situation"])},
+     "inputSchema": _schema({"situation": {"type": "string"}, "language": LANG,
+                             "style": {"type": "string", "enum": ["color", "bw"],
+                                       "description": "color (default) or bw for black-and-white printers."}}, ["situation"])},
     {"name": "draft_progress_note",
      "description": "Turn an LVN's or medical assistant's own shift jottings into a progress note draft. Every "
                     "sentence is checked against the jottings and flagged if unsupported. No identifiers.",
@@ -220,7 +223,7 @@ def call_tool(name: str, args: dict) -> str:
         out = Path.home() / "Documents" / "IHH Care Bridge" / "handouts"
         out.mkdir(parents=True, exist_ok=True)
         f = out / f"{'proximos-pasos' if lang == 'es' else 'next-steps'}-{time.strftime('%Y%m%d-%H%M%S')}.pdf"
-        f.write_bytes(handout.build(items, res["plan_today"], lang, res["danger"]))
+        f.write_bytes(handout.build(items, res["plan_today"], lang, res["danger"], args.get("style", "color")))
         return f"Saved: {f}\nSteps: " + "; ".join(c["name"] for c in res["cards"]) + "\nCheck it before you print it for the client."
     if name == "draft_progress_note":
         res = staff.note_draft(args["jottings"], lang)

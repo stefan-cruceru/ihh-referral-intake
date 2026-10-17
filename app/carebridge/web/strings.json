@@ -684,8 +684,12 @@
   "es": "Necesita un referido"
  },
  "res_print": {
-  "en": "Print for the client",
-  "es": "Imprimir para el cliente"
+  "en": "Print for the client (color)",
+  "es": "Imprimir para el cliente (color)"
+ },
+ "res_print_bw": {
+  "en": "Black and white",
+  "es": "Blanco y negro"
  },
  "res_print_head": {
   "en": "Your next steps",

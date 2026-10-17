@@ -99,9 +99,10 @@ const T = {
   send: ["Put this patient on the referral board", "Poner a este paciente en el tablero"],
   sent: ["Added to the board. Open the board to work the referral.", "Agregado al tablero. Abra el tablero para trabajar el referido."],
   open_board: ["Open the board", "Abrir el tablero"],
-  pdf: ["Print next steps for this patient (PDF)", "Imprimir próximos pasos para este paciente (PDF)"],
-  pdf_note: ["A large-print page they take with them: where to go, who to call, what to bring, and boxes to tick. Phone numbers and hours come only from the checked list.",
-             "Una hoja en letra grande para llevar: adónde ir, a quién llamar, qué llevar y casillas para marcar. Los teléfonos y horarios vienen solo de la lista revisada."],
+  pdf: ["Print next steps (color PDF)", "Imprimir próximos pasos (PDF a color)"],
+  pdf_bw: ["Black and white", "Blanco y negro"],
+  pdf_note: ["One or two large-print pages they take with them: clear steps, who to call, where to go, boxes to tick, and a notes box under each step for you to write in. Phone numbers and hours come only from the checked list.",
+             "Una o dos hojas en letra grande para llevar: pasos claros, a quién llamar, adónde ir, casillas para marcar y un espacio de notas debajo de cada paso para que usted escriba. Los teléfonos y horarios vienen solo de la lista revisada."],
   pick: ["Pick a patient to see their profile and their pages.", "Escoja un paciente para ver su perfil y sus páginas."],
 };
 let LANG = "en", LIST = [], CUR = null, VIEW = { pid: null, n: 1, max: 1 };
@@ -161,7 +162,8 @@ function detail() {
       <div class="pp-answer" id="answer" hidden><h3>${esc(t("answer"))}: ${esc(t(r.answer_key_decision))}</h3><p>${esc(r.summary)}</p><p class="pp-muted">${esc(t("answer_note"))}</p></div>`;
   }
   right += `<div class="pp-actions"><button class="pp-btn primary" id="send">${esc(t("send"))}</button>
-    <a class="pp-btn" href="/api/profiles/${encodeURIComponent(p.id)}/handout.pdf?lang=${LANG}" target="_blank" rel="noopener">${esc(t("pdf"))}</a></div>
+    <a class="pp-btn" href="/api/profiles/${encodeURIComponent(p.id)}/handout.pdf?lang=${LANG}" target="_blank" rel="noopener">${esc(t("pdf"))}</a>
+    <a class="pp-btn" href="/api/profiles/${encodeURIComponent(p.id)}/handout.pdf?lang=${LANG}&style=bw" target="_blank" rel="noopener">${esc(t("pdf_bw"))}</a></div>
     <p class="pp-muted">${esc(t("pdf_note"))}</p><p id="sent" class="pp-muted"></p></div>`;
   $("#detail").innerHTML = `<div class="pp-detail">${left}${right}</div>`;
   document.querySelectorAll("#detail [data-page]").forEach((b) => b.addEventListener("click", () => show(p.id, Number(b.dataset.page), p.pages)));
