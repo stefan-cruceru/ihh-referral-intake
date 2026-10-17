@@ -9,9 +9,14 @@ const HOME = "/home/pyodide/repo";
 let ready = null, started = false;
 const jar = new Map(); // practice sign-in cookies; a service worker cannot set real ones
 
+// If this worker ever stops answering (seen right after a new version is published), requests fall
+// through to GitHub and get 404.html. HEAL drops the worker and reloads; 404.html installs it fresh.
+const HEAL = `async function heal() { for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); location.reload(); }`;
+
 // Added to every app page. The browser stops an idle service worker, and with it the board and the
 // sign-in, so an open page pings it. If the sign-in is gone anyway, the page goes back to sign in.
-const PAGE_JS = `<script>
+const PAGE_JS = `<script>${HEAL}
+fetch("${APP}__ready").then((r) => { if (r.status === 404) heal(); }, () => {});
 setInterval(() => navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage("ping"), 20000);
 (() => { const f = window.fetch; window.fetch = async (...a) => { const r = await f(...a);
   if (r.status === 401 && !location.pathname.includes("/auth/")) {
@@ -26,7 +31,9 @@ font:17px/1.6 "Public Sans",system-ui,sans-serif;text-align:center;padding:16px}
 .d{width:40px;height:40px;margin:0 auto 16px;border:4px solid #fbe3cc;border-top-color:#e39235;border-radius:50%;animation:s 1s linear infinite}
 @keyframes s{to{transform:rotate(1turn)}}@media (prefers-reduced-motion:reduce){.d{animation:none}}</style></head>
 <body><div><div class="d"></div><b>Getting Lamplight ready…</b><p>This takes about 20 seconds.</p><p>Preparando Lamplight…</p></div>
-<script>setInterval(async () => { try { if ((await fetch("${APP}__ready")).ok) location.replace(location.href); } catch (e) {} }, 2000);</script>
+<script>${HEAL}
+setInterval(async () => { try { const r = await fetch("${APP}__ready");
+  if (r.ok) location.replace(location.href); else if (r.status === 404) heal(); } catch (e) {} }, 2000);</script>
 </body></html>`;
 
 function boot() {
@@ -43,7 +50,7 @@ function boot() {
   })();
 }
 
-self.addEventListener("install", (e) => { self.skipWaiting(); });
+self.addEventListener("install", (e) => e.waitUntil(self.skipWaiting()));
 self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
 self.addEventListener("message", (e) => {
   if (e.data === "warm") { ready = ready || boot(); ready.then(() => e.source.postMessage("ready"), (err) => e.source.postMessage("error:" + err)); }
