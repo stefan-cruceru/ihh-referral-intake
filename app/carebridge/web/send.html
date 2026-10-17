@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Send a referral to IHH</title>
 <link rel="stylesheet" href="/static/app.css">
@@ -75,7 +76,7 @@
 </main>
 <script>
 "use strict";
-let S = {}, LANG = (navigator.language || "en").startsWith("es") ? "es" : "en";
+let S = {}, LANG = window.cbLang?.get() || ((navigator.language || "en").startsWith("es") ? "es" : "en");
 const $ = (s) => document.querySelector(s);
 const t = (k) => (S[k] && (S[k][LANG] ?? S[k].en)) ?? k;
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -88,7 +89,7 @@ function paint() {
   $("#docs").innerHTML = DOCS.map((d) => `<li>${esc(d[LANG] || d.en)}</li>`).join("");
   if (LAST) showReceipt(LAST);
 }
-document.querySelectorAll(".langs button").forEach((b) => b.addEventListener("click", () => { LANG = b.dataset.lang; paint(); }));
+document.querySelectorAll(".langs button").forEach((b) => b.addEventListener("click", () => { LANG = b.dataset.lang; window.cbLang?.set(LANG); paint(); }));
 
 async function status() {
   if (!LAST) return;

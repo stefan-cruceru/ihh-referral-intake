@@ -22,6 +22,21 @@
   }
   let D = load();
   apply(D);
+
+  // One language for every page, one at a time. A cookie (not localStorage) so the server-built
+  // sign-in pages can read it too. get() is "" until someone picks; pages then fall back to the
+  // app setting (/api/state) or English.
+  window.cbLang = {
+    get() {
+      const m = document.cookie.match(/(?:^|;\s*)cb_lang=(en|es)\b/);
+      return m ? m[1] : "";
+    },
+    set(l) {
+      if (l !== "en" && l !== "es") return;
+      document.cookie = `cb_lang=${l}; path=/; max-age=31536000; SameSite=Lax`;
+      root.lang = l;
+    },
+  };
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(D)); } catch {}
     apply(D);

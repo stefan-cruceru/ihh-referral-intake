@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Practice patients</title>
 <link rel="stylesheet" href="/static/app.css">
@@ -190,10 +191,10 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowLeft") $("#prev").click();
   if (e.key === "ArrowRight") $("#next").click();
 });
-document.querySelectorAll(".pp-lang button").forEach((b) => b.addEventListener("click", () => { LANG = b.dataset.lang; chrome(); grid(); detail(); }));
+document.querySelectorAll(".pp-lang button").forEach((b) => b.addEventListener("click", () => { LANG = b.dataset.lang; window.cbLang?.set(LANG); chrome(); grid(); detail(); }));
 
 (async function boot() {
-  try { LANG = (await api("/api/state")).lang || "en"; } catch (e) {}
+  try { LANG = window.cbLang?.get() || (await api("/api/state")).lang || "en"; } catch (e) {}
   chrome();
   LIST = (await api("/api/profiles")).profiles;
   grid();

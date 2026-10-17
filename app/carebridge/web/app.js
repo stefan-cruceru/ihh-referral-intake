@@ -44,6 +44,7 @@ function applyI18n() {
 
 async function setLang(l) {
   LANG = l;
+  window.cbLang?.set(l); // shared with the other pages and the sign-in page (display.js)
   applyI18n();
   post("/api/settings", { lang: l }).catch(() => {});
   renderQueue(LAST_Q);
@@ -864,7 +865,7 @@ function renderOnboard() {
   const dots = `<div class="ob-dots">${[0, 1, 2].map((i) => `<span class="${i === OB.step ? "on" : ""}"></span>`).join("")}</div>`;
   let h = `<div class="ob-step">${esc(t("ob_step", { n: OB.step + 1, m }))}</div>`;
   if (OB.step === 0) {
-    h += `<h2 id="ob-title">${esc(t("ob_welcome"))} · Bienvenido</h2><p>${esc(t("ob_lang"))}</p>
+    h += `<h2 id="ob-title">${esc(t("ob_welcome"))}</h2><p>${esc(t("ob_lang"))}</p>
       <div class="ob-choices"><button data-ob-lang="en" class="${LANG === "en" ? "on" : ""}">English</button><button data-ob-lang="es" class="${LANG === "es" ? "on" : ""}">Español</button></div>
       <p class="muted">${esc(t("ob_lang_note"))}</p>
       <p class="muted">${esc(t("ob_display"))} <button class="btn sm" id="ob-display">${esc(t("ob_display_btn"))}</button></p>`;
@@ -929,7 +930,7 @@ async function printHandout(style = "color") {
     const me = await api("/api/me").catch(() => ({}));
     if (me.name) { ME = me.name; pref.set("cb_me", ME); }
   }
-  LANG = STATE.lang || "en";
+  LANG = window.cbLang?.get() || STATE.lang || "en";
   applyI18n();
   loadScenarios();
   renderRules();

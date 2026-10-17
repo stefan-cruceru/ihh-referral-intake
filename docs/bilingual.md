@@ -12,10 +12,10 @@ hospitals.
 
 | Piece | How |
 |---|---|
-| Every screen: the queue, the 2-hour tracker, cards, buttons, alerts, statuses | One **English / Español** switch per user. English by default |
+| Every screen: the queue, the 2-hour tracker, cards, buttons, alerts, statuses, sign-in, the Teams action links | One **English / Español** switch. One language at a time, never both side by side. The choice carries to every page (a `cb_lang` cookie). English by default. Browser auto-translate is turned off so it can't fight the switch |
 | The review screen: the two gates, rule results, flags, open questions | Claude writes the summary in the chosen language. Rule IDs stay the same in both |
 | Drafts to hospitals: missing items, chase nudges, supervisor escalation, the decision reply | Drafted in the chosen language, with one click for the other language. A person picks one and sends it |
-| The status a hospital can check | Both languages on the same page |
+| The status a hospital can check | The send page opens in the browser's language, with the same switch |
 | The three handoffs after a yes | The ops email follows the switch. The Kipu fields and the census row keep the field names IHH's systems use, so they paste in cleanly. Labels on screen follow the switch |
 | The demo | Show one card and one draft in English, flip the switch, show the same card and draft in Spanish |
 | The team README | A short **Resumen en español** near the top: the problem, what we built, how to run it |
