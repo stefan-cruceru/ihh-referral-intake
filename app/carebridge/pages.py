@@ -1,6 +1,7 @@
 """Turn a faxed packet (PDF or images) into page images, in memory only."""
 
 import io
+import warnings
 from dataclasses import dataclass
 
 from PIL import Image
@@ -8,6 +9,7 @@ from PIL import Image
 from . import guard
 
 Image.MAX_IMAGE_PIXELS = 80_000_000  # a decompression bomb raises instead of filling memory
+warnings.simplefilter("error", Image.DecompressionBombWarning)  # Pillow only warns below 2x the cap
 
 LONG_EDGE = 1600  # px; enough to read handwriting on a 200 dpi fax without huge requests
 
@@ -62,6 +64,9 @@ def _from_image(data: bytes) -> list[Page]:
     pages = []
     i = 0
     while True:
+        if i >= guard.MAX_PAGES:
+            raise guard.Blocked({"verdict": guard.BLOCK, "kind": "tiff", "pages": {},
+                                 "findings": [{"code": "too_many_pages", "level": guard.BLOCK}]})
         pages.append(Page(i + 1, img.convert("L").copy()))
         i += 1
         try:

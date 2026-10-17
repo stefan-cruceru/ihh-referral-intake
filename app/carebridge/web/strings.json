@@ -1771,6 +1771,34 @@
   "en": "Only the clinical line can say no.",
   "es": "Solo la línea clínica puede decir que no."
  },
+ "sec_chip_hold": {
+  "en": "Security hold",
+  "es": "Retenido por seguridad"
+ },
+ "sec_chip_block": {
+  "en": "Blocked file",
+  "es": "Archivo bloqueado"
+ },
+ "sec_executable_or_archive": {
+  "en": "The file is a program or a zip, not a fax.",
+  "es": "El archivo es un programa o un zip, no un fax."
+ },
+ "sec_unknown_file_type": {
+  "en": "The file is not a PDF or image.",
+  "es": "El archivo no es un PDF ni una imagen."
+ },
+ "sec_too_big": {
+  "en": "The file is too big.",
+  "es": "El archivo es demasiado grande."
+ },
+ "sec_too_many_pages": {
+  "en": "The file has too many pages.",
+  "es": "El archivo tiene demasiadas páginas."
+ },
+ "sec_pdf_unreadable": {
+  "en": "The PDF can't be read.",
+  "es": "No se puede leer el PDF."
+ },
  "kipu_ck_ok": {
   "en": "Kipu: ready",
   "es": "Kipu: listo"

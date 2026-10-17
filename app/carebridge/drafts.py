@@ -36,6 +36,12 @@ def _doc(did, lang):
     return DOC_ES[did] if lang == "es" else rules.all_rules()[did]["text"]
 
 
+def _cell(v) -> str:
+    """A census cell pasted into Excel: one starting with = + - @ (or a tab or CR) would run as a formula."""
+    v = "" if v is None else str(v)
+    return "'" + v if v[:1] in ("=", "+", "-", "@", chr(9), chr(13)) else v
+
+
 def _hhmm(ts):
     return datetime.fromtimestamp(ts).strftime("%I:%M %p").lstrip("0")
 
@@ -165,7 +171,8 @@ def handoffs(card: dict, report: dict | None, lang: str) -> dict:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(["Referral", "Received", "Hospital", "Reason", "Preferred language", "Owner", "Status"])
-    w.writerow([card["case_no"], _hhmm(card["arrived_at"]), card.get("hospital", ""), reason, pref, card.get("owner", ""), "Accepted"])
+    w.writerow([_cell(v) for v in (card["case_no"], _hhmm(card["arrived_at"]), card.get("hospital", ""), reason, pref,
+                                   card.get("owner", ""), "Accepted")])
     ops = (f"Asunto: Nuevo ingreso aceptado: {card['case_no']}\n\nEquipo de operaciones de {site}:\n\nAceptamos el referido {card['case_no']} "
            f"de {card.get('hospital', '')}.\nMotivo: {reason}\nIdioma preferido: {pref}\nResponsable: {card.get('owner', '')}\n"
            if lang == "es" else

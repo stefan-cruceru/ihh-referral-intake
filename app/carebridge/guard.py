@@ -23,6 +23,7 @@ import zlib
 
 MAX_BYTES = 40 * 1024 * 1024  # a 300-page fax at 200 dpi is well under this
 MAX_PAGES = 300
+MAX_PIXELS = 80_000_000  # per page image, same as pages.py
 MAX_INFLATE = 64 * 1024 * 1024  # total bytes we decompress while looking inside PDF streams
 
 BLOCK, HOLD, OK = "block", "hold", "ok"
@@ -207,6 +208,9 @@ def scan_file(data: bytes, filename: str = "") -> dict:
     elif filename and (kind == "pdf") != filename.lower().endswith(".pdf"):
         add("name_does_not_match_content", HOLD)
 
+    if kind in ("tiff", "png", "jpeg") and not any(f["level"] == BLOCK for f in findings):
+        _check_image(data, add)
+
     if kind == "pdf" and not any(f["level"] == BLOCK for f in findings):
         seen = set()
         for blob in [_unescape_names(data), *(_unescape_names(s) for s in _inflated_streams(data))]:
@@ -221,6 +225,30 @@ def scan_file(data: bytes, filename: str = "") -> dict:
 
     verdict = BLOCK if any(f["level"] == BLOCK for f in findings) else HOLD if findings else OK
     return {"verdict": verdict, "kind": kind, "findings": findings, "pages": pages}
+
+
+def _check_image(data: bytes, add) -> None:
+    """A multi-page TIFF can hold thousands of huge, well-compressed frames: count them before decoding any."""
+    import io
+    import warnings
+
+    from PIL import Image
+
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            img = Image.open(io.BytesIO(data))
+            frames = getattr(img, "n_frames", 1)
+            if frames > MAX_PAGES:
+                add("too_many_pages", BLOCK)
+                return
+            for i in range(frames):
+                img.seek(i)
+                if img.width * img.height > MAX_PIXELS:
+                    add("too_big", BLOCK)
+                    return
+    except Exception:
+        add("unknown_file_type", BLOCK)
 
 
 def _scan_pdf_text(data: bytes, findings: list, add, pages: dict) -> None:
