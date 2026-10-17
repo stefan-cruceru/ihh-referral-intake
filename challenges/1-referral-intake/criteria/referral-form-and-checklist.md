@@ -44,7 +44,7 @@ safe place to recover.
 | DOC-9 | Blood or Wound Culture (if needed) |
 | DOC-10 | 30-day supply of all medications |
 
-## The service promise
+## Response time
 
 Once the Illumination Health + Home Referral Form has been completed online, emailed or faxed, you
 will receive notice of confirmation within two hours. A referral coordinator will review and may
