@@ -3,6 +3,7 @@
 // A service worker may only load scripts while it starts, so both Pyodide scripts load here.
 importScripts("https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js", "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.asm.js");
 
+const BUILD = "dev"; // build.py writes the app's hash here, so every new version is a new worker
 const SCOPE = new URL(self.registration.scope).pathname; // e.g. /ihh-referral-intake/
 const APP = SCOPE + "app/";
 const HOME = "/home/pyodide/repo";
@@ -23,6 +24,7 @@ fetch("${APP}__ready").then((r) => { if (r.status === 404) heal(); }, () => {});
   const nav = performance.getEntriesByType("navigation")[0], from = document.referrer;
   const inApp = nav?.type !== "reload" && from.startsWith(location.origin + "${APP}") && !from.includes("/auth/");
   if (!inApp) try { localStorage.removeItem("cb_onboarded"); } catch (e) {} })();
+navigator.serviceWorker.addEventListener("controllerchange", () => location.reload()); // a new version took over
 setInterval(() => navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage("ping"), 20000);
 (() => { const f = window.fetch; window.fetch = async (...a) => { const r = await f(...a);
   if (r.status === 401 && !location.pathname.includes("/auth/")) {
@@ -47,7 +49,7 @@ function boot() {
     const py = await loadPyodide();
     await py.loadPackage(["pillow", "sqlite3", "ssl", "micropip"]); // fpdf2 imports urllib HTTPS names
     await py.pyimport("micropip").install(["fpdf2"]);
-    const zip = await (await fetch(SCOPE + "carebridge.zip", { cache: "no-cache" })).arrayBuffer();
+    const zip = await (await fetch(SCOPE + "carebridge.zip?v=" + BUILD, { cache: "no-cache" })).arrayBuffer();
     py.unpackArchive(zip, "zip", { extractDir: HOME });
     py.runPython(`import sys; sys.path[:0] = ["${HOME}/app", "${HOME}", "${HOME}/demo/pages"]`);
     const handle = py.pyimport("bridge").handle;

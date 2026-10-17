@@ -17,7 +17,7 @@ Where the app uses them:
 
 - **Practice patients page** (`/static/profiles.html`): each profile, its documents, its pages, the
   practice review, and "Put this patient on the referral board".
-- **Try a busy Monday**: the 4 PM burst is S06, S01, S09, S05 and S04 (`../inbox.json`).
+- **Practice with made-up referrals** (the Practice panel): the 4 PM burst is S06, S01, S09, S05 and S04 (`../inbox.json`).
 
 The organizers' answers approve S01 to S04. The app shows those four as "need more from the
 hospital", because it always treats rules that depend on a date as "can't tell" (real packets have

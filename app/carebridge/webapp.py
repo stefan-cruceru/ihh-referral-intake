@@ -81,17 +81,23 @@ def load_demo(start_hour: int = 16, speed: float = 60.0) -> dict:
     TRACK.reset()
     REVIEWS.clear()
     PACKETS.clear()
+    from . import notify
+
+    notify.clear_practice()  # a restart is a new practice run: last run's alerts would block this one's
     today = datetime.now()
     monday = (today - timedelta(days=today.weekday())).replace(hour=start_hour, minute=0, second=0, microsecond=0)
     t0 = monday.timestamp()
-    TRACK.clock.set(sim_time=t0 - 30, speed=speed)
+    # Fast-forward until the last practice referral lands, then real time, so the 2-hour clocks
+    # don't all run out while someone reads a card or a practice patient.
+    last = max((r["arrives_min"] for r in inbox["referrals"]), default=0)
+    TRACK.clock.set(sim_time=t0 - 30, speed=speed, real_from=t0 + (last + 1) * 60)
     def on_shift(s):
         a, b = (s.get("shift") or "00:00-24:00").split("-")
         mins = lambda x: int(x[:2]) * 60 + int(x[3:])
         return mins(a) <= start_hour * 60 < mins(b)
 
     if inbox.get("staff"):
-        TRACK.staff = [{"name": s["name"], "role": s.get("role", "coordinator"), "on_shift": on_shift(s)}
+        TRACK.staff = [{"name": s["name"], "role": s.get("role", "coordinator"), "on_shift": on_shift(s), "email": s.get("email", "")}
                        for s in inbox["staff"] if s.get("role") != "clinical_line"]
     contacts = {c["hospital"]: c for c in inbox.get("contacts", [])}
     for i, r in enumerate(inbox["referrals"]):

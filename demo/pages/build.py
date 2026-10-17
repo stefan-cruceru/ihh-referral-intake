@@ -13,6 +13,7 @@ No packets: R01-R11 are never in git, and only the synthetic S01-S10 patients sh
 Needs `pip install markdown`.
 """
 
+import hashlib
 import html
 import re
 import shutil
@@ -77,8 +78,10 @@ PAGE = """<!doctype html>
 """
 
 
-def _zip_app(out: Path) -> None:
+def _zip_app(out: Path) -> str:
+    """Writes carebridge.zip and returns a short hash of what is in it."""
     seen = set()
+    digest = hashlib.sha256()
     with zipfile.ZipFile(out / "carebridge.zip", "w", zipfile.ZIP_DEFLATED) as z:
         for rel in dict.fromkeys(INCLUDE + DATA):
             src = REPO / rel
@@ -93,6 +96,8 @@ def _zip_app(out: Path) -> None:
                     continue
                 seen.add(name)
                 z.write(p, name)
+                digest.update(name.encode() + b"|" + p.read_bytes())
+    return digest.hexdigest()[:12]
 
 
 def _link(href: str, here: str, pages: dict) -> str:
@@ -163,10 +168,14 @@ def build(out: Path) -> Path:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    for f in ("sw.js", "404.html"):
-        shutil.copy2(HERE / f, out / f)
+    shutil.copy2(HERE / "404.html", out / "404.html")
     (out / ".nojekyll").write_text("")
-    _zip_app(out)
+    # The build hash goes into sw.js, so a new app version changes sw.js and the browser installs it.
+    # With the same sw.js, an open tab keeps the old worker, and the old app, running.
+    sw = (HERE / "sw.js").read_text(encoding="utf-8")
+    if 'const BUILD = "dev";' not in sw:
+        raise SystemExit('sw.js needs the line: const BUILD = "dev";')
+    (out / "sw.js").write_text(sw.replace('const BUILD = "dev";', f'const BUILD = "{_zip_app(out)}";'), encoding="utf-8")
     shutil.copytree(REPO / "app/carebridge/web/fonts", out / "fonts")
     architecture = (REPO / "docs/architecture.html").read_text(encoding="utf-8")
     architecture = architecture.replace("../app/carebridge/web/fonts/", "fonts/").replace("../campaign/logo/", "campaign/logo/")
