@@ -375,6 +375,9 @@ mentions it.
 8. **Eval harness:** run R01 to R11 and compare with `eval/decisions.json` in a separate script
    that the reviewer never sees. Report accuracy and misses in the README.
 
+**Language:** every screen and every draft works in English and Spanish, with one switch. Statuses
+stay language-free codes in the data, and quotes stay word for word. See `docs/bilingual.md`.
+
 **Stack (proposed):** Python, the Anthropic SDK (vision; model `claude-opus-5-5` or
 `claude-sonnet-5-5`), Streamlit for the UI, and `ANTHROPIC_API_KEY` from the environment. Event
 credits are $100 per person, API only, claimed with a Console Org ID.
@@ -390,6 +393,8 @@ credits are $100 per person, API only, claimed with a Console Org ID.
       cached outputs and screenshots too.
 - [ ] No API keys in the repo or its history.
 - [ ] Someone outside the team can run it from the README.
+- [ ] Every screen and draft works in English and Spanish, and the README has a short Spanish
+      summary (`docs/bilingual.md`).
 - [ ] An optional 2-minute screen recording, linked in the README.
 - [ ] The submission form is filled in.
 - [ ] The demo works on an **unseen packet**.

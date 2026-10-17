@@ -42,6 +42,11 @@ purpose.
   of supporting documents (nursing notes, PT/OT notes and so on). **(lead)**
 - **The 2-hour clock starts when the packet arrives**, not when someone opens it. **(lead)**
 - **Busiest times:** the start of the work week and around 4 PM. Weekends are quiet. **(lead)**
+- **Where the 2 hours go:** mostly reviewing. The referrals that end up withdrawn are the ones that
+  tend to get stuck waiting on the hospital. **(lead)**
+- **Sites:** six, by the lead's count: three in Orange County (the largest), one in Riverside and a
+  new children's recuperative care site in Los Angeles. The sixth wasn't named. The census has one
+  tab per facility. **(lead)**
 
 ### Decision rules
 
@@ -60,6 +65,9 @@ purpose.
   line, staffed 24/7. Unconfirmed: whether an LVN staffs it. **(lead)**
 - The criteria are reviewed yearly and rarely change. Updates come from IHH's own quality reviews
   or from DHCS. **(lead)**
+- **How hospitals learn the criteria:** the lead trains hospital case managers and social workers
+  in person (in-services) and leaves printed documentation. Coordinators answer questions after
+  that. **(lead)**
 
 ### After a "yes": three manual steps
 
@@ -139,6 +147,8 @@ packet review pipeline in `intake-context.md` section 6 stays the core. Around i
    clinician can deny (section 5).
 5. **One click after a "yes"** drafts all three handoffs: Kipu fields, census row, ops email
    (section 7).
+6. **English and Spanish throughout:** every screen, status and draft, with one switch
+   (`docs/bilingual.md`).
 
 **Judging constraint:** features that need IHH's live systems to mean anything do not place
 (`docs/judging.md`). Everything here has to run on its own, with a mock inbox and packets read by
@@ -284,7 +294,8 @@ leads with them, above everything else, each marked met, not met or can't tell, 
      with the clinical line, the chase ladder nudging the quiet hospital. All five are decided in
      time.
 2. Click "Accept" on one and show the three handoff drafts: Kipu fields, census row, ops email.
-3. Run one **unseen** packet live through the pipeline. Judges may hand us one.
+3. Flip the switch to **Español** and show the same card and the hospital draft in Spanish.
+4. Run one **unseen** packet live through the pipeline. Judges may hand us one.
 
 ---
 
@@ -383,6 +394,8 @@ A design checklist, not legal advice. IHH's counsel should review it.
 | Do denials get a clinical check? | Yes. Every possible "no" goes to the 24/7 clinical line |
 | What happens after a yes? | Kipu record, Excel census row, ops email, all by hand |
 | What tools do they use? | Microsoft 365, Copilot under a BAA, Kipu, Excel |
+| Where do the 2 hours go? | Mostly reviewing. Referrals that end up withdrawn tend to be stuck waiting on the hospital |
+| How do hospitals learn the criteria? | In-person trainings (in-services) for case managers and social workers, plus printed documentation |
 
 ### Still open, most important first
 
@@ -402,6 +415,8 @@ A design checklist, not legal advice. IHH's counsel should review it.
 
 - "About 150" came up without a unit. Monthly referrals, beds, or something else?
 - What is CIQ? It did not come up in the Q&A.
+- Which is the sixth site? The lead named three in Orange County, one in Riverside and the
+  children's site in Los Angeles.
 - Who staffs the clinical line (an LVN?), and how fast does it answer, day and night?
 - Does the e-fax service deliver into the same inbox as email, or into a portal?
 - Is the arrival time recorded anywhere a tool could read (e-fax or email timestamp)?
@@ -425,7 +440,7 @@ A design checklist, not legal advice. IHH's counsel should review it.
 | Lost to another placement or AMA | About a quarter of all referrals **(lead, estimate)** |
 | Minutes per referral, start to finish, and the longest step | Unknown |
 | Referrals per day or month | Unknown ("about 150" was said without a unit) |
-| Time spent waiting on hospitals for missing documents | Unknown |
+| Time spent waiting on hospitals for missing documents | Unknown; the lead said most of the 2 hours is reviewing **(lead)** |
 | How often the clinical line overrides the coordinator | Unknown |
 | How often the reply is "send us X" | Unknown |
 
