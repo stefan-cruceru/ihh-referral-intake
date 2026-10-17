@@ -10,6 +10,8 @@ How to read the labels:
 - **(staff)**: from an earlier, shorter conversation with IHH staff in the room.
 - **(Q&A 2)**: from a second recorded conversation with IHH, about referral outcomes and how staff
   feel about AI.
+- **(director)**: from a recorded phone call with IHH's intake director, who supervises the referral
+  team and hospital operations and does intake hands-on.
 - **unconfirmed**: we think so, but nobody at IHH has confirmed it yet.
 - **placeholder**: a made-up number for illustration. Replace it with IHH's real number (section 12).
 
@@ -106,6 +108,71 @@ purpose.
 - IHH wants a baseline of AI comfort across staff before rolling out more tools. The way they see
   to get there: staff watching AI help with their own day-to-day work. **(Q&A 2)**
 
+### What the intake director told us
+
+**How referrals arrive**
+
+- By **fax, email (PDF), and for some hospitals Aidin**, a referral platform IHH logs into to see the
+  referral and its history and can save as a PDF for the chart. (Spelled "Aiden" in the recording;
+  unconfirmed.) **(director)**
+- **Not only from hospitals.** Referrals also come from the community, skilled nursing facilities
+  and other partners. The contact person is on the referral or the fax cover. **(director)**
+- **IHH already wants one front door.** They are working on a QR code hospitals would scan to upload
+  everything electronically, straight to the referral team, instead of faxes and emails. One portal
+  "would cut out about four or five steps." **(director)**
+
+**Step by step today** **(director)**
+
+1. Check the CRM: has this person been with IHH before? If so, work in their existing chart. If not,
+   create one.
+2. File the referral documents into the chart.
+3. **Background check, by hand:** the Superior Court website for active or recent felonies, and
+   whether the person is a registered sex offender (Penal Code 290). If something comes up, judge
+   how severe it is.
+4. Review the referral. Check what this case needs, such as home health or a clinic connection (HIV
+   care, dialysis). Every case is different.
+5. Ask the hospital social worker for anything missing: a call if the referral came by fax, an
+   email if it came by email.
+6. Send the decision by email or phone, then move to the next referral while waiting on the social
+   worker.
+
+**Where time goes**
+
+- Coordinators **multitask**: phone calls and other programs' questions come in while they work a
+  referral. **(director)**
+- **Social workers send one referral to several programs at once**, then often don't answer
+  follow-ups, not even to confirm receipt. Example: asking for the last three finger sticks for a
+  patient with uncontrolled diabetes. **(director)** So the program that answers first gets the
+  patient. Speed is how withdrawals are won.
+- **After hours,** two people cover with their phones on. Few referrals arrive overnight, and the
+  morning shift picks up what came in. Hospitals know the team is there until 8:30 in the evening.
+  An overnight packet usually just starts the process: the patient is almost never ready to move at
+  2 or 4 AM, so the 2-hour work effectively starts with the morning shift. **(director)**
+- **The clinical second check is one person.** Possible denials and red flags (advanced wounds,
+  hostile behavior) go to one clinical reviewer for a second look and to name extra documents to
+  request. The reviewer keeps notes in a shared Excel sheet ("page 16 shows this; ask for X, Y and
+  Z"), and the team pings them on Microsoft Teams. This started recently. Usually 20 to 40 minutes,
+  sometimes 24 hours. While a likely denial waits, the team tells the hospital it is escalated for
+  review and may be denied. **(director)**
+
+**What they asked for**
+
+- **A review that lists what's missing or needs clarification.** "If AI can review the referral and
+  say these are the items that are missing... that would really help." **(director)**
+- **An automatic receipt** the moment a referral arrives (received, in process, please call the
+  referral coordinator about the following), and **reminders to the social worker** while it is
+  pending. Aidin already shows a pending status. **(director)**
+- Checking for missing items at upload, so the social worker can fix them before sending: "could be
+  a possibility." **(director)**
+- **Retyping isn't the pain.** Asked what busywork to hand off, the director said not really: every
+  referral is case by case. The help they want is in the review. **(director)**
+
+**The worry**
+
+- **"How accurate is AI?"** If it misses, say, an ejection fraction, the patient is admitted and then
+  needs emergency care, who is responsible? These are human lives, and people make mistakes too.
+  They want it tested first, with a person always checking. **(director)**
+
 ### From the earlier conversation
 
 - The clinical team approves after intake, and an intake yes that clinical then rejects causes
@@ -151,8 +218,19 @@ purpose.
 - **What the answer can be.** The written process has only approve or deny, with no "not yet"
   (criteria gaps table). The role card adds a third reply: a list of what to send.
   `intake-context.md` section 6 proposes "needs info".
-- **Channels.** The form lists online, email and fax. The lead named fax and email. Whether
-  "online" is still used is unknown.
+- **Channels.** The form lists online, email and fax. The lead named fax and email. The director
+  added Aidin, which may be what "online" means (unconfirmed).
+- **The clinical line: 24/7, or one person?** The lead said every possible "no" goes to a clinical
+  line staffed 24/7. The director described one clinical reviewer working from a shared Excel sheet
+  and Teams: usually 20 to 40 minutes, sometimes 24 hours.
+- **Overnight.** The lead said referrals come in 24/7 with after-hours cover. The director said
+  after hours is phones only, and the morning shift works overnight packets. Unknown: how IHH counts
+  the 2 hours for a packet that arrives overnight.
+- **Automatic messages.** Our guardrail says nothing is sent automatically (section 10). The
+  director asked for an automatic receipt and reminders. Proposal: a receipt and a reminder carry no
+  decision and no clinical detail, so in a pilot they could go out on their own if IHH agrees. The
+  list of missing items, every request for records, and every decision stay drafts a person sends.
+  In the prototype, all of them are mocked.
 
 ---
 
@@ -163,14 +241,18 @@ IHH picked fewer withdrawals as the measure that matters most, so the demo and t
 with it.
 
 The biggest gain is **closing the follow-up gap with hospitals**, not only reading faster. The
-packet review pipeline in `intake-context.md` section 6 stays the core. Around it:
+intake director's own ask confirms the core: a review that lists what's missing or unclear. And
+social workers send each referral to several programs, so the first to answer wins. The packet
+review pipeline in `intake-context.md` section 6 stays the core. Around it:
 
-1. **One front door** for fax and email, with the clock starting on arrival (section 6, mocked).
+1. **One front door** for fax, email, Aidin exports and a hospital upload page (IHH's own QR-code
+   plan), with the clock starting on arrival and an instant receipt (section 6, mocked).
 2. **Clear assignment**, instead of whoever is at the fax (section 3).
 3. **Missing items caught on arrival**, and the follow-up to the case manager drafted right away,
-   with a chase ladder when they go quiet (section 4).
-4. **Likely "no" goes straight to the clinical line**, in parallel with the coordinator. Only a
-   clinician can deny (section 5).
+   with reminders while it is pending and a chase ladder when they go quiet (section 4).
+4. **Likely "no" goes straight to the clinical reviewer**, in parallel with the coordinator. The
+   reviewer works in the app, with the flagged pages, a notes field and timestamps, instead of a
+   shared Excel sheet and Teams. Only a clinician can deny (section 5).
 5. **One click after a "yes"** drafts all three handoffs: Kipu fields, census row, ops email
    (section 7).
 6. **English and Spanish throughout:** every screen, status and draft, with one switch
@@ -184,6 +266,12 @@ packet review pipeline in `intake-context.md` section 6 stays the core. Around i
 9. **A closed loop IHH runs itself.** Intake, review, follow-up, decision, handoff, outcome and
    learning in one app. IHH's data stays on IHH's systems, and the model is the only outside call
    (`docs/closed-loop.md`).
+10. **Staff-only steps stay staff-only.** The returning-client check in the CRM and the court
+    background check are done by a person. The tool shows them as checklist items and never looks
+    anyone up.
+11. **Critical values are never silent.** For each critical item, the review says found (with page
+    and quote) or not found. The director's example, a missing ejection fraction for heart failure,
+    is a test case.
 
 **Judging constraint:** features that need IHH's live systems to mean anything do not place
 (`docs/judging.md`). Everything here has to run on its own, with a mock inbox and packets read by
@@ -425,7 +513,11 @@ A design checklist, not legal advice. IHH's counsel should review it.
 |---|---|
 | When does the 2-hour clock start? | On arrival, not when opened |
 | Who fills out the form? | The hospital case manager |
-| How do referrals arrive? | PDFs by fax (third-party e-fax) and email |
+| How do referrals arrive? | PDFs by fax (third-party e-fax) and email, and for some hospitals Aidin |
+| Where do referrals come from? | Hospitals, the community, skilled nursing facilities and other partners |
+| What would help most on day one? | A review that lists what's missing or needs clarification **(director)** |
+| Who does the clinical second check? | One clinical reviewer; notes in a shared Excel sheet, pinged on Teams; usually 20 to 40 minutes, sometimes 24 hours |
+| What happens overnight? | Two people on call by phone; the morning shift works overnight packets; patients are rarely ready to move overnight |
 | Who reviews, and when? | A lead plus 3 coordinators, staggered, 24/7; director, lead and salaried staff after hours |
 | Who takes each referral? | First come, first served. They want clearer assignment |
 | When is it busiest? | Start of the week and around 4 PM. Weekends are quiet |
@@ -451,8 +543,10 @@ A design checklist, not legal advice. IHH's counsel should review it.
 3. **When a case manager goes quiet, how long do you wait before following up, and who do you
    escalate to?** This sets the chase ladder in section 4.
 4. **Can we see the withdrawal reasons you already use?** So the tool's categories match yours.
-5. **If you could have one thing on Monday, what would it be?** Judges weight IHH's day-one view
-   most.
+5. **How should the 2 hours count for a packet that arrives overnight?** From arrival, or from the
+   start of the morning shift? This sets the tracker in section 3.
+6. **Would IHH let a receipt and reminders go out automatically?** They carry no decision and no
+   clinical detail. Everything else stays a draft a person sends.
 
 **Also open**
 
@@ -460,7 +554,9 @@ A design checklist, not legal advice. IHH's counsel should review it.
 - What is CIQ? It did not come up in the Q&A.
 - Which is the sixth site? The lead named three in Orange County, one in Riverside and the
   children's site in Los Angeles.
-- Who staffs the clinical line (an LVN?), and how fast does it answer, day and night?
+- What is the clinical reviewer's credential (LVN, RN?), and who covers when they are away?
+- Where does the QR-code upload plan stand, and where would the upload page be hosted?
+- Can Aidin referrals be saved as PDFs into the same folder as faxes and emails?
 - Does the e-fax service deliver into the same inbox as email, or into a portal?
 - Is the arrival time recorded anywhere a tool could read (e-fax or email timestamp)?
 - Does the clock pause while IHH waits on the hospital?
@@ -486,6 +582,8 @@ A design checklist, not legal advice. IHH's counsel should review it.
 | Minutes per referral, start to finish, and the longest step | Unknown |
 | Referrals per day or month | Unknown ("about 150" was said without a unit) |
 | Time spent waiting on hospitals for missing documents | Unknown; the lead said most of the 2 hours is reviewing **(lead)** |
+| Clinical review turnaround | Usually 20 to 40 minutes; up to 24 hours seen **(director)** |
+| After-hours cover | Two people on call by phone; team on site until 8:30 in the evening **(director)** |
 | How often the clinical line overrides the coordinator | Unknown |
 | How often the reply is "send us X" | Unknown |
 

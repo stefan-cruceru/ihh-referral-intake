@@ -17,7 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import APP_NAME, __version__, config, drafts, guard, handout, intake, llm, mcp, phi, resources, rules, staff, store, tracker
+from . import APP_NAME, __version__, auth, config, drafts, gateway, guard, handout, intake, llm, mail, mcp, phi, resources, rules, staff, store, tracker
 from .pages import load_packet
 from .paths import BUNDLE, DEMO_DIR, FROZEN, load_json, packets_dir
 
@@ -159,6 +159,47 @@ def start_review(cid: str) -> None:
     threading.Thread(target=work, daemon=True).start()
 
 
+def add_email(raw: bytes, name: str, arrived_at: float | None = None, case: str = "") -> dict:
+    """An .eml referral becomes a card like a fax: body pages first, then the attachments."""
+    got = mail.packet_from_eml(raw)
+    case = case or f"REF-{len(TRACK.cards) + 1:03d}"
+    card = TRACK.add({"id": case, "case_no": case, "channel": "email", "hospital": "unknown",
+                      "subject": got["subject"], "sender": got["sender"], "packet_used": name,
+                      "email_skipped": got["skipped"], "email_body_set_aside": got["body_set_aside"]},
+                     arrived_at=arrived_at or got["sent_at"])
+    for s in got["skipped"]:
+        TRACK.log(card["id"], "system", "email attachment not used", f"{s['name']}: {s['reason']}")
+    if got["body_set_aside"]:
+        TRACK.log(card["id"], "system", "security hold", "email text gives orders to the AI; not used")
+    if got["pdf"]:
+        PACKETS[card["id"]] = (got["pdf"], Path(name).stem + ".pdf")
+        if config.get_api_key():
+            start_review(card["id"])
+    return card
+
+
+def _form_sidecar(packet: Path) -> dict:
+    """The hospital form's details, when the intake flow (m365/flows.md) saves them next to the
+    packet as <packet>.json: case code, hospital and who sent it. Missing fields stay unknown."""
+    try:
+        with open(packet.with_suffix(".json"), encoding="utf-8") as fh:
+            form = json.load(fh)
+    except (OSError, ValueError):
+        return {}
+    out = {"channel": "form"}
+    if form.get("case_code"):
+        out["id"] = out["case_no"] = str(form["case_code"])
+    if form.get("hospital"):
+        out["hospital"] = str(form["hospital"])
+    who = ", ".join(str(form[k]) for k in ("submitter_name", "submitter_role") if form.get(k))
+    if who:
+        out["case_manager"] = who
+    for src, dst in (("submitter_email", "cm_email"), ("submitter_phone", "cm_phone"), ("submitter_lang", "cm_lang")):
+        if form.get(src):
+            out[dst] = str(form[src])
+    return out
+
+
 def watch_inbox(interval: float = 5.0) -> None:
     """Step 1 of the closed loop: a referral saved into the inbox folder (fax PDF or email
     attachment) becomes a card. The clock starts from the file's arrival time, not when it is opened."""
@@ -169,7 +210,7 @@ def watch_inbox(interval: float = 5.0) -> None:
             folder = config.inbox_dir()
             if folder and Path(folder).is_dir():
                 for f in sorted(Path(folder).iterdir()):
-                    if f.suffix.lower() not in (".pdf", ".tif", ".tiff") or str(f) in seen:
+                    if f.suffix.lower() not in (".pdf", ".tif", ".tiff", ".eml") or str(f) in seen:
                         continue
                     seen.add(str(f))
                     try:
@@ -177,9 +218,18 @@ def watch_inbox(interval: float = 5.0) -> None:
                     except OSError:
                         seen.discard(str(f))  # still being written; try again next pass
                         continue
+                    if f.suffix.lower() == ".eml":
+                        # The clock starts when the email was received in the folder, never later.
+                        try:
+                            add_email(data, f.name, arrived_at=f.stat().st_mtime)
+                        except Exception:
+                            traceback.print_exc()
+                        continue
                     case = f"REF-{len(TRACK.cards) + 1:03d}"
-                    card = TRACK.add({"id": case, "case_no": case, "channel": "fax" if "fax" in f.name.lower() else "email",
-                                      "hospital": "unknown", "packet_used": f.name}, arrived_at=f.stat().st_mtime)
+                    fields = {"id": case, "case_no": case, "channel": "fax" if "fax" in f.name.lower() else "email",
+                              "hospital": "unknown", "packet_used": f.name}
+                    fields.update(_form_sidecar(f))
+                    card = TRACK.add(fields, arrived_at=f.stat().st_mtime)
                     PACKETS[card["id"]] = (data, f.name)
                     if config.get_api_key():
                         start_review(card["id"])
@@ -247,6 +297,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self._local_only():
             return
+        if not gateway.allowed(self, urlparse(self.path).path) or gateway.handle(self, "GET"):
+            return
         u = urlparse(self.path)
         q = parse_qs(u.query)
         p = u.path
@@ -261,12 +313,12 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"app": APP_NAME, "version": __version__, "has_key": bool(config.get_api_key()),
                                    "model": config.model(), "fast_model": config.fast_model(),
                                    "lang": s.get("lang", "en"), "real_packets": real, "provider": config.provider(),
-                                   "foundry_resource": config.foundry_resource(), "inbox_dir": config.inbox_dir(),
+                                   "foundry_resource": config.foundry_resource(), "inbox_dir": config.inbox_dir(), "kipu_url": config.kipu_url(),
                                    "db": str(store.db_path())})
             if p == "/api/queue":
                 for c in TRACK.tick():
                     _on_land(c)
-                q_ = TRACK.queue()
+                q_ = TRACK.queue(owner=q.get("owner", [""])[0] or None)
                 for v in q_:
                     r = REVIEWS.get(v["id"])
                     v["review_stage"] = r.stage if r else ("sample" if v.get("sample") else None)
@@ -301,6 +353,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(store.weekly_report(int(q.get("days", ["7"])[0]), q.get("practice", ["0"])[0] == "1"))
             if p == "/api/audit":
                 return self._json(TRACK.audit[-300:])
+            if p.startswith("/api/notify"):
+                return self._notify_get(p, q)
             return self._json({"error": "not found"}, 404)
         except Exception as e:
             traceback.print_exc()
@@ -308,6 +362,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         if not self._local_only():
+            return
+        if not gateway.allowed(self, urlparse(self.path).path) or gateway.handle(self, "POST"):
             return
         p = urlparse(self.path).path
         try:
@@ -325,7 +381,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": True})
             if p == "/api/settings":
                 b = self._jbody()
-                keys = ("lang", "model", "fast_model", "provider", "foundry_resource", "inbox_dir")
+                keys = ("lang", "model", "fast_model", "provider", "foundry_resource", "inbox_dir", "kipu_url")
                 return self._json(config.save_settings({k: v for k, v in b.items() if k in keys}))
             if p == "/api/demo":
                 b = self._jbody()
@@ -339,6 +395,11 @@ class Handler(BaseHTTPRequestHandler):
                 name = re.sub(r"[^\w .()-]", "_", Path(self.headers.get("X-Filename") or "packet.pdf").name)[:120]
                 if not data:
                     return self._json({"error": "empty file"}, 400)
+                if name.lower().endswith(".eml"):
+                    case = self.headers.get("X-Case") or ""
+                    if not re.fullmatch(r"[A-Za-z0-9-]{1,24}", case) or case in TRACK.cards:
+                        case = ""
+                    return self._json({"card": TRACK.view(add_email(data, name, time.time(), case)["id"])})
                 threat = guard.scan_file(data, name)
                 if threat["verdict"] == guard.BLOCK:
                     raise guard.Blocked(threat)
@@ -366,7 +427,12 @@ class Handler(BaseHTTPRequestHandler):
                 if what == "act":
                     b = self._jbody()
                     try:
-                        c = TRACK.act(cid, b["action"], b.get("who", ""), b.get("reason", ""))
+                        # With sign-in on, the person and role come from the session, not the request.
+                        me = gateway.person(self) if auth.mode() != "off" else None
+                        # For a hand-off, "who" in the request is the person it goes to, not the actor.
+                        c = TRACK.act(cid, b["action"], me["name"] if me else b.get("who", ""), b.get("reason", ""),
+                                      role=me["role"] if me else None,
+                                      target=b.get("who") if b["action"] == "handoff" else None)
                     except ValueError as e:
                         return self._json({"error": str(e)}, 400)
                     return self._json({"card": TRACK.view(c["id"])})
@@ -392,6 +458,8 @@ class Handler(BaseHTTPRequestHandler):
             if p == "/api/staff/explain":
                 b = self._jbody()
                 return self._json(staff.explain_rule(b.get("rule_id", ""), b.get("lang", "en")))
+            if p.startswith("/api/notify"):
+                return self._notify_post(p)
             return self._json({"error": "not found"}, 404)
         except guard.Blocked as e:
             return self._json({"error": "security_block", "findings": e.threat["findings"]}, 422)
@@ -473,6 +541,63 @@ class Handler(BaseHTTPRequestHandler):
             out["markdown"] = mcp.report_markdown(rep, lang)
         return out
 
+    # ---- staff alerts (notify.py): drafts in a local outbox, a person sends them ---------------
+    def _app_url(self) -> str:
+        return f"http://{self.headers.get('Host', '127.0.0.1')}/"
+
+    def _notify_get(self, p: str, q: dict):
+        from . import notify
+
+        if p == "/api/notify/people":
+            return self._json({"people": notify.people(TRACK.staff), "channels": notify.CHANNELS, "roles": notify.ROLES})
+        notify.APP_URL = self._app_url()
+        if p == "/api/notify/outbox":
+            notify.sync(TRACK)
+            return self._json({"outbox": notify.outbox(q.get("person", [None])[0], q.get("done", ["0"])[0] == "1",
+                                                        staff=TRACK.staff)})
+        parts = p.strip("/").split("/")
+        if len(parts) >= 3 and parts[2].split(".")[0].isdigit():
+            row = notify.get(int(parts[2].split(".")[0]), TRACK.staff)
+            if not row:
+                return self._json({"error": "not found"}, 404)
+            if parts[2].endswith(".eml") and row["channel"] == "email":
+                return self._send(200, notify.eml(row), "message/rfc822",
+                                  {"Content-Disposition": f'attachment; filename="{row["case_no"]}-{row["event"]}.eml"'})
+            if len(parts) == 4 and parts[3] == "card.json" and row["channel"] == "teams":
+                return self._send(200, json.dumps(row["card"] or {}, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8",
+                                  {"Content-Disposition": f'attachment; filename="{row["case_no"]}-{row["event"]}.json"'})
+        return self._json({"error": "not found"}, 404)
+
+    def _notify_post(self, p: str):
+        from . import notify
+
+        b = self._jbody()
+        try:
+            if p == "/api/notify/people":
+                return self._json({"person": notify.save_person(b)})
+            parts = p.strip("/").split("/")
+            if len(parts) == 4 and parts[2].isdigit() and parts[3] == "mark":
+                notify.mark(int(parts[2]), b.get("status", ""), b.get("who", ""))
+                return self._json({"ok": True})
+        except ValueError as e:
+            return self._json({"error": str(e)}, 400)
+        return self._json({"error": "not found"}, 404)
+
+
+def notify_loop(interval: float = 10.0) -> None:
+    """Draft staff alerts as the clock runs, even when nobody has the outbox open."""
+    from . import notify
+
+    def loop():
+        while True:
+            try:
+                notify.sync(TRACK)
+            except Exception:
+                traceback.print_exc()
+            time.sleep(interval)
+
+    threading.Thread(target=loop, daemon=True).start()
+
 
 def serve(port: int = 0, open_browser: bool = True) -> None:
     import webbrowser
@@ -489,6 +614,10 @@ def serve(port: int = 0, open_browser: bool = True) -> None:
         print(f"{APP_NAME} {__version__} is listening on {host}:{httpd.server_address[1]} in the container.")
         print("Open the host port from compose.yaml (default http://localhost:8780/). Reviews are not saved.")
     watch_inbox()
+    from . import notify
+
+    notify.APP_URL = url
+    notify_loop()
     if open_browser:
         threading.Timer(0.6, lambda: webbrowser.open(url)).start()
     try:

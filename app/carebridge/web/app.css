@@ -186,7 +186,29 @@ details.admin p { margin: .4rem 0; }
 .viewer { position: fixed; inset: 0; background: rgba(0,0,0,.82); z-index: 30; display: flex; flex-direction: column; }
 .viewer-bar { display: flex; justify-content: space-between; align-items: center; padding: .7rem 1rem; color: #fff; }
 .viewer-bar .btn { color: #fff; border-color: #fff6; }
-.viewer img { max-width: 100%; max-height: calc(100% - 64px); margin: 0 auto; object-fit: contain; background: #fff; }
+.viewer-body { flex: 1; min-height: 0; display: flex; gap: 1rem; padding: 0 1rem 1rem; }
+.viewer img { flex: 1; min-width: 0; max-width: 100%; max-height: 100%; margin: 0 auto; object-fit: contain; background: #fff; }
+.transcript { flex: 0 0 min(40%, 520px); overflow: auto; background: var(--panel); color: var(--ink); border-radius: var(--radius-sm); padding: .8rem 1rem; white-space: pre-wrap; font-size: .95rem; }
+.transcript h3 { margin-top: 0; }
+.transcript mark { background: var(--red-soft); color: var(--red); font-weight: 600; padding: 0 .2rem; border-radius: 4px; }
+
+/* ---- the pinned countdown, who am I, and the queue chips ---- */
+.urgent { position: sticky; top: 0; z-index: 4; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; background: var(--lamp-soft); border: 1.5px solid var(--lamp); border-radius: var(--radius); padding: .75rem 1.1rem; margin: 1rem 0 0; cursor: pointer; }
+.urgent.red { background: var(--red-soft); border-color: var(--red); }
+.urgent .count { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+.urgent.red .count { color: var(--red); }
+.urgent .who { color: var(--muted); }
+.whoami { display: flex; gap: .55rem; align-items: center; color: var(--muted); flex-wrap: wrap; }
+.whoami select { width: auto; padding: .4rem .7rem; }
+.seg { display: flex; background: var(--gray-soft); border-radius: 999px; padding: 3px; }
+.seg button { border: 0; background: none; padding: .35rem .85rem; cursor: pointer; border-radius: 999px; color: var(--muted); font-weight: 600; }
+.seg button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.chip.danger-red { background: var(--red); color: var(--brand-ink); font-weight: 700; }
+.chip.danger-amber { background: var(--yellow-soft); color: var(--yellow); font-weight: 600; }
+.chip.viewing { background: var(--blue-soft); }
+.chip.handwriting { background: var(--yellow-soft); color: var(--yellow); }
+.odds { font-size: .8rem; color: var(--muted); margin-top: .3rem; }
+.countdown { font-variant-numeric: tabular-nums; }
 .modal { position: fixed; inset: 0; background: rgba(20,30,27,.45); z-index: 25; display: grid; place-items: center; padding: 1rem; }
 .modal-inner { background: var(--panel); border-radius: 22px; padding: 1.6rem 1.7rem; width: min(620px, 100%); max-height: 90vh; overflow-y: auto; }
 .toast { position: fixed; bottom: 1.4rem; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: .7rem 1.2rem; border-radius: 999px; z-index: 40; }
@@ -239,4 +261,28 @@ details.admin p { margin: .4rem 0; }
   .timer b { font-size: 1.2rem; }
   .card .side { display: none; }
   .sim-row { grid-template-columns: 1fr; }
+  .viewer-body { flex-direction: column; }
+  .transcript { flex: 0 0 40%; }
 }
+
+/* ---- staff alerts and people ---- */
+.tabs .count { margin-left: .35rem; min-width: 1.4rem; padding: 0 .4rem; border-radius: 999px; background: var(--red); color: var(--brand-ink); font-size: .78rem; font-weight: 600; text-align: center; }
+.alert-item .alert-subject { font-weight: 600; margin: .5rem 0 .2rem; }
+.alert-item.done { opacity: .7; }
+.person-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .2rem 1rem; align-items: end; }
+.person-grid label { display: block; }
+.person-grid input[readonly] { background: var(--gray-soft); }
+#tab-outbox .row input[type="checkbox"] { flex: none; min-width: 0; width: auto; }
+
+/* ---- the patient dashboard: stages ---- */
+.stages { display: flex; gap: .4rem; flex-wrap: wrap; margin: .2rem 0 1rem; }
+.stages button { border: 1.5px solid var(--line); background: var(--panel); border-radius: 999px; padding: .4rem .9rem; cursor: pointer; font-weight: 600; color: var(--muted); }
+.stages button:hover { border-color: var(--brand); color: var(--brand); }
+.stages button.on { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+.stages .count, .stage-h .count { display: inline-block; min-width: 1.5em; padding: 0 .4em; border-radius: 999px; background: var(--gray-soft); color: var(--ink); font-size: .85em; text-align: center; }
+.stages button.on .count { background: color-mix(in srgb, var(--brand-ink) 25%, transparent); color: var(--brand-ink); }
+.stage-group { display: grid; gap: .8rem; margin-bottom: 1.4rem; }
+.stage-h { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; margin: 0; padding-bottom: .4rem; border-bottom: 2px solid var(--lamp-soft); }
+.stage-h .muted { font-weight: 400; }
+.chip.kipu { background: var(--brand-soft); color: var(--brand); font-weight: 600; text-decoration: none; }
+a.chip.kipu:hover { text-decoration: underline; }

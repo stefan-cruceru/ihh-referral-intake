@@ -79,6 +79,11 @@ Plus:
   Desktop. In Copilot Chat, pick **IHH Care Bridge** in the agent dropdown, or type `/` and pick
   a command such as `check_referral`: a pick list offers the practice patients, and the whole
   check shows in the chat. There is also a Microsoft 365 Copilot agent package. See [copilot/README.md](copilot/README.md).
+- **Kipu and Teams.** Referrals waiting in Kipu come onto the board with one click. The team's
+  Kipu steps are one click each: check for a returning client, make the chart, file the packet,
+  add the intake note. Each is started by a person. Staff sign in with their Teams account. The
+  clinical reviewer gets a Teams card whose buttons only work for them, once, after signing in.
+  The demo uses a practice Kipu and a practice sign-in. See [docs/kipu-and-teams.md](docs/kipu-and-teams.md).
 
 **Demo video:** _to add_
 
@@ -147,6 +152,7 @@ first step never opens `eval/decisions.json`.
 | Two gates, bilingual flags, checklist, conflicts, questions | Working |
 | Drafts (missing items, chase ladder, clinical, decision, handoffs) | Working. Templates filled from the review; never sent |
 | 2-hour tracker, assignment, escalation alerts, peak warning | Working |
+| Staff alerts by Outlook and Teams, per person, English or Spanish | Working: the Alerts and People tabs. Drafts in a local outbox (an Outlook `.eml`, a Teams chat link), and a person presses send. Nothing connects to Outlook or Teams. See [docs/notifications.md](docs/notifications.md) |
 | Watched inbox folder | Working on a local folder. No real fax or email connection |
 | Monday 4 PM demo and practice patients | The organizers' 10 synthetic patients (S01-S10): invented people with realistic faxed packets. Practice reviews come from the organizers' answer key, run through the app's own checks |
 | Per-patient next-steps PDF | Working. Needs come from the patient's story; resources come only from the sourced list (Claude picks them when a key is set, otherwise matched by need) |
@@ -157,7 +163,9 @@ first step never opens `eval/decisions.json`.
 | GitHub Copilot / Claude Desktop (MCP) | Working (stdio tested). Agent dropdown entry, `/` commands with pick lists, and a skill |
 | Microsoft 365 Copilot agent | Package builds; not yet validated or uploaded in a tenant. Knows the rules, does not run the packet checker |
 | Azure Foundry endpoint | Setting is there; not tested at the event |
-| Kipu, Excel census, Outlook | Not connected on purpose: copy-ready drafts only |
+| Kipu connector | Working against the practice Kipu (signed requests, made-up patients). Live Kipu is built but off; it needs IHH IT, a BAA and Kipu's keys. Two Kipu paths are unconfirmed (see the doc) |
+| Teams sign-in and Teams approval cards | Practice sign-in working, and it is the default. Real Teams (Entra ID) sign-in is built but untested: it needs IHH IT to register the app. Cards are drafts a person posts |
+| Excel census, Outlook | Not connected on purpose: copy-ready drafts only |
 
 ## Where it gets things wrong
 

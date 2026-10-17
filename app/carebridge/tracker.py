@@ -41,6 +41,17 @@ def simulate(arrivals_min: list[float], minutes_each: float, people: int, withdr
 STATUSES = ["received", "reviewing", "needs_info", "clinical_check", "likely_no", "intake_cleared",
             "accepted", "denied", "withdrawn"]
 CLOSED = {"accepted", "denied", "withdrawn"}
+VIEWING_SEC = 30  # someone counts as "has it open" for this long after their screen last checked in (real seconds)
+
+
+def queue_key(v: dict) -> tuple:
+    """Open before closed. A red safety flag or a security hold first, whatever the clock says. Then the
+    2-hour clock in bands (red, yellow, green) and, inside a band, the best odds on paper, then least time left.
+    Odds only order the list: a likely no still gets its answer inside 2 hours."""
+    band = {"red": 0, "yellow": 1, "green": 2}.get(v["color"], 3)
+    urgent = v.get("danger") == "red" or v.get("suggested_route") == "security_hold"
+    odds = v.get("odds")
+    return (v["status"] in CLOSED, not urgent, band, -(odds if odds is not None else -1), v["left_min"])
 
 
 class Clock:
@@ -105,8 +116,10 @@ class Tracker:
                 "review_id": None, "review_state": None, "arrived_at": arrived_at or self.clock.now(),
                 "info_requested_at": None, "hospital_replied_at": None, "clinical_sent_at": None,
                 "clinical_picked_up": False, "decision": None, "decision_reason": None,
-                "withdraw_reason": None, "chase": [], "suggested_route": None, "patient_arrived": None,
-                "override": 0, "override_reason": None, "review_usd": None, **card,
+                "withdraw_reason": None, "chase": [], "suggested_route": None, "patient_arrived": None, "kipu_id": None,
+                "override": 0, "override_reason": None, "review_usd": None,
+                "danger": None, "danger_flags": [], "odds": None, "odds_why": [], "illegible_pages": [],
+                "viewers": {}, **card,
             }
             card["id"] = cid
             card["owner"] = card["owner"] or self.assign()
@@ -121,6 +134,11 @@ class Tracker:
         c["review_state"] = code
         c["suggested_route"] = code
         c["review_usd"] = (report.get("cost") or {}).get("usd")
+        rec = report["recommendation"]
+        c["odds"], c["odds_why"] = rec.get("odds"), rec.get("odds_why") or []
+        c["illegible_pages"] = rec.get("illegible_pages") or []
+        c["danger"] = (report.get("danger") or {}).get("level")
+        c["danger_flags"] = (report.get("danger") or {}).get("flags") or []
         c["status"] = {"likely_no": "likely_no", "clinical_check": "clinical_check", "needs_info": "needs_info",
                        "security_hold": "clinical_check"}.get(code, "reviewing")
         self.log(cid, "Claude", "flagged", f"route {code}; blockers {report['recommendation']['blockers']}")
@@ -130,13 +148,29 @@ class Tracker:
         self.persist(cid)
 
     # ---- actions -------------------------------------------------------------------------
-    def act(self, cid: str, action: str, who: str = "", reason: str = "") -> dict:
+    def act(self, cid: str, action: str, who: str = "", reason: str = "", role: str | None = None,
+            target: str | None = None) -> dict:
+        """who is the person acting; role comes from the signed-in staff list (auth.py). Without sign-in,
+        the old name check stands. target is the new owner for a hand-off (defaults to who, as before)."""
         c = self.cards[cid]
         now = self.clock.now()
-        if action == "open":
+        if action in ("viewing", "leave"):
+            # Presence only: who has this referral open right now. Not logged, not saved.
+            if who:
+                if action == "viewing":
+                    c["viewers"][who] = time.time()
+                else:
+                    c["viewers"].pop(who, None)
+            return c
+        if action == "claim":
+            if not who:
+                raise ValueError("Pick your name first.")
+            c["owner"] = who
+        elif action == "open":
             c["opened"] = True
         elif action == "handoff":
-            c["owner"] = who or self.assign()
+            c["owner"] = target or who or self.assign()
+            reason = reason or f"to {c['owner']}"
         elif action == "info_sent":
             c["info_requested_at"], c["status"] = now, "needs_info"
         elif action == "hospital_replied":
@@ -148,7 +182,8 @@ class Tracker:
         elif action == "intake_cleared":
             c["status"] = "intake_cleared"
         elif action in ("accepted", "denied", "withdrawn"):
-            if action == "denied" and not who.lower().startswith("clinic"):
+            clinical = role == "clinical" if role is not None else who.lower().startswith("clinic")
+            if action == "denied" and not clinical:
                 raise ValueError("Only the clinical line can deny a referral.")
             c["status"], c["decision"] = action, action
             c["decision_reason"] = reason
@@ -162,6 +197,9 @@ class Tracker:
                 c["override"], c["override_reason"] = 1, reason or None
         elif action == "patient_arrived":
             c["patient_arrived"] = 0 if reason == "no" else 1
+        elif action == "kipu_id":
+            # The client's record number in Kipu, typed by staff after they create it there.
+            c["kipu_id"] = reason.strip() or None
         else:
             raise ValueError(f"unknown action {action}")
         self.log(cid, who or c["owner"], action, reason)
@@ -194,8 +232,11 @@ class Tracker:
         silent = None
         if c["info_requested_at"] and not c["hospital_replied_at"]:
             silent = round((now - c["info_requested_at"]) / 60)
+        real = time.time()
+        viewers = sorted(w for w, t in c["viewers"].items() if real - t <= VIEWING_SEC)
         return {**c, "elapsed_min": round(elapsed), "left_min": round(left), "color": color,
-                "alerts": alerts, "hospital_silent_min": silent,
+                "deadline": c["arrived_at"] + CLOCK_MIN * 60,
+                "alerts": alerts, "hospital_silent_min": silent, "viewers": viewers,
                 "withdraw_risk": bool(silent and silent >= LADDER["nudge"])}
 
     def schedule(self, card: dict, at: float):
@@ -217,10 +258,11 @@ class Tracker:
         self.audit.clear()
         self._rr = itertools.count()
 
-    def queue(self) -> list[dict]:
+    def queue(self, owner: str | None = None) -> list[dict]:
         views = [self.view(cid) for cid in self.cards]
-        # Sorted by time left, not arrival. Closed cards sink.
-        return sorted(views, key=lambda v: (v["status"] in CLOSED, v["left_min"]))
+        if owner:
+            views = [v for v in views if v["owner"] == owner]
+        return sorted(views, key=queue_key)
 
     def peak_warning(self, minutes_per_referral: float = 10) -> dict:
         """With N waiting and M on shift, which referrals miss the clock if nothing changes."""

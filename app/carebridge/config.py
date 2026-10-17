@@ -58,6 +58,12 @@ def foundry_resource() -> str | None:
     return os.environ.get("ANTHROPIC_FOUNDRY_RESOURCE") or load_settings().get("foundry_resource")
 
 
+def kipu_url() -> str | None:
+    """Link to a client's Kipu record, with {kipu_id} where the number goes. IHH supplies it;
+    until then the dashboard shows the number without a link."""
+    return os.environ.get("CAREBRIDGE_KIPU_URL") or load_settings().get("kipu_url")
+
+
 def inbox_dir() -> str | None:
     """Folder the app watches for new referral PDFs (fax or email attachments saved there)."""
     return os.environ.get("CAREBRIDGE_INBOX") or load_settings().get("inbox_dir")
