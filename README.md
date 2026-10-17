@@ -76,7 +76,9 @@ Plus:
 - **First-run walkthrough.** Pick a language, pick your job, three short "how it works" and "keep
   it private" points, then it opens the right screen.
 - **Copilot plugin.** The same exe is an MCP server for GitHub Copilot in VS Code and Claude
-  Desktop, and there is a Microsoft 365 Copilot agent package. See [copilot/README.md](copilot/README.md).
+  Desktop. In Copilot Chat, pick **IHH Care Bridge** in the agent dropdown, or type `/` and pick
+  a command such as `check_referral`: a pick list offers the practice patients, and the whole
+  check shows in the chat. There is also a Microsoft 365 Copilot agent package. See [copilot/README.md](copilot/README.md).
 - **Kipu and Teams.** Referrals waiting in Kipu come onto the board with one click. The team's
   Kipu steps are one click each: check for a returning client, make the chart, file the packet,
   add the intake note. Each is started by a person. Staff sign in with their Teams account. The
@@ -158,7 +160,7 @@ first step never opens `eval/decisions.json`.
 | Outcome log and weekly report | Working, local SQLite. Practice runs are marked and can be left out |
 | Client resources | Working. Sourced seed list from the event repo, checked 2026-10-13 |
 | Staff practice | Working on invented examples |
-| GitHub Copilot / Claude Desktop (MCP) | Working (stdio tested) |
+| GitHub Copilot / Claude Desktop (MCP) | Working (stdio tested). Agent dropdown entry, `/` commands with pick lists, and a skill |
 | Microsoft 365 Copilot agent | Package builds; not yet validated or uploaded in a tenant. Knows the rules, does not run the packet checker |
 | Azure Foundry endpoint | Setting is there; not tested at the event |
 | Kipu connector | Working against the practice Kipu (signed requests, made-up patients). Live Kipu is built but off; it needs IHH IT, a BAA and Kipu's keys. Two Kipu paths are unconfirmed (see the doc) |

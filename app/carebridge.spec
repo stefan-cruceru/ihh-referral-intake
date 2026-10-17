@@ -17,6 +17,8 @@ datas = [
     (str(CHALLENGE2 / "data" / "oc-resources.seed.json"), "data"),
     (str(CHALLENGE2 / "scenarios" / "client-scenarios.json"), "data"),
     (str(APP / "demo" / "inbox.json"), "data/demo"),
+    (str(REPO / "copilot" / "vscode" / "ihh-care-bridge.agent.md"), "data/copilot"),
+    (str(REPO / "copilot" / "vscode" / "skills" / "ihh-referral-intake" / "SKILL.md"), "data/copilot/skills/ihh-referral-intake"),
 ]
 # fpdf2 (the client handout PDF) ships font metric files alongside its code.
 from PyInstaller.utils.hooks import collect_data_files
