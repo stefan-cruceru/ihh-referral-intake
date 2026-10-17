@@ -55,7 +55,7 @@ decision, and go home.
 | 11 Huddle guide for whoever leads it | Letter |
 | 12–15 Letters to after-hours intake, hospital supervisors, site operations, everyone at IHH | Letter |
 | 16 "Ask me about Lamplight", for each champion's desk | 11 × 17 in |
-| 17 "You don't have to love it", for break areas | 11 × 17 in |
+| 17 "Take your time. Then tell us the truth.", for break areas | 11 × 17 in |
 | 18 "Every packet. Every note. Every phone number.", for hallways | 11 × 17 in |
 | 19 Huddle announcement, with lines for when, where and who leads it | 11 × 17 in |
 | 20 "Your note. Your name. Your words.", for the nursing station | 11 × 17 in |
