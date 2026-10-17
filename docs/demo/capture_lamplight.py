@@ -122,6 +122,9 @@ def check_response(response, label):
 
 def sign_in(browser, base):
     context = browser.new_context(viewport=VIEWPORT)
+    runtime = check_response(context.request.get(base + "/api/state"), "runtime mode")
+    if runtime.get("production") is not False:
+        raise RuntimeError("Refusing to capture unless production is explicitly false.")
     context.add_init_script(INIT)
     page = context.new_page()
     context.new_cdp_session(page).send("Emulation.setDefaultBackgroundColorOverride",
