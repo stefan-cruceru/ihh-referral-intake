@@ -1995,6 +1995,46 @@
   "en": "Try a made-up client",
   "es": "Probar con un cliente inventado"
  },
+ "ob_private_prod": {
+  "en": "This is IHH's production setup. Sign in with your Microsoft work account and follow IHH's privacy procedures when handling referrals.",
+  "es": "Esta es la configuración de producción de IHH. Inicie sesión con su cuenta de Microsoft del trabajo y siga los procedimientos de privacidad de IHH al manejar referidos."
+ },
+ "ob_s4_title_prod": {
+  "en": "You're ready to start.",
+  "es": "Ya puede empezar."
+ },
+ "ob_s4_sub_prod": {
+  "en": "This is IHH's production setup. Open your work area and follow your team's referral process.",
+  "es": "Esta es la configuración de producción de IHH. Abra su área de trabajo y siga el proceso de referidos de su equipo."
+ },
+ "ob_try_1_prod": {
+  "en": "Open the referrals assigned to your team.",
+  "es": "Abra los referidos asignados a su equipo."
+ },
+ "ob_try_2_prod": {
+  "en": "Review the source pages and every draft before using them.",
+  "es": "Revise las páginas de origen y cada borrador antes de usarlos."
+ },
+ "ob_try_3_prod": {
+  "en": "Every referral decision stays with authorized staff.",
+  "es": "Cada decisión sobre un referido sigue en manos del personal autorizado."
+ },
+ "ob_try_btn_coord_prod": {
+  "en": "Open the referral board",
+  "es": "Abrir el tablero de referidos"
+ },
+ "ob_try_btn_clinical_prod": {
+  "en": "Open the referral board",
+  "es": "Abrir el tablero de referidos"
+ },
+ "ob_try_btn_lvn_prod": {
+  "en": "Open staff tools",
+  "es": "Abrir herramientas del personal"
+ },
+ "ob_try_btn_cm_prod": {
+  "en": "Open client resources",
+  "es": "Abrir recursos para clientes"
+ },
  "ob_skip": {
   "en": "Skip for now",
   "es": "Omitir por ahora"

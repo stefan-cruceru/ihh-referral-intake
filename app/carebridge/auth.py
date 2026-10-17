@@ -92,8 +92,9 @@ def microsoft_configured() -> bool:
 def mode() -> str:
     """Once IHH's Microsoft sign-in is set up, it is the only way in: practice sign-in (pick anyone,
     even a made-up clinician) and no sign-in are refused, whatever a setting says. Without it, the
-    practice sign-in is the default and "off" is allowed for a single-user laptop."""
-    if microsoft_configured():
+    practice sign-in is the default and "off" is allowed for a single-user laptop. Production
+    always requires Teams, including while IT has not finished configuring it."""
+    if config.production() or microsoft_configured():
         return "teams"
     m = os.environ.get("CAREBRIDGE_AUTH") or config.load_settings().get("auth") or "practice"
     return m if m in ("practice", "off") else "practice"
@@ -103,10 +104,11 @@ def staff() -> list[dict]:
     """IHH's staff list (email, name, role). Practice mode uses the invented list, plus the people
     added on the sign-in page and any role changes made on the Access page."""
     f = user_dir() / "staff.json"
-    if mode() != "practice" and f.is_file():
+    m = mode()
+    if m == "teams" or (m != "practice" and f.is_file()):
         try:
             return json.loads(f.read_text(encoding="utf-8"))
-        except ValueError:
+        except (OSError, ValueError):
             return []
     extra = _practice_extra()
     people = PRACTICE_STAFF + extra["added"]
@@ -180,19 +182,27 @@ def lookup(email: str) -> dict | None:
 
 def start_session(person: dict, via: str) -> str:
     token = secrets.token_urlsafe(32)
+    # A personal MCP token inherits the server-recorded sign-in origin. A practice session can
+    # never claim Teams origin, even if its person dictionary happens to contain that field.
+    origin = (person.get("auth_origin") or person.get("via") or via) if via == "token" else via
     with _lock:
-        _sessions[token] = {**person, "via": via, "exp": time.time() + SESSION_HOURS * 3600}
+        _sessions[token] = {**person, "via": via, "auth_origin": origin, "exp": time.time() + SESSION_HOURS * 3600}
     return token
+
+
+def _current_session(s: dict | None) -> dict | None:
+    if not s or s["exp"] <= time.time():
+        return None
+    if mode() == "teams" and (not microsoft_configured() or (s.get("auth_origin") or s.get("via")) != "teams"):
+        return None
+    return s
 
 
 def session(cookie_header: str | None) -> dict | None:
     if mode() == "off":
         return {"email": "", "name": "", "role": "admin", "roles": list(ROLES), "via": "off"}
     token = _cookie(cookie_header)
-    s = _sessions.get(token) if token else None
-    if s and s["exp"] > time.time():
-        return s
-    return None
+    return _current_session(_sessions.get(token) if token else None)
 
 
 def bearer_session(authorization: str | None) -> dict | None:
@@ -201,8 +211,7 @@ def bearer_session(authorization: str | None) -> dict | None:
     kind, _, token = (authorization or "").partition(" ")
     if kind.lower() != "bearer" or not token:
         return None
-    s = _sessions.get(token.strip())
-    return s if s and s["exp"] > time.time() else None
+    return _current_session(_sessions.get(token.strip()))
 
 
 def end_session(cookie_header: str | None) -> None:

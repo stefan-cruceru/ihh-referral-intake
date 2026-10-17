@@ -926,12 +926,12 @@ function renderOnboard() {
     $("#onboard").classList.add("hidden");
     if (OB.role === "cm") goTab("resources");
     else if (OB.role === "lvn") { goTab("staff"); $('.role[data-role="lvn"]').click(); }
-    else { goTab("referrals"); if (practice) $("#start-demo")?.click(); }
+    else { goTab("referrals"); if (practice && !STATE.production) $("#start-demo")?.click(); }
   };
   $("#ob-skip")?.addEventListener("click", () => finish(false));
   $("#ob-next").addEventListener("click", () => {
     if (!last) { OB.step++; return renderOnboard(); }
-    finish(true);
+    finish(!STATE.production);
   });
   $("#onboard-body").scrollTop = 0;
   $("#ob-next").focus({ preventScroll: true });

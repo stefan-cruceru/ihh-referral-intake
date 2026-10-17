@@ -131,6 +131,9 @@ W = {
               "botón es la única forma de entrar y el inicio de práctica se apaga."),
     "back": ("← Back to sign-in", "← Volver a iniciar sesión"),
     "problem": ("Sign-in problem", "Problema al entrar"),
+    "setup_title": ("IHH IT setup required", "Se requiere configuración de TI de IHH"),
+    "setup_body": ("IHH IT must finish connecting Microsoft work sign-in before this setup can be used. Ask IT to check the tenant and app registration. Practice sign-in is unavailable.",
+                   "TI de IHH debe terminar de conectar el inicio de sesión de Microsoft del trabajo antes de usar esta configuración. Pida a TI que revise el inquilino y el registro de la app. El inicio de práctica no está disponible."),
     "try_again": ("Try again", "Intentar otra vez"),
     "pick": ("Pick someone on the list.", "Escoja a alguien de la lista."),
     "expired": ("This link has expired.", "Este enlace venció."),
@@ -211,13 +214,19 @@ def _page(h, title: str, body: str, code: int = 200, extra: dict | None = None, 
     h._send(code, html.encode("utf-8"), "text/html; charset=utf-8", extra)
 
 
+def _setup_required_page(h):
+    lg = _lang(h)
+    title = _w(lg, "setup_title")
+    return _page(h, title, f"<h1>{title}</h1><p>{_w(lg, 'setup_body')}</p>", 503, lang=lg)
+
+
 def _sign_in_page(h, nxt: str, msg: str = ""):
     m = auth.mode()
     if m == "teams":
         try:
             return h._send(302, b"", "text/plain", {"Location": teams.sign_in_url(_redirect(h), nxt)})
-        except RuntimeError as e:
-            msg = str(e)
+        except RuntimeError:
+            return _setup_required_page(h)
     lg = _lang(h)
     if lg == "es":
         msg = ERRORS_ES.get(msg, msg)
@@ -287,13 +296,10 @@ def handle(h, method: str) -> bool:
         return True
     if p == "/auth/microsoft":
         nxt = q.get("next", "/")
-        if auth.microsoft_configured():
-            try:
-                h._send(302, b"", "text/plain", {"Location": teams.sign_in_url(_redirect(h), nxt)})
-                return True
-            except RuntimeError:
-                pass
-        _microsoft_page(h, nxt)
+        if auth.mode() == "teams":
+            _sign_in_page(h, nxt)
+        else:
+            _microsoft_page(h, nxt)
         return True
     if p == "/auth/practice/add" and method == "POST":
         f = _form(h)
@@ -318,6 +324,9 @@ def handle(h, method: str) -> bool:
         h._send(302, b"", "text/plain", {"Location": _same_site(f.get("next")), "Set-Cookie": auth.set_cookie(token)})
         return True
     if p == "/auth/callback":
+        if auth.mode() == "teams" and not auth.microsoft_configured():
+            _setup_required_page(h)
+            return True
         try:
             who, nxt = teams.finish_sign_in(q.get("code", ""), q.get("state", ""), _redirect(h))
         except Exception as e:
@@ -388,7 +397,7 @@ def handle(h, method: str) -> bool:
         # A token for an agent to call /mcp as this person, with this person's roles. Same lifetime
         # as a sign-in; making a new one does not end the old ones.
         me = person(h)
-        who = {k: me.get(k) for k in ("email", "name", "role", "roles")}
+        who = {k: me.get(k) for k in ("email", "name", "role", "roles", "auth_origin", "via")}
         token = auth.start_session(who, "token")
         audit(h, "Copilot token made", f"{auth.SESSION_HOURS} hours")
         h._json({"token": token, "hours": auth.SESSION_HOURS,
