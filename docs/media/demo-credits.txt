@@ -1,0 +1,29 @@
+IHH Care Bridge — presentation demo
+
+Two-minute working-app demonstration, based on the repository at:
+https://github.com/stefan-cruceru/ihh-referral-intake
+Source revision: e8f2a7b5ace01e73e393c7e275cdbbd1273a8d1c
+
+The app recording uses the supplied fictional practice patients. Practice reviews
+are seeded from the organizers' answer key and passed through the app's checks.
+The recording does not demonstrate live AI extraction or measured time savings.
+Human staff make decisions. All messages and handoffs shown are drafts.
+No real IHH systems are connected. Voiceover is synthesized narration.
+
+The opening and closing use illustrative stock footage of people at work.
+These people are not represented as IHH staff or patients, or as endorsing the app.
+
+Doctor using a computer — Pavel Danilyuk:
+https://www.pexels.com/video/doctor-using-a-computer-6997946/
+
+Woman working with computer — Antoni Shkraba:
+https://www.pexels.com/video/woman-working-with-computer-8048240/
+
+Stock footage license:
+https://www.pexels.com/license/
+
+Presentation requirements followed: docs/submission.md, docs/judging.md,
+docs/bilingual.md, docs/ground-rules.md, docs/workflow-and-timing.md and CLAUDE.md.
+The same referral card and follow-up draft are shown in English and Spanish.
+Some seeded practice summaries still need translation review; the film says so.
+The film identifies limitations and distinguishes practice data from live reading.
