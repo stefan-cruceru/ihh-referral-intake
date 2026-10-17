@@ -20,6 +20,7 @@ const t = (k, vars) => {
 async function api(path, opts = {}) {
   const r = await fetch(path, { headers: { "Content-Type": "application/json" }, ...opts });
   const j = await r.json().catch(() => ({}));
+  if (r.status === 403 && j.error === "not_allowed") throw new Error(t("not_allowed"));
   if (!r.ok) throw new Error(j.error || r.statusText);
   return j;
 }

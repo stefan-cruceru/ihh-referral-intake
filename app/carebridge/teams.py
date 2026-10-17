@@ -4,7 +4,8 @@ Sign-in (auth mode "teams") is Microsoft Entra ID's standard sign-in for an inst
 authorization-code flow with PKCE, no client secret, redirect to this app on localhost. IHH IT
 registers the app once and gives two IDs (CAREBRIDGE_TEAMS_TENANT, CAREBRIDGE_TEAMS_CLIENT_ID).
 The ID token comes straight from Microsoft's token endpoint over HTTPS, so it is read, not
-re-verified. We check it is for our app and IHH's tenant, then look the person up in IHH's staff list.
+re-verified. We check it is for our app and IHH's tenant. Roles come from the token's Entra app
+roles when IT has assigned them (auth.roles_from_claims), otherwise from IHH's staff list.
 
 Teams chat cards: the clinical reviewer is already pinged in Teams today. review_card() builds an
 Adaptive Card for that chat. Its buttons are links back to this app, each signed for one person,
@@ -66,10 +67,17 @@ def finish_sign_in(code: str, state: str, redirect_uri: str) -> tuple[dict, str]
     if claims.get("aud") != client_id or claims.get("tid") != tenant or claims.get("nonce") != p["nonce"]:
         raise PermissionError("That sign-in was not for this app.")
     email = claims.get("preferred_username") or claims.get("email") or ""
+    roles = auth.roles_from_claims(claims)
+    if roles is not None:
+        # IHH's Entra app roles decide what this person may do.
+        if not roles:
+            raise PermissionError("You signed in, but IHH has not given you a Care Bridge role. Ask IT to assign one.")
+        return {"email": email, "name": claims.get("name") or email, "role": auth.primary_role(roles),
+                "roles": roles, "from": "entra"}, p["next"]
     person = auth.lookup(email)
     if not person:
         raise PermissionError("You signed in, but you are not on the referral team's staff list. Ask your lead.")
-    return person, p["next"]
+    return {**person, "roles": [person["role"]], "from": "staff_list"}, p["next"]
 
 
 # ---- Teams chat cards -----------------------------------------------------------------------

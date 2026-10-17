@@ -4,12 +4,42 @@ webapp.Handler calls allowed() first (is this request signed in?) and then handl
 these routes?). Pages here are small and plain, in English and Spanish.
 """
 
+import re
 from html import escape
 from urllib.parse import parse_qs, quote, urlparse
 
 from . import auth, config, drafts, kipu, teams
 
 OPEN = ("/static/", "/auth/", "/go/", "/mcp", "/api/state")
+
+# Which permission (auth.PERMISSIONS) each changing route needs. Checked here for every request so a
+# route cannot forget it. Any POST under /api/ that is not listed is refused (fail closed).
+# /api/cards/<id>/act is checked in webapp, where the body says which action it is.
+ROUTES = [
+    ("POST", re.compile(r"^/api/key(/clear)?$"), "api_key"),
+    ("POST", re.compile(r"^/api/settings$"), "settings"),
+    ("POST", re.compile(r"^/api/(demo|clock)$"), "demo"),
+    ("POST", re.compile(r"^/api/upload$"), "upload"),
+    ("POST", re.compile(r"^/api/profiles/[^/]+/send$"), "upload"),
+    ("POST", re.compile(r"^/api/cards/[^/]+/review$"), "review"),
+    ("POST", re.compile(r"^/api/cards/[^/]+/kipu$"), "kipu_write"),
+    ("POST", re.compile(r"^/api/cards/[^/]+/act$"), None),
+    ("GET", re.compile(r"^/api/cards/[^/]+/teams-card$"), "teams_card"),
+    ("POST", re.compile(r"^/api/kipu/settings$"), "kipu_settings"),
+    ("POST", re.compile(r"^/api/kipu/sync$"), "kipu_sync"),
+    ("POST", re.compile(r"^/api/kipu/find$"), "kipu_find"),
+    ("POST", re.compile(r"^/api/notify/people$"), "people_edit"),
+    ("POST", re.compile(r"^/api/notify/\d+/mark$"), "alert_mark"),
+    ("POST", re.compile(r"^/api/(resources|handout|phi-check|staff/note|staff/explain)$"), "staff_tools"),
+]
+
+
+def permission(method: str, path: str) -> tuple[bool, str | None]:
+    """(listed, permission) for a request. Unlisted GETs are reads anyone signed in may do."""
+    for m, rx, perm in ROUTES:
+        if m == method and rx.match(path):
+            return True, perm
+    return False, None
 
 
 def person(h) -> dict | None:
@@ -19,13 +49,20 @@ def person(h) -> dict | None:
 def allowed(h, path: str) -> bool:
     """Everything needs a signed-in person, except sign-in itself, static files and the local MCP
     endpoint. Sends the 302 or 401 itself and returns False when the request should stop."""
-    if auth.mode() == "off" or path.startswith(OPEN) or person(h):
+    if auth.mode() == "off" or path.startswith(OPEN):
         return True
-    if path.startswith("/api/"):
-        h._json({"error": "sign_in", "sign_in": "/auth/signin"}, 401)
-    else:
-        h._send(302, b"", "text/plain", {"Location": f"/auth/signin?next={quote(h.path)}"})
-    return False
+    me = person(h)
+    if not me:
+        if path.startswith("/api/"):
+            h._json({"error": "sign_in", "sign_in": "/auth/signin"}, 401)
+        else:
+            h._send(302, b"", "text/plain", {"Location": f"/auth/signin?next={quote(h.path)}"})
+        return False
+    listed, perm = permission(h.command, path)
+    if (h.command == "POST" and path.startswith("/api/") and not listed) or (perm and not auth.can(me, perm)):
+        h._json({"error": "not_allowed", "role": me.get("role"), "needs": perm}, 403)
+        return False
+    return True
 
 
 def _page(h, title: str, body: str, code: int = 200, extra: dict | None = None):
@@ -99,7 +136,13 @@ def handle(h, method: str) -> bool:
         return True
     if p == "/api/me":
         me = person(h)
-        h._json({"auth": auth.mode(), **({k: me[k] for k in ("email", "name", "role", "via")} if me else {})}, 200 if me else 401)
+        out = {"auth": auth.mode()}
+        if me:
+            out.update({k: me.get(k) for k in ("email", "name", "role", "via")})
+            out["roles"] = sorted(auth.roles_of(me))
+            # What this person may do, so the screen can hide buttons it would refuse anyway.
+            out["can"] = sorted(k for k in auth.PERMISSIONS if auth.can(me, k))
+        h._json(out, 200 if me else 401)
         return True
     # ---- Teams card links ----
     if p.startswith("/go/"):
@@ -148,7 +191,7 @@ def _go(h, method: str, token: str):
         return _page(h, "Already used", "<h1>This link was already used.</h1><a class='b' href='/'>Open the board</a>", 409)
     reason = _form(h).get("reason", "")
     try:
-        webapp.TRACK.act(card["id"], data["a"], me["name"], f"{reason} (from Teams link)", role=me["role"])
+        webapp.TRACK.act(card["id"], data["a"], me["name"], f"{reason} (from Teams link)", role=auth.act_role(me))
     except ValueError as e:
         return _page(h, "Not done", f"<h1>{escape(str(e))}</h1>", 400)
     _page(h, "Done", f"<h1>Done: {escape(label)}</h1><p class='m'>Saved in the log under {escape(me['name'])}.</p><a class='b' href='/'>Open the board</a>")
@@ -181,8 +224,6 @@ def _kipu(h, method: str, p: str, parts: list[str]):
             out["pending"] = len(kipu.pending_referrals())
         return h._json(out)
     if p == "/api/kipu/settings" and method == "POST":
-        if me.get("role") not in ("lead", "admin") and auth.mode() != "off":
-            return h._json({"error": "Only a lead can change Kipu settings."}, 403)
         b = h._jbody()
         keep = {k: b[k] for k in ("kipu_mode", "kipu_write", "kipu_base_url") if k in b}
         return h._json(config.save_settings(keep))

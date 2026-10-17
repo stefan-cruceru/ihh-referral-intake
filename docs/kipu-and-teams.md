@@ -33,8 +33,30 @@ Teams on its own.
 | `teams` | Sign in with the Microsoft work account people use for Teams (Microsoft Entra ID) |
 | `off` | No sign-in, for a single-user laptop |
 
-Microsoft says **who** you are. IHH's staff list says **what you may do**. Only the `clinical`
-role can say no to a referral. The app checks this, not the person's name.
+Microsoft says **who** you are. **What you may do** comes from IHH's own Microsoft Entra ID: IT
+gives each person (or a security group) a Care Bridge app role, and the role arrives in the sign-in
+token. If IT has not set up app roles yet, IHH's staff list decides instead. Only the `clinical`
+role can say no to a referral. The app checks the role on the server for every action, not the
+person's name and not what the screen shows.
+
+### Who may do what
+
+The table lives in one place, `PERMISSIONS` in `app/carebridge/auth.py`.
+
+| Action | Coordinator | Lead | Clinical | Admin (IT) |
+|---|---|---|---|---|
+| Work a referral: open, request info, log replies, chase, say yes, withdrawn | ✓ | ✓ | ✓ | |
+| **Say no** (deny), "I have it" for a clinical check | | | ✓ | |
+| Hand a referral to someone else, record that the patient arrived | ✓ | ✓ | | |
+| Add a packet, make a Teams card | ✓ | ✓ | | |
+| Run a review | ✓ | ✓ | ✓ | |
+| Kipu: pull referrals, returning-client check, make a chart, file papers | ✓ | ✓ | | |
+| Kipu settings, people and alert settings, app settings | | ✓ | | ✓ |
+| Mark someone else's alert as sent | | ✓ | | ✓ |
+| Claude API key | | | | ✓ |
+
+Someone with two roles (for example lead and clinical) can do what either role allows. An action
+that is not in the table is refused, so a new feature has to be added to it on purpose.
 
 ## Turning it on at IHH (for IT)
 
@@ -49,9 +71,18 @@ role can say no to a referral. The app checks this, not the person's name.
 4. **Teams sign-in.** In Entra ID, register an app ("mobile and desktop", redirect
    `http://localhost:<port>/auth/callback` or the pilot's own address). Then set
    `CAREBRIDGE_TEAMS_TENANT` and `CAREBRIDGE_TEAMS_CLIENT_ID`, and `CAREBRIDGE_AUTH=teams`.
-5. **Staff list.** Put IHH's list in `staff.json` in the app's settings folder:
+5. **Roles in Entra (recommended).** In the app registration, open **App roles** and create four,
+   allowed for **Users/Groups**, with these exact values:
+   `CareBridge.Coordinator`, `CareBridge.Lead`, `CareBridge.Clinical`, `CareBridge.Admin`.
+   Then in **Enterprise applications → Care Bridge → Users and groups**, assign people or security
+   groups to a role. Turn on **Assignment required** so only assigned staff can sign in.
+   - The `roles` claim only appears in the token after someone is assigned a role. Someone who
+     signs in with no Care Bridge role is refused.
+   - Assigning a whole group may need an Entra ID P1 or P2 licence. Confirm with IHH IT.
+   - Changing someone's role in Entra takes effect at their next sign-in (sessions last 12 hours).
+6. **Staff list (only without app roles).** Put IHH's list in `staff.json` in the app's settings folder:
    `[{"email": "...", "name": "...", "role": "coordinator|lead|clinical|admin"}]`.
-6. **Turn on Kipu.** A lead picks **IHH's live Kipu** on the Kipu and Teams page. Writing stays
+7. **Turn on Kipu.** A lead picks **IHH's live Kipu** on the Kipu and Teams page. Writing stays
    off until they tick "Allow writing to Kipu".
 
 ## What we know and don't know about Kipu's API

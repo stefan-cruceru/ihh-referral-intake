@@ -429,9 +429,11 @@ class Handler(BaseHTTPRequestHandler):
                     try:
                         # With sign-in on, the person and role come from the session, not the request.
                         me = gateway.person(self) if auth.mode() != "off" else None
+                        if me and not auth.can(me, b["action"]):
+                            return self._json({"error": "not_allowed", "role": me.get("role"), "needs": f"act:{b['action']}"}, 403)
                         # For a hand-off, "who" in the request is the person it goes to, not the actor.
                         c = TRACK.act(cid, b["action"], me["name"] if me else b.get("who", ""), b.get("reason", ""),
-                                      role=me["role"] if me else None,
+                                      role=auth.act_role(me),
                                       target=b.get("who") if b["action"] == "handoff" else None)
                     except ValueError as e:
                         return self._json({"error": str(e)}, 400)
@@ -577,7 +579,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"person": notify.save_person(b)})
             parts = p.strip("/").split("/")
             if len(parts) == 4 and parts[2].isdigit() and parts[3] == "mark":
-                notify.mark(int(parts[2]), b.get("status", ""), b.get("who", ""))
+                # Who marked it comes from the sign-in, and only your own alerts unless you are a lead.
+                me = gateway.person(self) if auth.mode() != "off" else None
+                row = store.get_notification(int(parts[2]))
+                if not row:
+                    return self._json({"error": "not found"}, 404)
+                if me and row["person"] != me["name"] and not auth.can(me, "alert_mark_any"):
+                    return self._json({"error": "not_allowed", "needs": "alert_mark_any"}, 403)
+                notify.mark(int(parts[2]), b.get("status", ""), me["name"] if me else b.get("who", ""))
                 return self._json({"ok": True})
         except ValueError as e:
             return self._json({"error": str(e)}, 400)

@@ -1370,5 +1370,9 @@
  "saved": {
   "en": "Saved",
   "es": "Guardado"
+ },
+ "not_allowed": {
+  "en": "Your role can't do this. Ask your lead.",
+  "es": "Su función no permite hacer esto. Pregunte a su líder."
  }
 }
