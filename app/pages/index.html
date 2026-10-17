@@ -7,6 +7,7 @@
 <meta name="description" content="Lamplight: referral intake, client help and staff practice for Illumination Health + Home. A working prototype with made-up patients.">
 <link rel="icon" href="campaign/logo/lamplight-logo.svg">
 <style>
+  @font-face { font-family: "Public Sans"; src: url("fonts/PublicSans-Variable.ttf") format("truetype"); font-weight: 100 900; font-display: swap; }
   /* Lamplight's own tokens (app/carebridge/web/app.css). Light only, like the app's default. */
   :root { --bg: #fff8f0; --panel: #fffdf9; --ink: #3b2b22; --muted: #715d50; --line: #dfd0bf;
     --brand: #3b2b22; --brand-ink: #fff8f0; --brand-soft: #f4eadb; --lamp: #e39235; --lamp-soft: #fbe3cc; --link: #a0461f; }
@@ -21,7 +22,7 @@
   h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.1; margin: 0 0 14px; letter-spacing: -.01em; }
   h2 { font-size: 26px; line-height: 1.2; margin: 0 0 8px; }
   .lede { font-size: 19px; color: var(--muted); margin: 0 0 8px; }
-  .es { color: var(--muted); font-size: 15px; margin: 0 0 20px; }
+  .es { color: #a0461f; font-size: 15px; margin: 0 0 20px; }
   .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 12px 20px; font-weight: 600; text-decoration: none; border: 1.5px solid var(--brand); color: var(--brand); background: var(--panel); }
   .btn.primary { background: var(--brand); color: var(--brand-ink); }
@@ -92,8 +93,7 @@
         <track kind="subtitles" src="media/demo.en.vtt" srclang="en" label="English" default>
         <track kind="subtitles" src="media/demo.es.vtt" srclang="es" label="Español">
       </video>
-      <div class="cap">Two-minute demo, with English and Spanish subtitles. Made-up patients. Filmed before the app took
-        the name Lamplight, so it says "Care Bridge". <a href="media/demo-credits.txt">Credits and notes</a>.</div>
+      <div class="cap">Two-minute Lamplight demo, with English narration and English/Spanish captions. Fictional practice patients; answer-key reviews, not live AI extraction. <a href="media/demo-credits.txt">Credits and notes</a> · <a href="https://github.com/stefan-cruceru/ihh-referral-intake/releases/tag/demo-lamplight-2026-10-17">1080p download</a>.</div>
     </div>
   </div>
 
