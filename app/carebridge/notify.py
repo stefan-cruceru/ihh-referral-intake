@@ -62,8 +62,8 @@ ROUTE = {"en": {"likely_yes": "likely yes", "needs_info": "missing items", "clin
                 "likely_no": "probable no", "security_hold": "retención de seguridad"}}
 OUTCOME = {"en": {"accepted": "accepted", "denied": "denied", "withdrawn": "withdrawn"},
            "es": {"accepted": "aceptado", "denied": "negado", "withdrawn": "retirado"}}
-NOTE = {"en": "Draft from Care Bridge. Not sent. No patient details: open the referral in the app.",
-        "es": "Borrador de Care Bridge. No enviado. Sin datos del paciente: abra el referido en la aplicación."}
+NOTE = {"en": "Draft from Lamplight. Not sent. No patient details: open the referral in the app.",
+        "es": "Borrador de Lamplight. No enviado. Sin datos del paciente: abra el referido en la aplicación."}
 OPEN = {"en": "Open referral", "es": "Abrir referido"}
 NO_ADDRESS = {"en": "unknown: add this person's address under People",
               "es": "desconocido: agregue la dirección de esta persona en Personas"}

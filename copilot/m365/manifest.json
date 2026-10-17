@@ -14,14 +14,14 @@
     "outline": "outline.png"
   },
   "name": {
-    "short": "IHH Care Bridge",
-    "full": "IHH Care Bridge: referral rules helper"
+    "short": "Lamplight",
+    "full": "Lamplight: referral rules helper"
   },
   "description": {
     "short": "Check a hospital referral against IHH's recuperative care rules.",
     "full": "Helps IHH referral coordinators check a hospital referral against IHH's recuperative care admission rules. It shows the two big checks first (can the person care for themselves, and are they stable), cites rule IDs, says when it can't tell, and drafts messages for a person to check and send. It never decides: a person decides, and only a clinician can deny. English and Spanish."
   },
-  "accentColor": "#1F6F78",
+  "accentColor": "#3B2B22",
   "copilotAgents": {
     "declarativeAgents": [
       {

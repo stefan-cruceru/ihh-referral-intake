@@ -3,41 +3,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>In Our Language</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
+@font-face { font-family: "Public Sans"; src: url("../app/carebridge/web/fonts/PublicSans-Variable.ttf") format("truetype"); font-weight: 100 900; font-style: normal; font-display: swap; }
 /* Layout: a letter you read side by side, English left and Spanish right, paragraph by paragraph.
-   Soft peach opener, quiet bands (sage = hospital side, paper = onsite), then the plan, the kit, the huddle. */
+   Soft peach opener, warm sand for hospital-side bands, cream for onsite, then the plan, the kit, the huddle. */
 :root {
-  --bg: #FDFCFA;
-  --ink: #1D3840;
-  --muted: #55676C;
-  --line: #DCE3E0;
+  --bg: #FFF8F0;
+  --ink: #3B2B22;
+  --muted: #725E50;
+  --line: #DED1C4;
   --card: #FFFFFF;
-  --sage: #EAF0EC;
-  --paper: #F7F3EC;
-  --es: #8F4A1F;
-  --accent: #E58F3E;
-  --strike: #77868A;
-  --chip: #EFF3F1;
-  --hero-bg: #FBE6D1;
-  --hero-ink: #1D3840;
-  --hero-soft: #5A5148;
-  --focus: #1F6F86;
+  --sage: #F4EADB;
+  --paper: #FFF8F0;
+  --es: #A0461F;
+  --accent: #E39235;
+  --strike: #806956;
+  --chip: #F4EADB;
+  --hero-bg: #FBE3CC;
+  --hero-ink: #3B2B22;
+  --hero-soft: #6F5140;
+  --focus: #A0461F;
   --font: "Public Sans", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0F1E22; --ink: #E6EDEA; --muted: #A6B5B2; --line: #2A3E44; --card: #14282D;
-    --sage: #12262A; --paper: #1A2427; --es: #F0B07A; --accent: #F2A65A; --strike: #8D9DA1; --chip: #1B3237;
-    --hero-bg: #2A2119; --hero-ink: #F6E9DA; --hero-soft: #CBB9A6; --focus: #7CC4D8; color-scheme: dark;
+    --bg: #211A16; --ink: #FFF8F0; --muted: #D1B9A6; --line: #604938; --card: #2B211A;
+    --sage: #33271E; --paper: #281F19; --es: #F5B98C; --accent: #E39235; --strike: #BFA38C; --chip: #3D2E23;
+    --hero-bg: #3C2B1E; --hero-ink: #FFF8F0; --hero-soft: #E3C9B0; --focus: #F5B98C; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0F1E22; --ink: #E6EDEA; --muted: #A6B5B2; --line: #2A3E44; --card: #14282D;
-  --sage: #12262A; --paper: #1A2427; --es: #F0B07A; --accent: #F2A65A; --strike: #8D9DA1; --chip: #1B3237;
-  --hero-bg: #2A2119; --hero-ink: #F6E9DA; --hero-soft: #CBB9A6; --focus: #7CC4D8; color-scheme: dark;
+  --bg: #211A16; --ink: #FFF8F0; --muted: #D1B9A6; --line: #604938; --card: #2B211A;
+  --sage: #33271E; --paper: #281F19; --es: #F5B98C; --accent: #E39235; --strike: #BFA38C; --chip: #3D2E23;
+  --hero-bg: #3C2B1E; --hero-ink: #FFF8F0; --hero-soft: #E3C9B0; --focus: #F5B98C; color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -78,7 +76,8 @@ html[data-show="en"] .pp, html[data-show="es"] .pp { grid-template-columns: 1fr;
 /* top bar */
 .bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); border-bottom: 1px solid var(--line); }
 .bar .wrap { display: flex; align-items: center; gap: 16px; padding-block: 10px; }
-.mark { font-weight: 700; white-space: nowrap; }
+.mark { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; white-space: nowrap; }
+.mark img { width: 28px; height: 28px; padding: 2px; border-radius: 5px; background: #FFF8F0; }
 .nav { display: flex; gap: 4px; overflow-x: auto; flex: 1; min-width: 0; scrollbar-width: none; }
 .nav::-webkit-scrollbar { display: none; }
 .nav a { text-decoration: none; font-size: .9rem; font-weight: 500; color: var(--muted); padding: 6px 10px; border-radius: 8px; white-space: nowrap; }
@@ -98,6 +97,7 @@ html[data-show="en"] .pp, html[data-show="es"] .pp { grid-template-columns: 1fr;
 .hero .sub .en { font-size: clamp(1.3rem, 2.6vw, 1.75rem); font-weight: 500; line-height: 1.3; }
 .hero .sub .es { font-size: clamp(1.2rem, 2.4vw, 1.6rem); line-height: 1.3; color: var(--hero-soft); }
 .hero .note { font-size: .9rem; color: var(--hero-soft); max-width: 68ch; }
+.hero-mark { width: 80px; height: 80px; padding: 6px; border-radius: 12px; background: #FFF8F0; }
 
 /* the letter */
 .letter { display: flex; flex-direction: column; gap: 26px; }
@@ -123,7 +123,7 @@ html[data-show="en"] .pp, html[data-show="es"] .pp { grid-template-columns: 1fr;
 .chead .sub .en, .chead .sub .es { font-size: 1.2rem; line-height: 1.5; }
 
 .dear { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: clamp(22px, 4vw, 44px); display: flex; flex-direction: column; gap: 22px; }
-.dear .job { font-size: .78rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.dear .job { font-size: .78rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--es); }
 .dear .to .en { font-size: clamp(1.4rem, 2.8vw, 1.9rem); font-weight: 600; line-height: 1.25; }
 .dear .to .es { font-size: clamp(1.25rem, 2.5vw, 1.65rem); line-height: 1.25; }
 .dear .part { display: flex; flex-direction: column; gap: 8px; padding-top: 18px; border-top: 1px solid var(--line); }
@@ -143,7 +143,7 @@ html[data-show="en"] .pp, html[data-show="es"] .pp { grid-template-columns: 1fr;
 /* together */
 .steps { list-style: none; padding: 0; display: flex; flex-direction: column; }
 .steps > li { display: grid; grid-template-columns: 64px 1fr; gap: 20px; padding-block: 26px; border-top: 1px solid var(--line); }
-.steps .n { font-size: 2rem; font-weight: 600; line-height: 1.1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.steps .n { font-size: 2rem; font-weight: 600; line-height: 1.1; color: var(--es); font-variant-numeric: tabular-nums; }
 .steps .what { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .steps .h .en { font-size: clamp(1.25rem, 2.4vw, 1.55rem); font-weight: 600; line-height: 1.25; }
 .steps .h .es { font-size: clamp(1.15rem, 2.2vw, 1.4rem); line-height: 1.25; }
@@ -170,7 +170,7 @@ html[data-show="es"] .softposter .es { color: var(--hero-ink); }
 .poster .x { padding-block: 8px; border-top: 1px solid var(--line); text-decoration: line-through; text-decoration-thickness: 2px; color: var(--strike); }
 .poster .x .es { color: var(--strike); }
 .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-.desk { aspect-ratio: 3 / 2; max-width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 22px rgba(29, 56, 64, .07); padding: clamp(18px, 3vw, 30px); display: flex; flex-direction: column; justify-content: space-between; gap: 14px; min-width: 0; }
+.desk { aspect-ratio: 3 / 2; max-width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 22px rgba(59, 43, 34, .07); padding: clamp(18px, 3vw, 30px); display: flex; flex-direction: column; justify-content: space-between; gap: 14px; min-width: 0; }
 .desk .top { display: flex; justify-content: space-between; gap: 10px; font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .desk .l .en { font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 700; line-height: 1.15; }
 .desk .l .es { font-size: clamp(1.15rem, 2.2vw, 1.5rem); line-height: 1.2; margin-top: 4px; }
@@ -197,7 +197,7 @@ section[id] { scroll-margin-top: 64px; }
 
 <div class="bar">
   <div class="wrap">
-    <span class="mark">In our language</span>
+    <span class="mark"><img src="logo/lamplight-logo.svg" alt="" width="28" height="28">In our language</span>
     <nav class="nav" aria-label="Sections">
       <a href="#letter">The letter</a>
       <a href="#hospital">Hospital side</a>
@@ -217,6 +217,7 @@ section[id] { scroll-margin-top: 64px; }
 
 <header class="hero">
   <div class="wrap">
+    <img class="hero-mark" src="logo/lamplight-logo.svg" alt="Lamplight desk lamp" width="80" height="80">
     <p class="eyebrow">Lamplight · A campaign for our team</p>
     <h1><span class="en">In our language.</span><span class="es">En nuestro idioma.</span></h1>
     <p class="sub"><span class="en">A campaign that starts by listening.</span><span class="es">Una campaña que empieza por escuchar.</span></p>
@@ -509,7 +510,7 @@ section[id] { scroll-margin-top: 64px; }
 <footer>
   <div class="wrap">
     <span><b>In our language · En nuestro idioma</b> · the staff campaign for Lamplight.</span>
-    <span>Built at the OC Claude Impact Lab, October 17, 2026. Lamplight is a prototype (its code is still called Care Bridge). It needs IHH’s own review before it is used with real referrals or clients. No patient information is on this page.</span>
+    <span>Built at the OC Claude Impact Lab, October 17, 2026. Lamplight is a prototype. It needs IHH’s own review before it is used with real referrals or clients. No patient information is on this page.</span>
   </div>
 </footer>
 

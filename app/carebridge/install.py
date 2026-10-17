@@ -2,7 +2,7 @@
 
 Copies the exe to %LOCALAPPDATA%\\Programs\\IHH Care Bridge, adds a Start menu shortcut, and
 registers the MCP server with GitHub Copilot in VS Code and with Claude Desktop when they are
-installed. For Copilot it also adds the "IHH Care Bridge" agent (it shows in Copilot Chat's agent
+installed. For Copilot it also adds the "Lamplight" agent (it shows in Copilot Chat's agent
 dropdown) and the ihh-referral-intake skill. Existing config files are backed up before they are
 changed.
 """
@@ -50,7 +50,7 @@ def install_copilot_files() -> str:
     shutil.copy2(COPILOT_DIR / VSCODE_AGENT.name, VSCODE_AGENT)
     COPILOT_SKILL.mkdir(parents=True, exist_ok=True)
     shutil.copy2(COPILOT_DIR / "skills" / COPILOT_SKILL.name / "SKILL.md", COPILOT_SKILL / "SKILL.md")
-    return "added (pick IHH Care Bridge in Copilot Chat's agent dropdown)"
+    return "added (pick Lamplight in Copilot Chat's agent dropdown)"
 
 
 def install() -> int:
@@ -74,7 +74,7 @@ def install() -> int:
     print("Copilot agent and skill:", install_copilot_files())
     print("Claude Desktop:", _edit_json(CLAUDE_DESKTOP, lambda d: d.setdefault("mcpServers", {}).__setitem__(NAME, entry)))
     print("\nDone. Open IHH Care Bridge from the Start menu. In VS Code, open Copilot Chat and pick\n"
-          "IHH Care Bridge in the agent dropdown, or type / to see its commands.")
+          "Lamplight in the agent dropdown, or type / to see its commands.")
     return 0
 
 
