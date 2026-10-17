@@ -15,8 +15,14 @@ const HEAL = `async function heal() { for (const r of await navigator.serviceWor
 
 // Added to every app page. The browser stops an idle service worker, and with it the board and the
 // sign-in, so an open page pings it. If the sign-in is gone anyway, the page goes back to sign in.
+// The demo shows the first-run walkthrough on every visit to the board (opened, reloaded, or after
+// sign-in), not just the first: only coming back from another app page skips it. The exe still shows it once.
 const PAGE_JS = `<script>${HEAL}
 fetch("${APP}__ready").then((r) => { if (r.status === 404) heal(); }, () => {});
+(() => { if (location.pathname !== "${APP}" && location.pathname !== "${APP}index.html") return;
+  const nav = performance.getEntriesByType("navigation")[0], from = document.referrer;
+  const inApp = nav?.type !== "reload" && from.startsWith(location.origin + "${APP}") && !from.includes("/auth/");
+  if (!inApp) try { localStorage.removeItem("cb_onboarded"); } catch (e) {} })();
 setInterval(() => navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage("ping"), 20000);
 (() => { const f = window.fetch; window.fetch = async (...a) => { const r = await f(...a);
   if (r.status === 401 && !location.pathname.includes("/auth/")) {

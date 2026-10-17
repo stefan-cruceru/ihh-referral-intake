@@ -12,6 +12,8 @@ The working app on that site is the same Python code as the exe. It runs inside 
   sign-in cookie itself, since a service worker can't set real cookies.
 
 It has no API key, so it shows the practice patients S01 to S10 only, and nothing leaves the browser.
+The first-run walkthrough opens on every visit (opened, reloaded or just signed in), so each visitor sees it.
+Moving between app pages does not reopen it. The exe still shows it once.
 State lives in the service worker's memory: if the browser stops the worker, the board starts fresh.
 
 Build and try it locally:
