@@ -883,7 +883,7 @@ async function loadState() {
   STATE = await api("/api/state");
   $("#key-status").textContent = STATE.has_key ? t("key_saved") : t("key_none");
   $("#key-status").style.background = STATE.has_key ? "var(--green-soft)" : "var(--yellow-soft)";
-  $("#version").textContent = `${STATE.app} ${STATE.version} · ${STATE.model} + ${STATE.fast_model} · log: ${STATE.db}`;
+  $("#version").textContent = `${STATE.app} ${STATE.version} · ${STATE.model} + ${STATE.side_model} + ${STATE.fast_model} · log: ${STATE.db}`;
   $("#provider").value = STATE.provider;
   $("#foundry-resource").value = STATE.foundry_resource || "";
   $("#foundry-resource").classList.toggle("hidden", STATE.provider !== "foundry");

@@ -19,6 +19,10 @@ DEFAULT_MODEL = "claude-opus-5-5"
 # Page sorting (type, rotation, blank) is a light task; it runs on the fast model so the
 # careful reading pass gets upright, sorted pages sooner.
 DEFAULT_FAST_MODEL = "claude-haiku-5-5"
+# The second, independent page read, client resources and the practice tools run on Sonnet: about half
+# Opus's price. The first read, the rule check and the quote check stay on Opus. A second read on a
+# different model also makes its mistakes less likely to match the first read's.
+DEFAULT_SIDE_MODEL = "claude-sonnet-5-5"
 
 
 def _settings_path():
@@ -47,6 +51,10 @@ def model() -> str:
 
 def fast_model() -> str:
     return os.environ.get("CAREBRIDGE_FAST_MODEL") or load_settings().get("fast_model") or DEFAULT_FAST_MODEL
+
+
+def side_model() -> str:
+    return os.environ.get("CAREBRIDGE_SIDE_MODEL") or load_settings().get("side_model") or DEFAULT_SIDE_MODEL
 
 
 def provider() -> str:

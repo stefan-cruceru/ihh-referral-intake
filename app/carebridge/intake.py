@@ -405,7 +405,8 @@ def run(review: Review, workers: int = 6) -> dict:
                            _batches(to_read, 4))
         # The second read runs at the same time, on its own call, so it can't copy the first.
         second = pool.map(lambda b: call(system=_system(SECOND_READ_PROMPT), content=_page_content(b, True),
-                                                  schema=SECOND_READ_SCHEMA, effort="medium", max_tokens=32000),
+                                                  schema=SECOND_READ_SCHEMA, model=config.side_model(),
+                                                  effort="medium", max_tokens=32000),
                           _batches(to_read, 4))
         for res in results:
             for pg in res["pages"]:
@@ -524,7 +525,8 @@ def run(review: Review, workers: int = 6) -> dict:
         sorted_pages[n]["isolated"] = True
     report = quality_control(assessment, facts, sorted_pages, page_summaries, page_text)
     report.update(id=review.id, packet=review.name, received_at=review.received_at, reviewed_at=time.time(),
-                  model=config.model(), fast_model=config.fast_model(), cost=review.usage.as_dict())
+                  model=config.model(), fast_model=config.fast_model(), side_model=config.side_model(),
+                  cost=review.usage.as_dict())
     report["flags"]["phi_pages"] = phi_pages
     report = guard.hold(report, review.threat, isolated, output_hits)
     if report["security"]["verdict"] != guard.OK:

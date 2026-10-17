@@ -132,9 +132,10 @@ detail, and stay drafts unless IHH agrees to send them on their own.
 - **Built with Claude:** Claude Code wrote the app with our team, from the event repo, IHH's
   criteria and our notes from the Q&As with IHH (`docs/workflow-and-timing.md`,
   `docs/closed-loop.md`, `docs/bilingual.md`).
-- **Inside the tool:** `claude-haiku-5-5` sorts pages; `claude-opus-5-5` reads pages, applies the
-  rules and verifies quotes, with structured JSON output. Claude also picks client resources and
-  drafts practice notes. Claude never decides; a person reads the evidence and decides.
+- **Inside the tool:** `claude-haiku-5-5` sorts pages. `claude-opus-5-5` reads pages, applies the
+  rules and verifies quotes, with structured JSON output. `claude-sonnet-5-5`, at about half Opus's
+  price, does the second, independent page read, picks client resources and drafts practice notes.
+  Claude never decides; a person reads the evidence and decides.
 - **What a person checks:** every flag links to its page. Every draft is a draft.
 - **When a packet attacks the AI:** a packet is untrusted. `app/carebridge/guard.py` checks the
   file before it opens (real file type, size, PDF JavaScript and other active parts, hidden text),

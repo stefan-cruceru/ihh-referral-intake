@@ -218,7 +218,7 @@ const nodes = {
   store:   [240, 600, 200, 72, "Outcomes + audit", ["SQLite · admin audit view"], "on", "store.py"],
   learn:   [460, 600, 220, 72, "Learn", ["weekly report · eval set"], "on", "eval_packets.py"],
   kipuP:   [700, 600, 220, 72, "Practice Kipu", ["fake patients · 127.0.0.1"], "practice", "kipu_mock.py"],
-  claude:  [990, 100, 185, 124, "Claude", ["Anthropic API or Azure", "Opus 5.5 reads and checks", "Haiku 5.5 sorts pages"], "on", "llm.py"],
+  claude:  [990, 100, 185, 124, "Claude", ["Anthropic API or Azure", "Opus 5.5 reads and checks", "Sonnet 5.5 reads again", "Haiku 5.5 sorts pages"], "on", "llm.py"],
   entra:   [975, 367, 200, 56, "Entra ID sign-in", ["Teams work account"], "off"],
   m365:    [975, 440, 200, 60, "Outlook · Teams", ["a person presses send"], "off"],
   kipuL:   [975, 594, 200, 60, "IHH's live Kipu", ["signed API · write switch"], "off"],
@@ -259,7 +259,7 @@ const steps = [
     b: "Before anything reads the file, plain code checks it: the real file type, size, active PDF parts, and text that tries to give an AI orders. Anything odd puts the referral on a security hold for a person.",
     f: ["guard.py", "pages.py"] },
   { t: "Read", nodes: ["guard","reader","claude"], paths: [["e_gr","e_rc","e_cr"]],
-    b: "Claude gets flattened page images. Haiku sorts pages; Opus reads them twice independently. Code compares the numbers and requires quotes to match the transcript without changing words, numbers or units. An image pass checks cited evidence and critical-value lines. Missing reads, disagreements or unconfirmed values go to a person. This does not guarantee that every reading error is caught.",
+    b: "Claude gets flattened page images. Haiku sorts pages; Opus reads them, and Sonnet reads them again on its own. Code compares the numbers and requires quotes to match the transcript without changing words, numbers or units. An image pass checks cited evidence and critical-value lines. Missing reads, disagreements or unconfirmed values go to a person. This does not guarantee that every reading error is caught.",
     f: ["intake.py", "llm.py", "rules.py", "critical.py"] },
   { t: "Route", nodes: ["reader","tracker"], paths: [["e_rt"]],
     b: "The referral becomes a card with an owner and a clock. A likely no goes to the clinical reviewer at the same time. The tracker never decides to beat the clock.",
@@ -315,13 +315,13 @@ for (const id in nodes) {
   sub.forEach((s, i) => { el("text", { x: x + 12, y: y + 38 + i * 15, class: "s" }, g).textContent = s; });
   if (id === "reader") {
     el("text", { x: x + 12, y: y + 38, class: "s" }, g).textContent = "a page and a quote for every fact";
-    const stages = [["Sort", "Haiku"], ["Read ×2", "Opus"], ["Rules", "Opus"], ["Verify", "Opus"], ["QC", "code"]];
+    const stages = [["Sort", "Haiku"], ["Read", "Opus"], ["Read 2", "Sonnet"], ["Rules", "Opus"], ["Verify", "Opus"], ["QC", "code"]];
     stages.forEach(([s, who], i) => {
-      const cx = x + 12 + i * 66;
+      const cx = x + 12 + i * 55; // six chips fit the 350px box
       const c = el("g", { class: "chip" }, g);
-      el("rect", { x: cx, y: y + 50, width: 60, height: 34, rx: 8 }, c);
-      el("text", { x: cx + 30, y: y + 64, "text-anchor": "middle" }, c).textContent = s;
-      const t2 = el("text", { x: cx + 30, y: y + 78, "text-anchor": "middle", style: "font-weight:400;font-size:9.5px" }, c);
+      el("rect", { x: cx, y: y + 50, width: 51, height: 34, rx: 8 }, c);
+      el("text", { x: cx + 25.5, y: y + 64, "text-anchor": "middle" }, c).textContent = s;
+      const t2 = el("text", { x: cx + 25.5, y: y + 78, "text-anchor": "middle", style: "font-weight:400;font-size:9.5px" }, c);
       t2.textContent = who;
     });
   }

@@ -8,7 +8,7 @@ Each card shows the date it was last checked and its source link.
 
 import re
 
-from . import llm, phi
+from . import config, llm, phi
 from .paths import RESOURCES, SCENARIOS, load_json
 
 S = llm.strict
@@ -194,7 +194,7 @@ def find(situation: str, lang: str = "en", needs_hint: list[str] | None = None, 
         system=PICK_PROMPT,
         content=[{"type": "text", "text": f"RESOURCES\n{listing}\n\nCLIENT SITUATION\n{situation}"
                   + (f"\nNEEDS NAMED BY STAFF: {', '.join(needs_hint)}" if needs_hint else "")}],
-        schema=PICK_SCHEMA, effort="medium", max_tokens=16000, usage=usage)
+        schema=PICK_SCHEMA, model=config.side_model(), effort="medium", max_tokens=16000, usage=usage)
     by_id = {r["id"]: r for r in catalog()}
     cards, dropped = [], []
     for p in res["picks"]:

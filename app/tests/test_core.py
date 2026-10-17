@@ -133,3 +133,13 @@ def test_fast_clock_goes_back_to_real_time_at_real_from():
     now = c.now()
     assert c.speed == 1.0
     assert start + 60 <= now < start + 61  # stopped fast-forwarding at real_from, not 180 sim seconds on
+
+
+def test_practice_tools_run_on_the_side_model(monkeypatch):
+    from carebridge import config, llm, staff
+
+    sent = {}
+    monkeypatch.delenv("CAREBRIDGE_SIDE_MODEL", raising=False)
+    monkeypatch.setattr(llm, "call_json", lambda **kw: sent.update(kw) or {"plain": "", "where": "", "example": ""})
+    staff.explain_rule(next(iter(rules.all_rules())))
+    assert sent["model"] == config.side_model() == "claude-sonnet-5-5"
