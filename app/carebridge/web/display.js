@@ -45,7 +45,7 @@
     let h = `<h2 id="disp-h">${t("disp_title")}</h2>`;
     for (const g of GROUPS) {
       h += `<div class="disp-group" role="group" aria-labelledby="disp-${g.key}"><div class="disp-label" id="disp-${g.key}">${t(g.label)}</div>
-        <div class="seg">${g.opts.map(([v, k]) => `<button type="button" data-k="${g.key}" data-v="${v}" aria-pressed="${D[g.key] === v}" class="${D[g.key] === v ? "on" : ""}">${t(k)}</button>`).join("")}</div>
+        <div class="disp-seg">${g.opts.map(([v, k]) => `<button type="button" data-k="${g.key}" data-v="${v}" aria-pressed="${D[g.key] === v}">${t(k)}</button>`).join("")}</div>
         ${g.help ? `<p class="muted small">${t(g.help)}</p>` : ""}</div>`;
     }
     h += `<div class="row end"><button type="button" class="btn" data-close>${t("close")}</button></div>`;
@@ -84,10 +84,10 @@
     btn.setAttribute("aria-expanded", "false");
     btn.setAttribute("aria-controls", "display-panel");
     btn.innerHTML = ICON;
-    // Main page: next to Settings. Other pages: at the end of the top bar.
+    // Main page: next to Settings. Other pages: at the end of the top bar, or by the language buttons.
     const settings = document.getElementById("open-settings");
     if (settings) settings.before(btn);
-    else document.querySelector("header")?.append(btn);
+    else (document.querySelector("header") || document.querySelector(".langs"))?.append(btn);
 
     panel = document.createElement("div");
     panel.id = "display-panel";
@@ -110,7 +110,9 @@
       if (e.key === "Escape" && !panel.classList.contains("hidden")) { e.stopPropagation(); close(true); }
     }, true);
     document.addEventListener("click", (e) => {
-      if (!panel.classList.contains("hidden") && !panel.contains(e.target) && !btn.contains(e.target)) close(false);
+      // composedPath, not contains: the panel re-renders on each choice, so the clicked button is already detached.
+      const path = e.composedPath();
+      if (!panel.classList.contains("hidden") && !path.includes(panel) && !path.includes(btn)) close(false);
     });
     // Follow the page's language switch (every page sets <html lang>).
     new MutationObserver(() => render()).observe(root, { attributes: true, attributeFilter: ["lang"] });
