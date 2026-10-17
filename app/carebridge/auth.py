@@ -7,8 +7,11 @@ Sign-in modes (setting `auth`, or CAREBRIDGE_AUTH):
             Needs IHH IT to register the app (tenant and client IDs). See teams.py.
   off       No sign-in (single-user laptop). Actions are not tied to a person.
 
-Roles come from IHH's staff list, not from the sign-in: Microsoft says who you are, the staff list
-says what you may do. Only the clinical role can deny a referral (IHH's rule).
+Roles come from IHH's own Microsoft Entra ID when IT has set up app roles: the sign-in token carries
+a `roles` claim (CareBridge.Coordinator, .Lead, .Clinical, .Admin), assigned to people or security
+groups in Entra. So who may do what is managed where IHH already manages staff accounts. Without
+app roles, IHH's staff list (staff.json) says what each person may do. PERMISSIONS below is the one
+place that says which role may do which action; only the clinical role can deny a referral (IHH's rule).
 """
 
 import base64
@@ -24,6 +27,34 @@ from . import config
 from .paths import user_dir
 
 ROLES = ("coordinator", "lead", "clinical", "admin")
+# Entra app role values (the `value` field in the app registration) -> our roles.
+ENTRA_ROLES = {"CareBridge.Coordinator": "coordinator", "CareBridge.Lead": "lead",
+               "CareBridge.Clinical": "clinical", "CareBridge.Admin": "admin"}
+
+_STAFF = ("coordinator", "lead", "clinical")
+# Which roles may do what. Admin is IT: settings and people, never a clinical decision.
+PERMISSIONS = {
+    # the referral board
+    "act:open": _STAFF, "act:info_sent": _STAFF, "act:hospital_replied": _STAFF, "act:chase_sent": _STAFF,
+    "act:intake_cleared": _STAFF, "act:accepted": _STAFF, "act:withdrawn": _STAFF,
+    "act:handoff": ("coordinator", "lead"), "act:patient_arrived": ("coordinator", "lead"),
+    "act:denied": ("clinical",), "act:clinical_pickup": ("clinical",),
+    "act:viewing": _STAFF + ("admin",), "act:leave": _STAFF + ("admin",), "act:claim": _STAFF,
+    "act:kipu_id": ("coordinator", "lead"),
+    "upload": ("coordinator", "lead"), "review": _STAFF, "teams_card": ("coordinator", "lead"),
+    "demo": ("lead", "admin"),
+    # Kipu
+    "kipu_sync": ("coordinator", "lead"), "kipu_find": ("coordinator", "lead"),
+    "kipu_write": ("coordinator", "lead"), "kipu_settings": ("lead", "admin"),
+    # staff alerts
+    "alert_mark": _STAFF + ("admin",), "alert_mark_any": ("lead", "admin"), "people_edit": ("lead", "admin"),
+    # settings
+    "settings": ("lead", "admin"), "api_key": ("admin",),
+    # help for clients, practice, rules: anyone signed in
+    "staff_tools": _STAFF + ("admin",),
+}
+# Practice mode is made-up data: anyone may restart the demo there.
+PRACTICE_OPEN = {"demo"}
 SESSION_HOURS = 12
 COOKIE = "cb_session"
 
@@ -73,7 +104,7 @@ def start_session(person: dict, via: str) -> str:
 
 def session(cookie_header: str | None) -> dict | None:
     if mode() == "off":
-        return {"email": "", "name": "", "role": "admin", "via": "off"}
+        return {"email": "", "name": "", "role": "admin", "roles": list(ROLES), "via": "off"}
     token = _cookie(cookie_header)
     s = _sessions.get(token) if token else None
     if s and s["exp"] > time.time():
@@ -103,12 +134,43 @@ def clear_cookie() -> str:
     return f"{COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
 
 
+def roles_of(person: dict | None) -> set[str]:
+    if not person:
+        return set()
+    return set(person.get("roles") or []) | ({person["role"]} if person.get("role") else set())
+
+
+def roles_from_claims(claims: dict) -> list[str] | None:
+    """Our roles from an Entra ID token's `roles` claim. None when the claim is absent (IT has not
+    assigned app roles), so the staff list decides instead. Unknown values are ignored."""
+    if "roles" not in claims:
+        return None
+    return [ENTRA_ROLES[r] for r in claims.get("roles") or [] if r in ENTRA_ROLES]
+
+
+def primary_role(roles: list[str]) -> str:
+    """The one role shown next to a name. Clinical first, since it is the one that can deny."""
+    return next((r for r in ("clinical", "lead", "coordinator", "admin") if r in roles), "")
+
+
 def can(person: dict | None, action: str) -> bool:
+    """May this person do this? `action` is a PERMISSIONS key; a bare tracker action like "denied" is
+    read as "act:denied". Unknown actions are refused, so a new route must be added to the table."""
+    if mode() == "off":
+        return True
     if person is None:
         return False
-    if action == "denied":
-        return person.get("role") in ("clinical",)
-    return True
+    if action in PRACTICE_OPEN and mode() == "practice":
+        return True
+    key = action if action in PERMISSIONS else f"act:{action}"
+    return bool(roles_of(person) & set(PERMISSIONS.get(key, ())))
+
+
+def act_role(person: dict | None) -> str | None:
+    """The role handed to tracker.act, which enforces "only clinical can deny" for every caller."""
+    if person is None:
+        return None
+    return "clinical" if "clinical" in roles_of(person) else person.get("role")
 
 
 # ---- signed one-time links (used by Teams cards) ---------------------------------------------
