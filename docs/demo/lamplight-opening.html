@@ -22,7 +22,7 @@ body{font-family:"Public Sans",sans-serif;color:var(--ink)}
 h1,h2,p{margin:0}.scene{position:absolute;left:78px;top:197px;width:730px;opacity:0;will-change:opacity,transform}
 h1,h2{font-size:79px;font-weight:650;line-height:1.04;letter-spacing:-4.6px;max-width:690px}
 h1 span,h2 span{display:block}.translation{font-size:25px;font-weight:450;color:var(--es);line-height:1.35;letter-spacing:-.5px;margin-top:23px;max-width:660px}
-.promise{animation:promise 15s linear both}.pressure{top:207px;animation:pressure 15s linear both}
+.care{animation:care 15s linear both}.pressure{top:207px;animation:pressure 15s linear both}
 .pressure-row{margin-bottom:25px;border-left:3px solid var(--amber);padding-left:22px;font-size:42px;font-weight:620;line-height:1.08;letter-spacing:-1.7px}
 .pressure-row span{display:block;color:var(--es);font-size:22px;line-height:1.3;font-weight:450;letter-spacing:-.4px;margin-top:7px}
 .resolve{top:200px;animation:resolve 15s linear both}.resolve h2{font-size:82px}.resolve .translation{font-size:25px;max-width:600px}
@@ -43,7 +43,7 @@ h1 span,h2 span{display:block}.translation{font-size:25px;font-weight:450;color:
 .bottom .built{max-width:680px;color:#705744}.bottom .built span{color:var(--es)}.bottom .stock{text-align:right;color:var(--cream);text-shadow:0 1px 4px #3B2B2266}
 @keyframes camera{from{transform:scale(1.08)}to{transform:scale(1.17) translateX(-9px)}}
 @keyframes lamplight{0%,24%{opacity:.15;transform:translateX(-70px)}64%,100%{opacity:1;transform:translateX(40px)}}
-@keyframes promise{0%{opacity:0;transform:translateY(14px)}4%,25%{opacity:1;transform:translateY(0)}29%,100%{opacity:0;transform:translateY(-8px)}}
+@keyframes care{0%{opacity:0;transform:translateY(14px)}4%,25%{opacity:1;transform:translateY(0)}29%,100%{opacity:0;transform:translateY(-8px)}}
 @keyframes pressure{0%,29%{opacity:0;transform:translateY(8px)}33%,61%{opacity:1;transform:translateY(0)}65%,100%{opacity:0;transform:translateY(-8px)}}
 @keyframes resolve{0%,64%{opacity:0;transform:translateY(8px)}69%,100%{opacity:1;transform:translateY(0)}}
 @keyframes clock{0%{opacity:0;transform:scale(.94)}5%,54%{opacity:1;transform:scale(1)}64%,100%{opacity:0;transform:scale(.94)}}
@@ -54,19 +54,19 @@ h1 span,h2 span{display:block}.translation{font-size:25px;font-weight:450;color:
 @keyframes papers{0%,67%{opacity:1;transform:scale(1)}77%,100%{opacity:0;transform:translateY(-10px) scale(.97)}}
 @keyframes desk{0%,74%{opacity:0;transform:translateY(5px)}82%,100%{opacity:1;transform:translateY(0)}}
 @keyframes warmth{from{opacity:.65}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){*{animation:none!important}.promise,.pressure,.clock,.papers{display:none}.resolve,.desk,.desk-mark{opacity:1}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}.care,.pressure,.clock,.papers{display:none}.resolve,.desk,.desk-mark{opacity:1}}
 </style>
 </head>
 <body>
-<main class="frame" aria-label="Lamplight. Every referral. A two-hour promise. Una promesa de dos horas.">
+<main class="frame" aria-label="Lamplight. Every referral, answered with care. Cada referido, respondido con cuidado.">
   <div class="film"><video autoplay muted playsinline loop preload="auto" aria-hidden="true"><source src="stock-footage/coordinator-computer-pexels-6997946.mp4" type="video/mp4"></video></div>
   <div class="light" aria-hidden="true"></div>
   <div class="brand"><img src="../../campaign/logo/lamplight-logo.svg" alt="">Lamplight</div>
   <div class="intro">For the people who care <span lang="es">Para quienes cuidan</span></div>
-  <section class="scene promise"><h1><span>Every referral.</span><span>A two-hour</span><span>promise.</span></h1><p class="translation" lang="es">Cada referido.<br>Una promesa de dos horas.</p></section>
+  <section class="scene care"><h1><span>Every referral,</span><span>answered</span><span>with care.</span></h1><p class="translation" lang="es">Cada referido,<br>respondido con cuidado.</p></section>
   <section class="scene pressure"><p class="pressure-row">Pages to read<span lang="es">Páginas por leer</span></p><p class="pressure-row">Records to find<span lang="es">Documentos por conseguir</span></p><p class="pressure-row">People to call<span lang="es">Personas a quienes llamar</span></p></section>
   <section class="scene resolve"><h2><span>One place.</span><span>A clear</span><span>next step.</span></h2><p class="translation" lang="es">Un solo lugar.<br>Un próximo paso claro.</p></section>
-  <div class="clock" aria-hidden="true"><svg viewBox="0 0 153 153"><circle cx="76.5" cy="76.5" r="70"></circle><circle class="progress" cx="76.5" cy="76.5" r="70"></circle></svg><div><b>2h</b><small>From arrival<br>Desde la llegada</small></div></div>
+  <div class="clock" aria-hidden="true"><svg viewBox="0 0 153 153"><circle cx="76.5" cy="76.5" r="70"></circle><circle class="progress" cx="76.5" cy="76.5" r="70"></circle></svg><div><b>2h</b><small>Response goal<br>Meta de respuesta</small></div></div>
   <div class="papers" aria-hidden="true"><div class="paper"><div class="head"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="seal"></div></div><div class="paper"><div class="head"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="seal"></div></div><div class="paper"><div class="head"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="seal"></div></div></div>
   <div class="desk" aria-hidden="true"></div><div class="desk-mark" aria-hidden="true"><img src="../../campaign/logo/lamplight-logo.svg" alt=""></div>
   <footer class="bottom"><p class="built">Built for the referral coordinator<br><span lang="es">Para quien coordina los referidos</span></p><p class="stock">Illustrative stock footage<br><span lang="es">Imágenes ilustrativas</span></p></footer>

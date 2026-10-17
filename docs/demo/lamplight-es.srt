@@ -1,13 +1,13 @@
 ﻿1
-00:00:00,250 --> 00:00:04,524
-En Illumination Health and Home, cada referido inicia un reloj de dos horas.
+00:00:00,250 --> 00:00:04,881
+En Illumination Health and Home, quienes coordinan trabajan con una meta de respuesta de dos horas.
 
 2
-00:00:04,524 --> 00:00:10,059
+00:00:04,881 --> 00:00:10,425
 Para quien coordina, hay páginas de fax, expedientes pendientes y otro hospital al que llamar.
 
 3
-00:00:10,059 --> 00:00:14,228
+00:00:10,425 --> 00:00:14,600
 Lamplight reúne la evidencia y el próximo paso en un solo lugar.
 
 4

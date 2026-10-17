@@ -1,13 +1,13 @@
 ﻿1
-00:00:00,250 --> 00:00:04,524
-At Illumination Health and Home, every referral starts a two-hour clock.
+00:00:00,250 --> 00:00:04,881
+At Illumination Health and Home, coordinators work toward a two-hour response goal.
 
 2
-00:00:04,524 --> 00:00:10,059
+00:00:04,881 --> 00:00:10,425
 For the coordinator, that means faxed pages, missing records, and another hospital to call.
 
 3
-00:00:10,059 --> 00:00:14,228
+00:00:10,425 --> 00:00:14,600
 Lamplight brings the evidence and the next step into one place.
 
 4

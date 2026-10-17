@@ -5,10 +5,14 @@ The release includes the 1080p film, 720p copy, cover, English and Spanish subti
 logo exports and a standalone interactive architecture map. These sources recreate its artwork,
 practice-app recording and compositor.
 
-**Recorded application revision:** `b710731af1f3d18dfbe0ef1ffa4864bd89d23658`.
-The film follows [submission](../submission.md), [judging](../judging.md),
-[bilingual](../bilingual.md), [ground rules](../ground-rules.md) and
+**Recorded application revision:** `be8fd8e5a6f23f62d46ec9d6fa941c79d0d55001`.
+This records the synthetic practice workflow available at that revision. The film follows
+[project rules](../../CLAUDE.md), [bilingual requirements](../bilingual.md), and
 [workflow and timing](../workflow-and-timing.md), with Sam’s Lamplight campaign and Public Sans.
+The original event [submission](https://github.com/stefan-cruceru/ihh-referral-intake/blob/d4b772170dfca3cfcd2f90533f2cd41ba3f840c6/docs/submission.md),
+[judging](https://github.com/stefan-cruceru/ihh-referral-intake/blob/d4b772170dfca3cfcd2f90533f2cd41ba3f840c6/docs/judging.md), and
+[ground rules](https://github.com/stefan-cruceru/ihh-referral-intake/blob/d4b772170dfca3cfcd2f90533f2cd41ba3f840c6/docs/ground-rules.md)
+remain in history after the starter-doc cleanup.
 
 ## The two-minute workflow
 

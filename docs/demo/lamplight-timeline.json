@@ -4,8 +4,8 @@
     {
       "start": 0,
       "end": 15,
-      "title_en": "A two-hour promise",
-      "title_es": "Una promesa de dos horas"
+      "title_en": "Every referral, answered with care.",
+      "title_es": "Cada referido, respondido con cuidado."
     },
     {
       "start": 15,
@@ -53,19 +53,19 @@
   "cues": [
     {
       "start": 0.25,
-      "end": 4.524,
-      "en": "At Illumination Health and Home, every referral starts a two-hour clock.",
-      "es": "En Illumination Health and Home, cada referido inicia un reloj de dos horas."
+      "end": 4.881,
+      "en": "At Illumination Health and Home, coordinators work toward a two-hour response goal.",
+      "es": "En Illumination Health and Home, quienes coordinan trabajan con una meta de respuesta de dos horas."
     },
     {
-      "start": 4.524,
-      "end": 10.059,
+      "start": 4.881,
+      "end": 10.425,
       "en": "For the coordinator, that means faxed pages, missing records, and another hospital to call.",
       "es": "Para quien coordina, hay páginas de fax, expedientes pendientes y otro hospital al que llamar."
     },
     {
-      "start": 10.059,
-      "end": 14.228,
+      "start": 10.425,
+      "end": 14.6,
       "en": "Lamplight brings the evidence and the next step into one place.",
       "es": "Lamplight reúne la evidencia y el próximo paso en un solo lugar."
     },
