@@ -42,6 +42,12 @@ def test_known_messages_get_a_code_and_keep_the_english():
     assert gateway.error("Something new") == {"error": "Something new"}  # no code: the English is the fallback
 
 
+def test_original_and_current_denial_messages_keep_the_same_translation_code():
+    for message in ("Only the clinical line can deny a referral.",
+                    "Only the clinical line can deny a referral. Sign in as the clinical reviewer."):
+        assert gateway.error(message) == {"error": message, "code": "only_clinical_deny"}
+
+
 class _H:
     def __init__(self, path):
         self.path, self.headers, self.out = path, {}, None

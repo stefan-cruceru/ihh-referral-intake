@@ -55,7 +55,7 @@ ERROR_CODES = [
     (r"Only the clinical reviewer writes clinical notes\.$", "only_clinical_notes"),
     (r"Type the note first\.$", "type_note"),
     (r"Unknown check\.$", "unknown_check"),
-    (r"Only the clinical line can deny a referral\.$", "only_clinical_deny"),
+    (r"Only the clinical line can deny a referral\.(?: Sign in as the clinical reviewer\.)?$", "only_clinical_deny"),
     (r"A clinical reviewer must read page\(s\) (?P<pages>.+) before this can be accepted\.$", "read_pages"),
     (r"unknown action ", "unknown_action"),
     (r"A person needs a name\.$", "person_name"),
