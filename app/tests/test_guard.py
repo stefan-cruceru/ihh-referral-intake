@@ -226,3 +226,12 @@ def test_every_packet_review_goes_through_the_security_scan():
         for line in f.read_text(encoding="utf-8").splitlines():
             if re.search(r"\bReview\(load_packet", line) and "threat" not in line:
                 raise AssertionError(f"{f.name}: review built without guard.scan_file: {line.strip()}")
+
+
+def test_demo_attack_packet_is_held_and_safe_to_open():
+    """app/demo/attack/attack-packet.pdf is what we hand people to see the security hold."""
+    data = (APP / "demo" / "attack" / "attack-packet.pdf").read_bytes()
+    t = guard.scan_file(data, "attack-packet.pdf")
+    assert t["verdict"] == guard.HOLD and list(t["pages"]) == [3]
+    # Only text: no JavaScript, actions or embedded files, so anyone can open it.
+    assert {f["code"] for f in t["findings"]} == {"hidden_instructions"}
