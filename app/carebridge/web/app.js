@@ -143,6 +143,45 @@ function fmtClock(ts) {
   return d.toLocaleString(LANG === "es" ? "es-US" : "en-US", { weekday: "short", hour: "numeric", minute: "2-digit" });
 }
 
+// Where each patient is in the process (m365/referrals-table.md, "Stages"). The dashboard groups by it.
+const STAGES = ["new", "reading", "hospital", "clinical", "cleared", "on_way", "arrived", "closed"];
+function stageOf(c) {
+  switch (c.status) {
+    case "received": return "new";
+    case "reviewing": return "reading";
+    case "needs_info": return "hospital";
+    case "clinical_check": case "likely_no": return "clinical";
+    case "intake_cleared": return "cleared";
+    case "accepted": return c.patient_arrived === 1 ? "arrived" : "on_way";
+    default: return "closed";
+  }
+}
+let STAGE = pref.get("cb_stage") || "all";
+
+function renderStages(cards) {
+  const n = Object.fromEntries(STAGES.map((s) => [s, 0]));
+  cards.forEach((c) => n[stageOf(c)]++);
+  const btn = (s, count) => `<button data-stage="${s}" class="${s === STAGE ? "on" : ""}">${esc(t("stage_" + s))} <span class="count">${count}</span></button>`;
+  $("#stages").innerHTML = btn("all", cards.length) + STAGES.map((s) => btn(s, n[s])).join("");
+  $$("#stages button").forEach((b) => b.addEventListener("click", () => { STAGE = b.dataset.stage; pref.set("cb_stage", STAGE); renderQueue(LAST_Q); }));
+}
+
+// A link to the client's Kipu record, only once IHH has given the link format (Settings).
+function kipuChip(c) {
+  if (!c.kipu_id) return "";
+  const tpl = STATE.kipu_url || "";
+  const url = tpl.includes("{kipu_id}") ? tpl.replaceAll("{kipu_id}", encodeURIComponent(c.kipu_id)) : "";
+  return /^https?:\/\//.test(url)
+    ? `<a class="chip kipu" href="${esc(url)}" target="_blank" rel="noopener" data-stop>${esc(t("kipu_open"))} ${esc(c.kipu_id)}</a>`
+    : `<span class="chip kipu">Kipu ${esc(c.kipu_id)}</span>`;
+}
+
+function contactLine(c) {
+  if (!c.case_manager && !c.cm_phone && !c.cm_email) return "";
+  const bits = [c.case_manager, c.cm_phone, c.cm_email].filter(Boolean).map(esc);
+  return `<div class="meta">${esc(t("sent_by"))}: ${bits.join(" · ")}</div>`;
+}
+
 function statusChip(st) {
   return `<span class="chip st-${esc(st)}">${esc(t("st_" + st))}</span>`;
 }
@@ -164,12 +203,12 @@ function renderQueue(q) {
   renderWhoami(q);
   const cards = SCOPE === "mine" && ME ? q.cards.filter((c) => c.owner === ME) : q.cards;
   renderUrgent(cards);
+  renderStages(cards);
   if (!cards.length) {
     $("#queue").innerHTML = `<div class="empty">${esc(t(q.cards.length ? "queue_empty_mine" : "queue_empty"))}</div>`;
     return;
   }
-  $("#queue").innerHTML = cards
-    .map((c) => {
+  const cardHtml = (c) => {
       const left = c.left_min;
       const timer = c.color === "done" ? `<b>✓</b><span>${c.elapsed_min} ${t("min")}</span>` : `<b class="countdown" data-fmt="min" data-deadline="${c.deadline}">${left >= 0 ? left : "+" + -left}</b><span>${t("min")} ${t(left >= 0 ? "left" : "over")}</span>`;
       const review =
@@ -185,13 +224,25 @@ function renderQueue(q) {
         <div>
           <div class="title">${esc(c.case_no)} · ${esc(c.hospital || t("unknown"))}</div>
           <div class="meta">${esc(t("channel_" + (c.channel || "upload")))} · ${esc(t("owner"))}: <b>${esc(c.owner)}</b>${c.owner === ME ? ` (${esc(t("you"))})` : ""}</div>
-          <div class="chips">${dangerChip(c)}${statusChip(c.status)}${viewersChip(c)}${handwritingChip(c)}${review}${alerts}${silent}${c.sample ? `<span class="chip">${esc(t("sample_badge"))}</span>` : ""}</div>
+          ${contactLine(c)}
+          <div class="chips">${dangerChip(c)}${statusChip(c.status)}${kipuChip(c)}${viewersChip(c)}${handwritingChip(c)}${review}${alerts}${silent}${c.sample ? `<span class="chip">${esc(t("sample_badge"))}</span>` : ""}</div>
           ${oddsLine(c)}
         </div>
         <div class="side">${fmtClock(c.arrived_at)}</div>
       </div>`;
+  };
+  // One group per stage, most urgent first inside each (the queue is already sorted).
+  const shown = STAGE === "all" ? STAGES : [STAGE];
+  $("#queue").innerHTML = shown
+    .map((s) => {
+      const list = cards.filter((c) => stageOf(c) === s);
+      if (!list.length && STAGE === "all") return "";
+      return `<section class="stage-group"><h3 class="stage-h">${esc(t("stage_" + s))} <span class="count">${list.length}</span>
+          <span class="muted small">${esc(t("next_" + s))}</span></h3>
+        ${list.length ? list.map(cardHtml).join("") : `<div class="empty">${esc(t("stage_empty"))}</div>`}</section>`;
     })
     .join("");
+  $$("#queue [data-stop]").forEach((a) => a.addEventListener("click", (e) => e.stopPropagation()));
   $$(".card").forEach((el) => {
     el.addEventListener("click", () => openCard(el.dataset.id));
     el.addEventListener("keydown", (e) => e.key === "Enter" && openCard(el.dataset.id));
@@ -440,6 +491,12 @@ function renderDetail() {
     h += `</div>`;
   }
 
+  // The client's Kipu record, once staff have created it there
+  h += `<div class="panel"><h3>${esc(t("kipu_title"))}</h3><div class="row">
+    <input id="kipu-id" value="${esc(card.kipu_id || "")}" placeholder="${esc(t("kipu_id_ph"))}" autocomplete="off">
+    <button class="btn" id="kipu-save">${esc(t("save"))}</button>${kipuChip(card)}</div>
+    ${card.kipu_id && !(STATE.kipu_url || "").includes("{kipu_id}") ? `<p class="muted small">${esc(t("kipu_no_link"))}</p>` : ""}</div>`;
+
   // Actions
   const closed = ["accepted", "denied", "withdrawn"].includes(card.status);
   h += `<div class="panel"><h3>${esc(t("h_actions"))}</h3>`;
@@ -469,6 +526,7 @@ function renderDetail() {
 
   $("#detail-body").innerHTML = h;
   $("#d-close").addEventListener("click", closeDetail);
+  $("#kipu-save").addEventListener("click", () => act("kipu_id", "", $("#kipu-id").value));
   $("#run-review")?.addEventListener("click", async () => {
     try { await post(`/api/cards/${encodeURIComponent(OPEN)}/review`); refreshOpen(); } catch (e) { toast(e.message === "no_key" ? t("need_key") : e.message); }
   });
@@ -647,7 +705,13 @@ async function loadState() {
   $("#foundry-resource").value = STATE.foundry_resource || "";
   $("#foundry-resource").classList.toggle("hidden", STATE.provider !== "foundry");
   $("#inbox-dir").value = STATE.inbox_dir || "";
+  $("#kipu-url").value = STATE.kipu_url || "";
 }
+$("#kipu-url-save").addEventListener("click", async () => {
+  await post("/api/settings", { kipu_url: $("#kipu-url").value.trim() });
+  await loadState();
+  toast(t("saved"));
+});
 $("#provider").addEventListener("change", (e) => $("#foundry-resource").classList.toggle("hidden", e.target.value !== "foundry"));
 $("#loop-save").addEventListener("click", async () => {
   await post("/api/settings", { provider: $("#provider").value, foundry_resource: $("#foundry-resource").value.trim(), inbox_dir: $("#inbox-dir").value.trim() });
@@ -877,8 +941,7 @@ function openFromHash() {
 (function bootAlerts() {
   $("#outbox-person").addEventListener("change", loadOutbox);
   $("#outbox-done").addEventListener("change", loadOutbox);
-  $('.tabs button[data-tab="people"]').addEventListener("click", loadPeople);
-  $('.tabs button[data-tab="outbox"]').addEventListener("click", loadOutbox);
+  $("#open-settings").addEventListener("click", () => loadPeople().catch(() => {}));
   $$(".lang button").forEach((b) => b.addEventListener("click", () => { loadPeople().catch(() => {}); renderOutbox(); }));
   window.addEventListener("hashchange", openFromHash);
   const tick = () => { loadOutbox(); setTimeout(tick, 5000); };

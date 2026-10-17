@@ -8,8 +8,8 @@
   "es": "Esta app se queda en esta computadora. No escriba nombres, fechas de nacimiento ni números de ID. La app nunca envía nada. Usted lo envía."
  },
  "tab_referrals": {
-  "en": "Referrals",
-  "es": "Referidos"
+  "en": "Patients",
+  "es": "Pacientes"
  },
  "tab_resources": {
   "en": "Help for clients",
@@ -1258,5 +1258,113 @@
  "transcript": {
   "en": "Typed by the AI. Check it against the page.",
   "es": "Escrito por la IA. Compárelo con la página."
+ },
+ "stage_all": {
+  "en": "All",
+  "es": "Todos"
+ },
+ "stage_new": {
+  "en": "New",
+  "es": "Nuevos"
+ },
+ "stage_reading": {
+  "en": "Being read",
+  "es": "En lectura"
+ },
+ "stage_hospital": {
+  "en": "Waiting on hospital",
+  "es": "Esperando al hospital"
+ },
+ "stage_clinical": {
+  "en": "Clinical review",
+  "es": "Revisión clínica"
+ },
+ "stage_cleared": {
+  "en": "Cleared, not final",
+  "es": "Aprobado, no final"
+ },
+ "stage_on_way": {
+  "en": "Accepted, on the way",
+  "es": "Aceptado, en camino"
+ },
+ "stage_arrived": {
+  "en": "Arrived",
+  "es": "Llegó"
+ },
+ "stage_closed": {
+  "en": "Closed",
+  "es": "Cerrados"
+ },
+ "next_new": {
+  "en": "Next: assign and start reading",
+  "es": "Sigue: asignar y empezar a leer"
+ },
+ "next_reading": {
+  "en": "Next: read the findings",
+  "es": "Sigue: leer lo que se encontró"
+ },
+ "next_hospital": {
+  "en": "Next: hospital sends what's missing",
+  "es": "Sigue: el hospital manda lo que falta"
+ },
+ "next_clinical": {
+  "en": "Next: the clinical line decides",
+  "es": "Sigue: decide la línea clínica"
+ },
+ "next_cleared": {
+  "en": "Next: final yes from the clinical line",
+  "es": "Sigue: el sí final de la línea clínica"
+ },
+ "next_on_way": {
+  "en": "Next: the patient arrives",
+  "es": "Sigue: llega el paciente"
+ },
+ "next_arrived": {
+  "en": "Next: create the client in Kipu and add the Kipu number",
+  "es": "Sigue: crear al cliente en Kipu y poner el número de Kipu"
+ },
+ "next_closed": {
+  "en": "Done. Kept for the weekly report",
+  "es": "Listo. Se guarda para el informe semanal"
+ },
+ "stage_empty": {
+  "en": "Nobody here right now.",
+  "es": "Nadie aquí por ahora."
+ },
+ "sent_by": {
+  "en": "Sent by",
+  "es": "Enviado por"
+ },
+ "channel_form": {
+  "en": "Referral form",
+  "es": "Formulario de referido"
+ },
+ "kipu_title": {
+  "en": "Kipu record",
+  "es": "Expediente en Kipu"
+ },
+ "kipu_id_ph": {
+  "en": "Kipu number, once the client is in Kipu",
+  "es": "Número de Kipu, cuando el cliente esté en Kipu"
+ },
+ "kipu_open": {
+  "en": "Open in Kipu",
+  "es": "Abrir en Kipu"
+ },
+ "kipu_no_link": {
+  "en": "To open Kipu from here, an admin adds the Kipu link in Settings.",
+  "es": "Para abrir Kipu desde aquí, un administrador agrega el enlace de Kipu en Ajustes."
+ },
+ "kipu_settings_title": {
+  "en": "Kipu link",
+  "es": "Enlace a Kipu"
+ },
+ "kipu_settings_help": {
+  "en": "The address of a client record in Kipu, with {kipu_id} where the number goes. Ask IHH IT for it. Until then, the dashboard shows the number without a link.",
+  "es": "La dirección de un expediente en Kipu, con {kipu_id} donde va el número. Pídala a TI de IHH. Mientras tanto, el tablero muestra el número sin enlace."
+ },
+ "saved": {
+  "en": "Saved",
+  "es": "Guardado"
  }
 }
