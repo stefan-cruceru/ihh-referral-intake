@@ -18,6 +18,9 @@ datas = [
     (str(CHALLENGE2 / "scenarios" / "client-scenarios.json"), "data"),
     (str(APP / "demo" / "inbox.json"), "data/demo"),
 ]
+# fpdf2 (the client handout PDF) ships font metric files alongside its code.
+from PyInstaller.utils.hooks import collect_data_files
+datas += collect_data_files("fpdf")
 datas += [(str(p), "data/demo") for p in sorted((STAGE / "demo").glob("D*.pdf"))]
 
 icon = STAGE / "carebridge.ico"

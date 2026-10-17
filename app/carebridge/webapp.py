@@ -16,7 +16,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import APP_NAME, __version__, config, drafts, intake, llm, mcp, phi, resources, rules, staff, store, tracker
+from . import APP_NAME, __version__, config, drafts, handout, intake, llm, mcp, phi, resources, rules, staff, store, tracker
 from .pages import load_packet
 from .paths import BUNDLE, DEMO_DIR, FROZEN, load_json, packets_dir, user_dir
 
@@ -338,6 +338,11 @@ class Handler(BaseHTTPRequestHandler):
                 b = self._jbody()
                 return self._json(resources.find(b.get("situation", ""), b.get("lang", "en"), b.get("needs") or None,
                                                  use_ai=bool(b.get("use_ai", True)) and bool(config.get_api_key())))
+            if p == "/api/handout":
+                b = self._jbody()
+                pdf = handout.build(b.get("items") or [], b.get("plan_today", ""), b.get("lang", "en"), bool(b.get("danger")))
+                name = "sus-proximos-pasos.pdf" if b.get("lang") == "es" else "your-next-steps.pdf"
+                return self._send(200, pdf, "application/pdf", {"Content-Disposition": f'inline; filename="{name}"'})
             if p == "/api/phi-check":
                 return self._json(phi.check(self._jbody().get("text", "")))
             if p == "/api/staff/note":
@@ -402,8 +407,12 @@ def serve(port: int = 0, open_browser: bool = True) -> None:
     host = os.environ.get("CAREBRIDGE_HOST") or "127.0.0.1"
     httpd = ThreadingHTTPServer((host, port), Handler)
     url = f"http://127.0.0.1:{httpd.server_address[1]}/"
-    print(f"{APP_NAME} {__version__} is running at {url}")
-    print("Only this computer can open it. Close this window to quit; reviews are not saved.")
+    if host == "127.0.0.1":
+        print(f"{APP_NAME} {__version__} is running at {url}")
+        print("Only this computer can open it. Close this window to quit; reviews are not saved.")
+    else:
+        print(f"{APP_NAME} {__version__} is listening on {host}:{httpd.server_address[1]} in the container.")
+        print("Open the host port from compose.yaml (default http://localhost:8780/). Reviews are not saved.")
     watch_inbox()
     if open_browser:
         threading.Timer(0.6, lambda: webbrowser.open(url)).start()

@@ -1,0 +1,14 @@
+# Keep secrets, packets and build output out of the build context.
+.git
+.env
+.env.*
+**/__pycache__
+**/*.pyc
+app/build
+app/dist
+copilot
+inbox
+challenges/1-referral-intake/packets
+challenges/1-referral-intake/eval
+**/R[0-9][0-9].pdf
+**/*.zip

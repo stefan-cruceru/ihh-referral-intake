@@ -8,9 +8,10 @@ Rule lookups need no API key. Packet reviews, resource picks and note drafts use
 
 import json
 import sys
+import time
 from pathlib import Path
 
-from . import __version__, intake, resources, rules, staff
+from . import __version__, handout, intake, resources, rules, staff
 from .pages import load_packet
 
 PROTOCOL = "2025-06-18"
@@ -43,6 +44,11 @@ TOOLS = [
      "description": "Suggest next-step resources in Orange County for an IHH client leaving recuperative care, "
                     "picked only from a sourced list (shelter, work, microloans, travel home, ID, benefits...). "
                     "Do not include names, dates of birth or other identifiers.",
+     "inputSchema": _schema({"situation": {"type": "string"}, "language": LANG}, ["situation"])},
+    {"name": "make_client_handout",
+     "description": "Make a large-print PDF of next steps for an IHH client to take home: each step with phone, "
+                    "address and hours from the sourced list, how to get there, what to bring, and boxes to tick. "
+                    "Saves it to Documents\\IHH Care Bridge\\handouts and returns the path. No identifiers.",
      "inputSchema": _schema({"situation": {"type": "string"}, "language": LANG}, ["situation"])},
     {"name": "draft_progress_note",
      "description": "Turn an LVN's or medical assistant's own shift jottings into a progress note draft. Every "
@@ -130,6 +136,16 @@ def call_tool(name: str, args: dict) -> str:
             lines.append("Staff to confirm: " + "; ".join(res["ask_staff"]))
         lines.append(res["disclaimer"])
         return "\n".join(lines)
+    if name == "make_client_handout":
+        res = resources.find(args["situation"], lang)
+        if res["blocked"]:
+            return "Blocked: the text looks like it contains identifiers. Remove them and try again."
+        items = [{"resource_id": c["id"], "why": c["why"], "first_step": c["first_step"], "watch_out": c["watch_out"]} for c in res["cards"]]
+        out = Path.home() / "Documents" / "IHH Care Bridge" / "handouts"
+        out.mkdir(parents=True, exist_ok=True)
+        f = out / f"{'proximos-pasos' if lang == 'es' else 'next-steps'}-{time.strftime('%Y%m%d-%H%M%S')}.pdf"
+        f.write_bytes(handout.build(items, res["plan_today"], lang, res["danger"]))
+        return f"Saved: {f}\nSteps: " + "; ".join(c["name"] for c in res["cards"]) + "\nCheck it before you print it for the client."
     if name == "draft_progress_note":
         res = staff.note_draft(args["jottings"], lang)
         if res["blocked"]:

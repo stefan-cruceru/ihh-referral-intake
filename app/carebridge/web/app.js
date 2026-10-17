@@ -617,22 +617,17 @@ $("#ob-again").addEventListener("click", startOnboard);
 
 // ---------------------------------------------------------------- printable client handout
 let LAST_RES = null;
-function printHandout() {
+// The client's take-home PDF: built server-side so phones, addresses and hours come only from
+// the sourced list. Opens in the browser's PDF viewer, ready to print.
+async function printHandout() {
   if (!LAST_RES) return;
   const r = LAST_RES;
-  const items = r.cards.map((c) => `<div class="item"><h2>${esc(c.name)}</h2>
-    ${c.first_step ? `<p><b>${esc(t("res_first_step"))}:</b> ${esc(c.first_step)}</p>` : ""}
-    <p><b>${esc(t("res_phone"))}:</b> ${esc(c.phone || t("unknown"))}</p><p><b>${esc(t("res_hours"))}:</b> ${esc(c.hours || t("unknown"))}</p>
-    ${c.watch_out ? `<p>${esc(c.watch_out)}</p>` : ""}</div>`).join("");
-  const w = window.open("", "_blank");
-  if (!w) return;
-  w.document.write(`<!doctype html><html lang="${LANG}"><head><meta charset="utf-8"><title>${esc(t("res_print_head"))}</title>
-    <style>body{font-family:Segoe UI,Arial,sans-serif;font-size:20px;line-height:1.5;margin:32px;color:#000;background:#fff}h1{font-size:30px}h2{font-size:24px;margin:0 0 6px}.item{border-top:2px solid #000;padding:14px 0}.safety{border:3px solid #000;padding:12px;font-weight:700}</style></head>
-    <body><h1>${esc(t("res_print_head"))}</h1>${r.danger ? `<p class="safety">${esc(t("res_safety"))}</p>` : ""}${r.plan_today ? `<p>${esc(r.plan_today)}</p>` : ""}${items}
-    <p><b>${esc(t("res_print_note"))}</b></p></body></html>`);
-  w.document.close();
-  w.focus();
-  w.print();
+  const items = r.cards.map((c) => ({ resource_id: c.id, why: c.why, first_step: c.first_step, watch_out: c.watch_out }));
+  const resp = await fetch("/api/handout", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items, plan_today: r.plan_today, lang: LANG, danger: r.danger }) });
+  if (!resp.ok) return toast(t("error"));
+  const url = URL.createObjectURL(await resp.blob());
+  window.open(url, "_blank");
 }
 
 // ---------------------------------------------------------------- boot
