@@ -127,6 +127,14 @@
   "en": "You can change it any time at the top of the screen.",
   "es": "Puede cambiarlo cuando quiera arriba en la pantalla."
  },
+ "ob_display": {
+  "en": "Want bigger words, a dark screen, or colors for color blindness?",
+  "es": "¿Quiere letras más grandes, una pantalla oscura o colores para daltónicos?"
+ },
+ "ob_display_btn": {
+  "en": "Change how it looks",
+  "es": "Cambiar cómo se ve"
+ },
  "ob_role": {
   "en": "What is your job?",
   "es": "¿Cuál es su trabajo?"
