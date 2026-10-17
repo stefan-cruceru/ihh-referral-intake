@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r app/requirements.txt
 COPY challenges/1-referral-intake/criteria/admission-criteria.json challenges/1-referral-intake/criteria/
 COPY challenges/2-finding-the-right-resource/data/oc-resources.seed.json challenges/2-finding-the-right-resource/data/
 COPY challenges/2-finding-the-right-resource/scenarios/client-scenarios.json challenges/2-finding-the-right-resource/scenarios/
+COPY m365/status-messages.json m365/
 COPY app/carebridge app/carebridge
 COPY app/demo app/demo
 COPY app/tests app/tests
