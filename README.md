@@ -117,6 +117,9 @@ Click **Practice with made-up referrals** to run the 4 PM demo with the syntheti
 patients. No key needed. Open **Practice patients** to see each made-up patient's profile, their
 faxed pages, what the app points out, the organizers' answer, and a printable next-steps PDF made
 for that patient.
+To see the security check, upload `app/demo/attack/attack-packet.pdf`: an invented packet with an
+order to the AI printed on page 2 and hidden white text on page 3. With an API key set, it comes
+back as a red "Security hold" with those pages set aside.
 To read real (de-identified) packets, an admin adds a Claude API key in Settings (saved in Windows
 Credential Manager) or sets `ANTHROPIC_API_KEY`. For Claude in IHH's Azure, pick Foundry in
 Settings, or set `CAREBRIDGE_PROVIDER=foundry`, `ANTHROPIC_FOUNDRY_RESOURCE` and
