@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Access and roles</title>
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/display.js"></script>
+<style>
+  body { margin: 0; background: var(--bg); }
+  .a-top { display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: .8rem 1.2rem; background: var(--panel); border-bottom: 1px solid var(--line); }
+  .a-top a { color: var(--brand); font-weight: 600; text-decoration: none; }
+  .a-wrap { max-width: 1080px; margin: 0 auto; padding: 1.2rem; display: grid; gap: 1rem; }
+  .a-box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1rem 1.2rem; }
+  .a-box h2 { margin: 0 0 .5rem; font-size: 1.15rem; }
+  .a-m { color: var(--muted); font-size: .92rem; }
+  .a-row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .5rem 0; }
+  .a-row input, .a-row select, td select { font: inherit; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: inherit; width: auto; }
+  .a-btn { font: inherit; font-weight: 600; padding: .55rem .9rem; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; color: inherit; text-decoration: none; }
+  .a-btn.primary { background: var(--brand); color: var(--brand-ink, #fff); border-color: var(--brand); }
+  .a-btn.ms { background: #4b53bc; color: #fff; border-color: #4b53bc; }
+  .a-pill { display: inline-block; padding: .2rem .6rem; border-radius: 999px; background: var(--gray-soft); font-size: .85rem; font-weight: 600; }
+  .a-pill.ok { background: var(--green-soft); color: var(--green); }
+  .a-pill.off { background: var(--yellow-soft); color: var(--yellow); }
+  table.a-t { width: 100%; border-collapse: collapse; font-size: .93rem; }
+  table.a-t td, table.a-t th { text-align: left; padding: .45rem .4rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  table.a-t th.r, table.a-t td.r { text-align: center; width: 7.5rem; }
+  table.a-t th.mine, table.a-t td.mine { background: var(--brand-soft); }
+  table.a-t tr.grp td { font-weight: 700; padding-top: .9rem; border-bottom: 2px solid var(--lamp-soft); }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--muted); }
+  pre.a-pre { white-space: pre-wrap; word-break: break-all; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: .7rem; font-size: .85rem; }
+  ol.a-steps { margin: .4rem 0 .2rem 1.2rem; padding: 0; }
+  ol.a-steps li { margin: .25rem 0; }
+</style>
+</head>
+<body>
+<header class="a-top">
+  <a href="/" id="back"></a>
+  <strong id="title"></strong>
+  <span><span id="me" class="a-m"></span> · <a href="/auth/signout" id="signout"></a> · <button class="a-btn" id="lang"></button></span>
+</header>
+<main class="a-wrap">
+  <section class="a-box">
+    <h2 id="h-signin"></h2>
+    <div class="a-row"><span id="ms-state" class="a-pill"></span></div>
+    <ol class="a-steps" id="steps"></ol>
+    <div class="a-row"><a class="a-btn ms" href="/auth/microsoft?next=/static/access.html" id="ms-how"></a></div>
+    <p class="a-m" id="entra-help"></p>
+    <table class="a-t" id="entra"></table>
+  </section>
+
+  <section class="a-box">
+    <h2 id="h-roles"></h2>
+    <p class="a-m" id="roles-help"></p>
+    <table class="a-t" id="matrix"></table>
+  </section>
+
+  <section class="a-box">
+    <h2 id="h-people"></h2>
+    <p class="a-m" id="people-help"></p>
+    <table class="a-t" id="people"></table>
+    <div id="add" class="a-row"></div>
+  </section>
+
+  <section class="a-box">
+    <h2 id="h-copilot"></h2>
+    <p class="a-m" id="copilot-help"></p>
+    <ol class="a-steps" id="copilot-steps"></ol>
+    <div class="a-row"><button class="a-btn primary" id="make-token"></button></div>
+    <div id="token-out"></div>
+  </section>
+</main>
+<div id="toast" class="toast hidden"></div>
+<script>
+// Access and roles: how people sign in, what each role may do, who has which role, and Copilot.
+// The table of what each role may do comes from the server (auth.PERMISSIONS), the same one it enforces.
+const T = {
+  back: ["← Back to the patients", "← Volver a los pacientes"], title: ["Access and roles", "Acceso y roles"],
+  signout: ["Sign out", "Cerrar sesión"], signed: ["Signed in as", "Sesión de"],
+  via_practice: ["practice sign-in", "inicio de práctica"], via_teams: ["Microsoft", "Microsoft"], via_token: ["Copilot token", "token de Copilot"], via_off: ["no sign-in", "sin inicio de sesión"],
+  h_signin: ["How people sign in", "Cómo entra la gente"],
+  ms_on: ["Microsoft sign-in: connected", "Inicio con Microsoft: conectado"],
+  ms_off: ["Microsoft sign-in: not connected in this demo (practice sign-in)", "Inicio con Microsoft: no conectado en esta demo (inicio de práctica)"],
+  step1: ["Staff click “Sign in with Microsoft” and use their Teams work account, with IHH's usual multi-factor check. Care Bridge never sees a password.",
+          "El personal hace clic en “Entrar con Microsoft” y usa su cuenta de Teams del trabajo, con la verificación de IHH. Care Bridge nunca ve una contraseña."],
+  step2: ["Microsoft sends back who they are and their Care Bridge roles, set by IT in Microsoft Entra (OAuth 2.0 with PKCE, OpenID Connect).",
+          "Microsoft devuelve quién es la persona y sus roles en Care Bridge, que TI pone en Microsoft Entra (OAuth 2.0 con PKCE, OpenID Connect)."],
+  step3: ["The server checks every action against those roles. A button a role may not use is refused, whatever the screen shows.",
+          "El servidor revisa cada acción contra esos roles. Si un rol no puede usar un botón, se rechaza, sin importar lo que muestre la pantalla."],
+  ms_how: ["See the Microsoft sign-in, step by step", "Ver el inicio con Microsoft, paso a paso"],
+  entra_help: ["IT assigns these Microsoft Entra app roles to people or security groups. No role, no entry.",
+               "TI asigna estos roles de Microsoft Entra a personas o grupos. Sin rol, no se entra."],
+  th_entra: ["Entra app role", "Rol en Entra"], th_role: ["Care Bridge role", "Rol en Care Bridge"],
+  h_roles: ["What each role can do", "Qué puede hacer cada rol"],
+  roles_help: ["This is the same table the server enforces. Your role is highlighted. Only the clinical role can say no to a referral.",
+               "Es la misma tabla que aplica el servidor. Su rol está resaltado. Solo el rol clínico puede decir que no a un referido."],
+  th_action: ["Action", "Acción"],
+  r_coordinator: ["Coordinator", "Coordinador(a)"], r_lead: ["Lead", "Líder"], r_clinical: ["Clinical", "Clínico"], r_admin: ["Admin (IT)", "Admin (TI)"],
+  g_ref: ["Referrals", "Referidos"], g_kipu: ["Kipu and Teams", "Kipu y Teams"], g_admin: ["People and settings", "Personas y ajustes"], g_copilot: ["Copilot and staff tools", "Copilot y herramientas"],
+  "act:open": ["Open and work a referral", "Abrir y trabajar un referido"],
+  upload: ["Add a referral packet", "Agregar un paquete de referido"],
+  review: ["Have the reader check a packet", "Pedir que se lea un paquete"],
+  "act:handoff": ["Hand a referral to someone else", "Pasar un referido a otra persona"],
+  "act:intake_cleared": ["Clear intake (not final yet)", "Aprobar admisión (todavía no final)"],
+  "act:accepted": ["Accept a referral", "Aceptar un referido"],
+  "act:denied": ["Deny a referral", "Negar un referido"],
+  "act:clinical_note": ["Clinical notes and questions", "Notas y preguntas clínicas"],
+  "act:patient_arrived": ["Mark that the patient arrived", "Marcar que llegó el paciente"],
+  "act:withdrawn": ["Close a referral as lost", "Cerrar un referido como perdido"],
+  "act:kipu_id": ["Link a client's Kipu record", "Enlazar el expediente de Kipu"],
+  kipu_write: ["Write to Kipu (chart, packet, note)", "Escribir en Kipu (expediente, paquete, nota)"],
+  kipu_settings: ["Kipu connection settings", "Ajustes de conexión con Kipu"],
+  teams_card: ["Send a Teams card to the clinical line", "Mandar una tarjeta de Teams a la línea clínica"],
+  people_edit: ["Who gets staff alerts", "Quién recibe avisos"],
+  roles_edit: ["Change people's roles", "Cambiar los roles de las personas"],
+  settings: ["App settings", "Ajustes de la app"],
+  api_key: ["Claude API key", "Clave de la API de Claude"],
+  mcp_token: ["Use Care Bridge from Copilot", "Usar Care Bridge desde Copilot"],
+  staff_tools: ["Help for clients, practice, the rules", "Ayuda para clientes, práctica, las reglas"],
+  h_people: ["People and roles", "Personas y roles"],
+  people_help_practice: ["These are made-up practice people. A lead or admin can change a role here, and it applies at once.",
+                         "Son personas de práctica inventadas. Un líder o admin puede cambiar un rol aquí y aplica de inmediato."],
+  people_help_ro: ["Only a lead or admin can change roles.", "Solo un líder o admin puede cambiar roles."],
+  people_help_entra: ["Roles come from Microsoft Entra. Change them there; they apply at the next sign-in.",
+                      "Los roles vienen de Microsoft Entra. Cámbielos allí; aplican al volver a entrar."],
+  th_name: ["Name", "Nombre"], th_email: ["Email", "Correo"],
+  add_name: ["Name", "Nombre"], add_email: ["Work email", "Correo del trabajo"], add: ["Add person", "Agregar persona"],
+  saved: ["Saved", "Guardado"], added: ["Added", "Agregado"], you: ["you", "usted"],
+  h_copilot: ["Care Bridge in Microsoft 365 Copilot", "Care Bridge en Microsoft 365 Copilot"],
+  copilot_help: ["Staff can ask Copilot to check a referral, list missing documents or explain a rule. Copilot calls Care Bridge's tools as the person asking, with that person's role, so a coordinator's Copilot can't deny a referral either. The reading model can be Claude inside Copilot Studio once IHH confirms its Microsoft agreement covers it.",
+                 "El personal puede pedirle a Copilot que revise un referido, liste documentos que faltan o explique una regla. Copilot usa las herramientas de Care Bridge como la persona que pregunta, con su rol: el Copilot de un coordinador tampoco puede negar un referido. El modelo puede ser Claude dentro de Copilot Studio cuando IHH confirme que su acuerdo con Microsoft lo cubre."],
+  cstep1: ["IT adds the Care Bridge agent to Copilot (see copilot/README.md).", "TI agrega el agente de Care Bridge a Copilot (ver copilot/README.md)."],
+  cstep2: ["Each person makes their own token here. It lets Copilot act as them, with their role, for 12 hours.", "Cada persona crea su propio token aquí. Permite que Copilot actúe como esa persona, con su rol, por 12 horas."],
+  cstep3: ["Copilot sends it with each call to Care Bridge. Treat it like a password.", "Copilot lo manda en cada llamada a Care Bridge. Trátelo como una contraseña."],
+  make_token: ["Make my Copilot token", "Crear mi token de Copilot"],
+  token_for: ["Token for", "Token de"], token_hours: ["hours", "horas"], endpoint: ["Care Bridge address for Copilot", "Dirección de Care Bridge para Copilot"],
+  token_once: ["Shown once. Copy it into Copilot now.", "Se muestra una vez. Cópielo a Copilot ahora."], copy: ["Copy", "Copiar"],
+};
+const GROUPS = [
+  ["g_ref", ["act:open", "upload", "review", "act:handoff", "act:intake_cleared", "act:accepted", "act:denied", "act:clinical_note", "act:patient_arrived", "act:withdrawn"]],
+  ["g_kipu", ["act:kipu_id", "kipu_write", "kipu_settings", "teams_card"]],
+  ["g_admin", ["people_edit", "roles_edit", "settings", "api_key"]],
+  ["g_copilot", ["mcp_token", "staff_tools"]],
+];
+let LANG = (() => { try { return localStorage.getItem("cb_lang") || "en"; } catch (e) { return "en"; } })();
+let A = null;
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const t = (k) => (T[k] ? T[k][LANG === "es" ? 1 : 0] : k);
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (r.status === 401) { location.href = "/auth/signin?next=/static/access.html"; throw new Error("sign in"); }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+const post = (p, b) => api(p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b || {}) });
+function toast(msg) {
+  const el = $("#toast"); el.textContent = msg; el.classList.remove("hidden");
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.add("hidden"), 2600);
+}
+
+function render() {
+  document.documentElement.lang = LANG;
+  for (const id of ["back", "title", "signout"]) $("#" + id).textContent = t(id);
+  $("#lang").textContent = LANG === "es" ? "English" : "Español";
+  for (const id of ["h-signin", "h-roles", "h-people", "h-copilot"]) $("#" + id).textContent = t(id.replace("-", "_"));
+  $("#ms-how").textContent = t("ms_how");
+  $("#entra-help").textContent = t("entra_help");
+  $("#roles-help").textContent = t("roles_help");
+  $("#copilot-help").textContent = t("copilot_help");
+  $("#make-token").textContent = t("make_token");
+  $("#steps").innerHTML = ["step1", "step2", "step3"].map((k) => `<li>${esc(t(k))}</li>`).join("");
+  $("#copilot-steps").innerHTML = ["cstep1", "cstep2", "cstep3"].map((k) => `<li>${esc(t(k))}</li>`).join("");
+  if (!A) return;
+  const me = A.me || {};
+  $("#me").textContent = me.name ? `${t("signed")} ${me.name} (${t("r_" + me.role)}, ${t("via_" + (me.via || "practice"))})` : "";
+  const ms = $("#ms-state");
+  ms.textContent = t(A.microsoft ? "ms_on" : "ms_off");
+  ms.className = "a-pill " + (A.microsoft ? "ok" : "off");
+  $("#entra").innerHTML = `<tr><th>${esc(t("th_entra"))}</th><th>${esc(t("th_role"))}</th></tr>` +
+    Object.entries(A.entra).map(([k, v]) => `<tr><td><code>${esc(k)}</code></td><td>${esc(t("r_" + v))}</td></tr>`).join("");
+  // what each role can do
+  const head = A.roles.map((r) => `<th class="r${r === me.role ? " mine" : ""}">${esc(t("r_" + r))}</th>`).join("");
+  let rows = `<tr><th>${esc(t("th_action"))}</th>${head}</tr>`;
+  for (const [g, keys] of GROUPS) {
+    rows += `<tr class="grp"><td colspan="${A.roles.length + 1}">${esc(t(g))}</td></tr>`;
+    for (const k of keys.filter((k) => A.permissions[k])) {
+      rows += `<tr><td>${esc(t(k))}</td>${A.roles.map((r) => {
+        const yes = A.permissions[k].includes(r);
+        return `<td class="r${r === me.role ? " mine" : ""}"><span class="${yes ? "yes" : "no"}" aria-label="${yes ? "yes" : "no"}">${yes ? "✓" : "—"}</span></td>`;
+      }).join("")}</tr>`;
+    }
+  }
+  $("#matrix").innerHTML = rows;
+  // people
+  $("#people-help").textContent = t(A.mode !== "practice" ? "people_help_entra" : A.can_edit ? "people_help_practice" : "people_help_ro");
+  const opts = (cur) => A.roles.map((r) => `<option value="${r}"${r === cur ? " selected" : ""}>${esc(t("r_" + r))}</option>`).join("");
+  $("#people").innerHTML = `<tr><th>${esc(t("th_name"))}</th><th>${esc(t("th_email"))}</th><th>${esc(t("th_role"))}</th></tr>` +
+    A.people.map((p) => `<tr><td>${esc(p.name)}${p.email === me.email ? ` <span class="a-m">(${esc(t("you"))})</span>` : ""}</td><td class="a-m">${esc(p.email)}</td>
+      <td>${A.can_edit ? `<select data-email="${esc(p.email)}" aria-label="${esc(t("th_role"))}">${opts(p.role)}</select>` : esc(t("r_" + p.role))}</td></tr>`).join("");
+  document.querySelectorAll("#people select").forEach((s) => s.addEventListener("change", async () => {
+    try { await post("/api/access/people", { email: s.dataset.email, role: s.value }); toast(t("saved")); await load(); } catch (e) { toast(e.message); load(); }
+  }));
+  $("#add").innerHTML = A.can_edit
+    ? `<input id="add-name" placeholder="${esc(t("add_name"))}" maxlength="60"><input id="add-email" type="email" placeholder="${esc(t("add_email"))}">
+       <select id="add-role">${opts("coordinator")}</select><button class="a-btn" id="add-btn">${esc(t("add"))}</button>`
+    : "";
+  if (A.can_edit) $("#add-btn").addEventListener("click", async () => {
+    try {
+      await post("/api/access/people", { add: true, name: $("#add-name").value, email: $("#add-email").value, role: $("#add-role").value });
+      toast(t("added")); await load();
+    } catch (e) { toast(e.message); }
+  });
+}
+
+async function load() {
+  A = await api("/api/access");
+  render();
+}
+
+$("#lang").addEventListener("click", () => {
+  LANG = LANG === "es" ? "en" : "es";
+  try { localStorage.setItem("cb_lang", LANG); } catch (e) {}
+  render();
+});
+$("#make-token").addEventListener("click", async () => {
+  try {
+    const r = await post("/api/me/token");
+    const url = `${location.origin}/mcp`;
+    $("#token-out").innerHTML = `<p class="a-m">${esc(t("token_once"))} ${esc(t("token_for"))} ${esc((A.me || {}).name || "")}, ${r.hours} ${esc(t("token_hours"))}.</p>
+      <p><b>${esc(t("endpoint"))}:</b> <code>${esc(url)}</code></p>
+      <pre class="a-pre" id="tok">${esc(r.token)}</pre><button class="a-btn" id="copy-tok">${esc(t("copy"))}</button>`;
+    $("#copy-tok").addEventListener("click", () => navigator.clipboard?.writeText(r.token).then(() => toast(t("copy"))));
+  } catch (e) { toast(e.message); }
+});
+(async () => {
+  try { const s = await (await fetch("/api/state")).json(); if (s.lang && !localStorage.getItem("cb_lang")) LANG = s.lang; } catch (e) {}
+  render();
+  load().catch((e) => toast(e.message));
+})();
+</script>
+</body>
+</html>

@@ -51,8 +51,8 @@ PERMISSIONS = {
     "kipu_write": ("coordinator", "lead"), "kipu_settings": ("lead", "admin"),
     # staff alerts
     "alert_mark": _STAFF + ("admin",), "alert_mark_any": ("lead", "admin"), "people_edit": ("lead", "admin"),
-    # settings
-    "settings": ("lead", "admin"), "api_key": ("admin",),
+    # settings, and who has which role (practice people only; with Entra, roles are changed in Entra)
+    "settings": ("lead", "admin"), "api_key": ("admin",), "roles_edit": ("lead", "admin"),
     # a personal token so an agent (Microsoft 365 Copilot) can call /mcp as the person who made it
     "mcp_token": _STAFF + ("admin",),
     # help for clients, practice, rules: anyone signed in
@@ -98,14 +98,75 @@ def mode() -> str:
 
 
 def staff() -> list[dict]:
-    """IHH's staff list (email, name, role). Practice mode uses the invented list."""
+    """IHH's staff list (email, name, role). Practice mode uses the invented list, plus the people
+    added on the sign-in page and any role changes made on the Access page."""
     f = user_dir() / "staff.json"
     if mode() != "practice" and f.is_file():
         try:
             return json.loads(f.read_text(encoding="utf-8"))
         except ValueError:
             return []
-    return PRACTICE_STAFF
+    extra = _practice_extra()
+    people = PRACTICE_STAFF + extra["added"]
+    return [{**p, "role": extra["roles"].get(p["email"].lower(), p["role"])} for p in people]
+
+
+# ---- practice people: made-up accounts anyone can add on the sign-in page --------------------
+
+def _practice_file():
+    return user_dir() / "practice-staff.json"
+
+
+def _practice_extra() -> dict:
+    try:
+        d = json.loads(_practice_file().read_text(encoding="utf-8"))
+        return {"added": list(d.get("added") or []), "roles": dict(d.get("roles") or {})}
+    except (OSError, ValueError):
+        return {"added": [], "roles": {}}
+
+
+def _save_practice_extra(d: dict) -> None:
+    _practice_file().write_text(json.dumps(d, indent=1), encoding="utf-8")
+
+
+def add_practice_person(name: str, email: str, role: str) -> dict:
+    """A made-up account for practice. With IHH's Microsoft sign-in, accounts come from Entra instead."""
+    if mode() != "practice":
+        raise PermissionError("Accounts come from IHH's Microsoft sign-in. Add people in Microsoft Entra.")
+    name, email = (name or "").strip(), (email or "").strip().lower()
+    if not name or len(name) > 60:
+        raise ValueError("Type a name (up to 60 letters).")
+    if "@" not in email or " " in email or len(email) > 120:
+        raise ValueError("Type a work email, like name@ihh.example.org.")
+    if role not in ROLES:
+        raise ValueError("Pick a role.")
+    if lookup(email):
+        raise ValueError("Someone already uses that email.")
+    with _lock:
+        d = _practice_extra()
+        person = {"email": email, "name": name, "role": role}
+        d["added"].append(person)
+        _save_practice_extra(d)
+    return person
+
+
+def set_role(email: str, role: str) -> dict:
+    """Change a practice person's role. It applies at once, also to anyone signed in as them."""
+    if mode() != "practice":
+        raise PermissionError("Roles come from IHH's Microsoft Entra app roles. Change them in Entra.")
+    if role not in ROLES:
+        raise ValueError("Pick a role.")
+    who = lookup(email)
+    if not who:
+        raise ValueError("No one with that email.")
+    with _lock:
+        d = _practice_extra()
+        d["roles"][who["email"].lower()] = role
+        _save_practice_extra(d)
+        for s in _sessions.values():
+            if (s.get("email") or "").lower() == who["email"].lower():
+                s["role"], s["roles"] = role, [role]
+    return {**who, "role": role}
 
 
 def lookup(email: str) -> dict | None:
