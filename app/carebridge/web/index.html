@@ -20,14 +20,13 @@
   <nav class="tabs" role="tablist">
     <button role="tab" data-tab="referrals" class="on"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 3h5L16 13h4"/><path d="M5.5 5h13L21 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Z"/></svg><span data-i18n="tab_referrals"></span></button>
     <button role="tab" data-tab="resources"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg><span data-i18n="tab_resources"></span></button>
-    <button role="tab" data-tab="staff"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg><span data-i18n="tab_staff"></span></button>
     <button role="tab" data-tab="rules"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3Z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg><span data-i18n="tab_rules"></span></button>
-<a class="tab-link practice-only" href="/static/profiles.html"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 5.5a3 3 0 0 1 0 5.6M18 19a5 5 0 0 0-2.5-4.3"/></svg><span data-i18n="tab_profiles"></span></a>
 <a class="tab-link" href="/static/kipu.html"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span data-i18n="tab_kipu"></span></a>
 <a class="tab-link" href="/static/access.html"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span data-i18n="tab_access"></span></a>
 <a class="tab-link" href="/static/audit.html" data-permission="audit_view"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></svg><span data-i18n="tab_audit"></span></a>
   </nav>
   <div class="right">
+    <button class="btn practice-btn" id="open-practice" aria-controls="practice" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg><span data-i18n="tab_staff"></span></button>
     <div class="lang" role="group" data-i18n-aria="aria_lang">
       <button data-lang="en">English</button><button data-lang="es">Español</button>
     </div>
@@ -40,34 +39,22 @@
 <main>
   <!-- Referrals -->
   <section id="tab-referrals" class="tab on">
-    <div class="hero">
+    <div class="board-top">
       <div>
         <h1 data-i18n="hero_title"></h1>
-        <p data-i18n="hero_sub"></p>
+        <div class="board-meta">
+          <span class="clock"><span data-i18n="clock"></span> <b id="clock-time">–</b></span>
+          <div id="stats" class="stats"></div>
+        </div>
       </div>
-      <div class="hero-actions">
-        <label class="btn primary big" for="file-input" tabindex="0"><span data-i18n="add_packet"></span></label>
-        <button class="btn big ghost practice-only" id="start-demo" data-i18n="start_demo"></button>
-        <input type="file" id="file-input" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg,.eml" hidden>
-      </div>
+      <label class="btn primary big" for="file-input" tabindex="0"><span data-i18n="add_packet"></span></label>
+      <input type="file" id="file-input" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg,.eml" hidden>
     </div>
     <div id="drop" class="drop" data-i18n="drop_hint"></div>
     <div id="sim" class="sim hidden practice-only"></div>
     <div id="urgent" class="urgent hidden" role="status" aria-live="polite"></div>
-    <div class="board-head">
-      <div class="clock"><span data-i18n="clock"></span> <b id="clock-time">–</b>
-      </div>
-      <div class="whoami">
-        <label for="me" data-i18n="me_label"></label>
-        <select id="me"></select>
-        <div class="seg" role="group">
-          <button data-scope="all" class="on" data-i18n="scope_all"></button>
-          <button data-scope="mine" data-i18n="scope_mine"></button>
-        </div>
-      </div>
-      <div id="stats" class="stats"></div>
-    </div>
     <div id="peak" class="peak hidden"></div>
+    <div class="board-bar">
     <div class="finder" role="search">
       <input type="search" id="find-q" autocomplete="off" data-i18n-ph="find_ph" data-i18n-aria="find_label">
       <label class="finder-show"><span data-i18n="filter_label"></span>
@@ -86,7 +73,18 @@
       <button class="btn ghost hidden" id="find-clear" data-i18n="find_clear"></button>
       <span id="find-count" class="muted small" role="status" aria-live="polite"></span>
     </div>
-    <div id="stages" class="stages" role="group"></div>
+    <div class="bar-row">
+      <div id="stages" class="stages" role="group"></div>
+      <div class="whoami">
+        <label for="me" data-i18n="me_label"></label>
+        <select id="me"></select>
+        <div class="seg" role="group">
+          <button data-scope="all" class="on" data-i18n="scope_all"></button>
+          <button data-scope="mine" data-i18n="scope_mine"></button>
+        </div>
+      </div>
+    </div>
+    </div>
     <div id="queue" class="queue"></div>
     <!-- Staff alerts: drafts a person sends from Outlook or Teams -->
     <div class="panel" id="outbox-panel">
@@ -124,43 +122,48 @@
     </div>
   </section>
 
-  <!-- Staff -->
-  <section id="tab-staff" class="tab">
-    <div class="narrow">
-      <h1 data-i18n="staff_title"></h1>
-      <p class="muted" data-i18n="staff_sub"></p>
-      <div class="roles">
-        <button class="role on" data-role="lvn"><b data-i18n="role_lvn"></b><span data-i18n="role_lvn_do"></span></button>
-        <button class="role" data-role="coord"><b data-i18n="role_coord"></b><span data-i18n="role_coord_do"></span></button>
-        <button class="role" data-role="cm"><b data-i18n="role_cm"></b><span data-i18n="role_cm_do"></span></button>
-      </div>
-      <div id="role-lvn" class="role-panel">
-        <label class="lbl" data-i18n="jottings"></label>
-        <textarea id="jottings" rows="5"></textarea>
-        <div id="phi-jot" class="phi hidden"></div>
-        <button class="btn primary" id="make-note" data-i18n="make_note"></button>
-        <div id="note-out"></div>
-      </div>
-      <div id="role-coord" class="role-panel hidden">
-        <input id="explain-id" list="rule-ids" placeholder="ADL-2, MOB-4, DOC-6…">
-        <datalist id="rule-ids"></datalist>
-        <button class="btn primary" id="explain" data-i18n="explain"></button>
-        <div id="explain-out"></div>
-      </div>
-    </div>
-  </section>
-
   <!-- Rules -->
   <section id="tab-rules" class="tab">
     <div class="narrow">
       <h1 data-i18n="tab_rules"></h1>
       <p class="muted" data-i18n="gates_why"></p>
-      <input id="rule-search" data-i18n-ph="search_rules">
+      <div class="search-row">
+        <input type="search" id="rule-search" autocomplete="off" data-i18n-ph="search_rules" data-i18n-aria="search_rules">
+        <span id="rule-count" class="muted small" role="status" aria-live="polite"></span>
+      </div>
       <div id="rules-out"></div>
     </div>
   </section>
 
 </main>
+
+<!-- Practice: a side panel, so the board stays in view -->
+<aside id="practice" class="side-panel hidden" aria-labelledby="practice-title">
+  <div class="side-head">
+    <h2 id="practice-title" data-i18n="tab_staff"></h2>
+    <button class="btn ghost sm" id="practice-close" data-i18n="close"></button>
+  </div>
+  <p class="muted small" data-i18n="staff_sub"></p>
+  <div class="side-block practice-only">
+    <button class="btn primary" id="start-demo" data-i18n="start_demo"></button>
+    <a class="btn ghost" href="/static/profiles.html" data-i18n="tab_profiles"></a>
+  </div>
+  <details class="side-tool" id="tool-note" open>
+    <summary><b data-i18n="tool_note"></b><span class="muted small" data-i18n="role_lvn_do"></span></summary>
+    <label class="lbl" for="jottings" data-i18n="jottings"></label>
+    <textarea id="jottings" rows="5"></textarea>
+    <div id="phi-jot" class="phi hidden"></div>
+    <button class="btn primary" id="make-note" data-i18n="make_note"></button>
+    <div id="note-out"></div>
+  </details>
+  <details class="side-tool" id="tool-explain">
+    <summary><b data-i18n="tool_explain"></b><span class="muted small" data-i18n="role_coord_do"></span></summary>
+    <input id="explain-id" list="rule-ids" placeholder="ADL-2, MOB-4, DOC-6…" data-i18n-aria="tool_explain">
+    <datalist id="rule-ids"></datalist>
+    <button class="btn primary" id="explain" data-i18n="explain"></button>
+    <div id="explain-out"></div>
+  </details>
+</aside>
 
 <!-- Referral detail -->
 <div id="detail" class="drawer hidden" role="dialog" aria-modal="true">

@@ -171,10 +171,6 @@
   "en": "Every referral, answered with care.",
   "es": "Cada referido, respondido con cuidado."
  },
- "hero_sub": {
-  "en": "When we answer late, the patient may go somewhere else. This board starts a timer when a referral comes in. It gives each one an owner. It reads the pages. It helps you follow up with the hospital.",
-  "es": "Si respondemos tarde, el paciente puede irse a otro lugar. Este tablero pone un reloj cuando llega un referido. Le da un responsable. Lee las páginas. Le ayuda a dar seguimiento al hospital."
- },
  "start_demo": {
   "en": "Practice with made-up referrals",
   "es": "Practique con referidos inventados"
@@ -747,10 +743,6 @@
   "en": "Please take out names, dates and numbers first:",
   "es": "Por favor quite primero los nombres, fechas y números:"
  },
- "staff_title": {
-  "en": "Try it on your own work",
-  "es": "Pruébelo con su propio trabajo"
- },
  "staff_sub": {
   "en": "Practice with made-up examples. You see exactly what goes out and what it costs. You stay in charge.",
   "es": "Practique con ejemplos inventados. Usted ve exactamente lo que sale y cuánto cuesta. Usted decide."
@@ -759,29 +751,13 @@
   "en": "Turn your notes into drafts. You see exactly what goes out and what it costs. You stay in charge.",
   "es": "Convierta sus notas en borradores. Usted ve exactamente lo que sale y cuánto cuesta. Usted decide."
  },
- "role_lvn": {
-  "en": "LVN or medical assistant",
-  "es": "LVN o asistente médico"
- },
  "role_lvn_do": {
   "en": "Turn your shift notes into a clean note. It marks anything you did not write.",
   "es": "Convierta sus apuntes del turno en una nota limpia. Marca todo lo que usted no escribió."
  },
- "role_coord": {
-  "en": "Referral coordinator",
-  "es": "Coordinador/a de referidos"
- },
  "role_coord_do": {
   "en": "Ask what a rule means and where to find it in the pages.",
   "es": "Pregunte qué quiere decir una regla y dónde buscarla en las páginas."
- },
- "role_cm": {
-  "en": "Case manager",
-  "es": "Administrador/a de casos"
- },
- "role_cm_do": {
-  "en": "Find help for a client from a checked list.",
-  "es": "Busque ayuda para un cliente en una lista revisada."
  },
  "jottings": {
   "en": "Your notes from the shift",
@@ -2258,5 +2234,17 @@
  "where_step": {
   "en": "Step {n} of {total}",
   "es": "Paso {n} de {total}"
+ },
+ "tool_note": {
+  "en": "Write a shift note",
+  "es": "Escribir una nota del turno"
+ },
+ "tool_explain": {
+  "en": "Explain a rule",
+  "es": "Explicar una regla"
+ },
+ "rules_none": {
+  "en": "No rules match. Try one short word.",
+  "es": "Ninguna regla coincide. Pruebe con una palabra corta."
  }
 }
