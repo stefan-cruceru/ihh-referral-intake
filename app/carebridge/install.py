@@ -54,6 +54,7 @@ def install_copilot_files() -> str:
 
 
 def install() -> int:
+    print("Prototype from a one-day event. Do not install at IHH without IHH IT and compliance sign-off.\n")
     if not getattr(sys, "frozen", False):
         print("install works from the built exe. From source, see the README for the MCP config.")
         return 1

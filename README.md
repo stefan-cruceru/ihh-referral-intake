@@ -11,6 +11,10 @@ and 3 Make AI approachable are built in.
 
 Lamplight follows the [In our language / En nuestro idioma](campaign/README.md) identity: a warm desk lamp, Public Sans, and people who make every decision. The executable, settings folder and tool identifiers keep their existing `ihh-care-bridge` names for compatibility.
 
+**The campaign is a draft.** The name "Lamplight", the posters and the letters in [campaign/](campaign/README.md)
+are a proposal from our hackathon team. IHH has not approved them. The letters are drafts for IHH
+leaders to change or throw out. They are not statements by IHH.
+
 ## Resumen en español
 
 **El problema.** Los hospitales mandan referidos de 14 a 34 páginas por fax. IHH promete responder
@@ -28,8 +32,15 @@ oscuro, colores para daltónicos y un modo fácil de ver con letras y botones m�
 órdenes a la IA, o un archivo con partes ocultas, la app aparta esas páginas y retiene el referido
 para que una persona lo revise.
 
-**Cómo usarla.** Haga doble clic en `ihh-care-bridge.exe`. Se abre en el navegador. Haga clic en
-"Practique con referidos inventados" para practicar sin clave.
+**Cómo usarla.** Primero hay que crear el programa: en la carpeta `app`, corra `.\build.ps1` (vea
+"Try it" más abajo). Luego haga doble clic en `app\dist\ihh-care-bridge.exe`. Se abre en el
+navegador. Haga clic en "Practique con referidos inventados" para practicar sin clave.
+
+**Conexiones apagadas.** Por defecto, la app solo se conecta al modelo de IA. Como decisión del
+equipo, el código también trae una conexión con Kipu (el sistema de registros de IHH), el inicio de
+sesión con Teams y un modo de producción para referidos reales. Todo viene apagado. Para usarlo,
+IHH necesita el visto bueno de su equipo de TI y un BAA. Esto va más allá de la regla del evento de
+hacer solo un prototipo.
 
 ## The problem
 
@@ -128,6 +139,8 @@ detail, and stay drafts unless IHH agrees to send them on their own.
 
 ## Try it
 
+Start each block from the repo root (the folder with this README).
+
 **The exe (Windows, no install needed):**
 
 ```powershell
@@ -135,10 +148,11 @@ cd app
 .\build.ps1                      # makes app\dist\ihh-care-bridge.exe
 .\dist\ihh-care-bridge.exe       # opens the app in your browser
 .\dist\ihh-care-bridge.exe install   # optional: Start menu + Copilot / Claude Desktop
+cd ..                            # back to the repo root
 ```
 
-Click **Practice with made-up referrals** to run the 4 PM demo with the synthetic practice
-patients. No key needed. Open **Practice patients** to see each made-up patient's profile, their
+Click **Practice with made-up referrals** to run the demo with the synthetic practice
+patients (the event demos are Saturday, October 17, from 4:30 PM). No key needed. Open **Practice patients** to see each made-up patient's profile, their
 faxed pages, what the app points out, the organizers' answer, and a printable next-steps PDF made
 for that patient.
 To see the security check, upload `app/demo/attack/attack-packet.pdf`: an invented packet with an
@@ -157,6 +171,7 @@ pip install -r requirements.txt
 python -m carebridge              # the app
 python -m carebridge mcp          # MCP server on stdio
 python -m pytest tests            # tests on the safety logic and the practice patients
+cd ..                             # back to the repo root
 ```
 
 **Docker (one command):** `.\start.ps1` on Windows or `./start.sh` on Mac or Linux. It builds the
@@ -168,8 +183,8 @@ See [docs/run-with-docker.md](docs/run-with-docker.md).
 practice demo never needs them: it uses the organizers' 10 synthetic patients in
 `app/demo/synthetic/`.
 
-**Score it:** `python app/eval_packets.py run`, then `python app/eval_packets.py score`. The
-first step never opens `eval/decisions.json`.
+**Score it:** `python app/eval_packets.py run`, then `python app/eval_packets.py score`. Run both from the repo root. The
+first step never opens `challenges/1-referral-intake/eval/decisions.json`.
 
 ## What is real and what is mocked
 
@@ -186,7 +201,7 @@ first step never opens `eval/decisions.json`.
 | Critical values (EF, glucose, SpO2, wound, swab, dialysis chair) | Working, plain code over the review. The list is the team's starting set, not IHH policy |
 | Clinical reviewer notes and turnaround | Working. Notes stay in memory; the log keeps only that a note was added |
 | Overnight packets | Marked. Whether the 2 hours start on arrival or at the 7 AM shift is a setting until IHH answers |
-| Monday 4 PM demo and practice patients | The organizers' 10 synthetic patients (S01-S10): invented people with realistic faxed packets. Practice reviews come from the organizers' answer key, run through the app's own checks |
+| Event demo (Saturday, October 17, from 4:30 PM) and practice patients | The organizers' 10 synthetic patients (S01-S10): invented people with realistic faxed packets. Practice reviews come from the organizers' answer key, run through the app's own checks |
 | Per-patient next-steps PDF | Working. Needs come from the patient's story; resources come only from the sourced list (Claude picks them when a key is set, otherwise matched by need) |
 | Manual vs. tool comparison | Placeholder numbers (40 vs 10 minutes per referral) until IHH gives real ones |
 | Outcome log and weekly report | Working, local SQLite. Practice runs are marked and can be left out |
@@ -234,7 +249,20 @@ first step never opens `eval/decisions.json`.
 ## Data and privacy
 
 This project uses only data from the event repo and public sources. It contains no real patient or
-client information. It does not connect to any Illumination Health + Home system.
+client information. By default, it does not connect to any Illumination Health + Home system.
+
+**Built but off.** As a team choice, the repo also has code for:
+
+- **Live Kipu** (IHH's record system), with `CAREBRIDGE_KIPU_MODE=live` (writes also need
+  `CAREBRIDGE_KIPU_WRITE`), and **Teams sign-in** through Microsoft Entra ID, with
+  `CAREBRIDGE_AUTH=teams`. See [docs/kipu-and-teams.md](docs/kipu-and-teams.md).
+- **Production mode** for real referrals (`CAREBRIDGE_PRODUCTION=1`, in `app/carebridge/config.py`,
+  added in PR #45). The production mode bullet below says what it changes.
+
+All of these are off by default. Do not turn them on without IHH IT and a BAA. They go past the
+event's "prototype only" rule in [CLAUDE.md](CLAUDE.md), which says not to connect to any IHH
+system. We built them so IHH can pick them up after the event.
+
 
 - Packet pages and reviews live only in the app's memory and are gone when it closes.
 - The local log keeps case numbers, times, owners, routes, decisions and reasons. Never chart text.
@@ -247,7 +275,8 @@ client information. It does not connect to any Illumination Health + Home system
   by drag and drop, the watched inbox folder, email and the `/send` page. Typed text is still checked.
 - Packets that try to give the AI orders, or carry active PDF content, are caught, isolated and put
   on a security hold. Executables and fake files are blocked and never opened.
-- The model endpoint is the only outside call. It is one setting, so IHH can use an endpoint
+- By default, the model endpoint is the only outside call. Live Kipu and Teams sign-in add calls
+  to Kipu and Microsoft only if IHH turns them on. The model endpoint is one setting, so IHH can use an endpoint
   covered by its BAA.
 - API keys stay in Windows Credential Manager or environment variables, never in git. In Docker, a key added in Settings goes in a file only the app can read, inside its data volume.
 
