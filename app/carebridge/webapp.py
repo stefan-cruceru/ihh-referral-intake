@@ -16,7 +16,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import APP_NAME, __version__, config, drafts, handout, intake, llm, mcp, phi, resources, rules, staff, store, tracker
+from . import APP_NAME, __version__, auth, config, drafts, gateway, handout, intake, llm, mcp, phi, resources, rules, staff, store, tracker
 from .pages import load_packet
 from .paths import BUNDLE, DEMO_DIR, FROZEN, load_json, packets_dir
 
@@ -230,6 +230,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self._local_only():
             return
+        if not gateway.allowed(self, urlparse(self.path).path) or gateway.handle(self, "GET"):
+            return
         u = urlparse(self.path)
         q = parse_qs(u.query)
         p = u.path
@@ -294,6 +296,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self._local_only():
             return
+        if not gateway.allowed(self, urlparse(self.path).path) or gateway.handle(self, "POST"):
+            return
         p = urlparse(self.path).path
         try:
             if p == "/mcp":
@@ -346,7 +350,10 @@ class Handler(BaseHTTPRequestHandler):
                 if what == "act":
                     b = self._jbody()
                     try:
-                        c = TRACK.act(cid, b["action"], b.get("who", ""), b.get("reason", ""))
+                        # With sign-in on, the person and role come from the session, not the request.
+                        me = gateway.person(self) if auth.mode() != "off" else None
+                        c = TRACK.act(cid, b["action"], me["name"] if me else b.get("who", ""), b.get("reason", ""),
+                                      role=me["role"] if me else None)
                     except ValueError as e:
                         return self._json({"error": str(e)}, 400)
                     return self._json({"card": TRACK.view(c["id"])})
