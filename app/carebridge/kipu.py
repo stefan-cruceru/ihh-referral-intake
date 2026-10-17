@@ -222,6 +222,6 @@ def add_intake_note(kipu_id: str, report: dict, decision: str, who: str) -> dict
         "gates": {g: v["status"] for g, v in report["gates"].items()},
         "not_met": [r["rule_id"] for r in report["rules"] if r["status"] == "not_met"],
         "missing_documents": [d["doc_id"] for d in report["checklist"] if d["status"] == "missing"],
-        "source": "IHH Care Bridge (AI-assisted review; a person decided)",
+        "source": "Lamplight (AI-assisted review; a person decided)",
     }
     return client().post("create_evaluation", {"patient_evaluation": note}, pid=kipu_id)

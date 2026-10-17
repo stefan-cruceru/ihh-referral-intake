@@ -71,7 +71,7 @@ def finish_sign_in(code: str, state: str, redirect_uri: str) -> tuple[dict, str]
     if roles is not None:
         # IHH's Entra app roles decide what this person may do.
         if not roles:
-            raise PermissionError("You signed in, but IHH has not given you a Care Bridge role. Ask IT to assign one.")
+            raise PermissionError("You signed in, but IHH has not given you a Lamplight role. Ask IT to assign one.")
         return {"email": email, "name": claims.get("name") or email, "role": auth.primary_role(roles),
                 "roles": roles, "from": "entra"}, p["next"]
     person = auth.lookup(email)

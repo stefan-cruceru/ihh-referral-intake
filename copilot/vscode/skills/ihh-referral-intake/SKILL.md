@@ -4,7 +4,7 @@ description: Check a hospital referral packet against Illumination Health + Home
 ---
 # IHH referral intake
 
-Care Bridge reads a faxed referral packet and checks it against IHH's admission rules. It flags.
+Lamplight reads a faxed referral packet and checks it against IHH's admission rules. It flags.
 A person decides, and only a clinician can deny.
 
 ## Steps

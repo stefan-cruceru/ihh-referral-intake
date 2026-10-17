@@ -154,14 +154,14 @@ function detail() {
       <p class="pp-muted">${esc(t("practice"))}</p>`;
     for (const g of ["self_care", "behavior"]) right += `<div><b>${esc(t("gate_" + g))}:</b> ${esc(t(r.gates[g].status))}</div>`;
     const flags = r.rules.filter((x) => x.status === "not_met" || (x.status === "cant_tell" && x.fact_ids.length));
-    right += flags.map((x) => `<div class="pp-flag ${esc(x.status)}"><b>${esc(x.rule_id)}</b> · ${esc(t(x.status))}<div>${esc(x.explanation)}</div>${x.fact_ids.map(quote).join("")}</div>`).join("");
+    right += flags.map((x) => `<div class="pp-flag ${esc(x.status)}"><b>${esc(x.rule_id)}</b> · ${esc(t(x.status))}<div>${esc(LANG === "es" ? x.explanation_es : x.explanation)}</div>${x.fact_ids.map(quote).join("")}</div>`).join("");
     right += r.diagnoses.filter((d) => d.ineligible).map((d) => `<div class="pp-flag not_met"><b>${esc(d.rule_id)}</b> · ${esc(d.text)}${d.fact_ids.map(quote).join("")}</div>`).join("");
     const miss = r.checklist.filter((c) => c.status === "missing");
     if (miss.length) right += `<h3>${esc(t("missing"))}</h3><ul>${miss.map((c) => `<li>${esc(c.doc_id)}: ${esc(c.text)}</li>`).join("")}</ul>`;
-    if (r.conflicts.length) right += `<h3>${esc(t("conflicts"))}</h3>${r.conflicts.map((c) => `<p>${esc(c.description)}</p>`).join("")}`;
-    if (r.questions.length) right += `<h3>${esc(t("ask"))}</h3><ul>${r.questions.map((q) => `<li>${esc(q.en)}</li>`).join("")}</ul>`;
+    if (r.conflicts.length) right += `<h3>${esc(t("conflicts"))}</h3>${r.conflicts.map((c) => `<p>${esc(LANG === "es" ? c.description_es : c.description)}</p>`).join("")}`;
+    if (r.questions.length) right += `<h3>${esc(t("ask"))}</h3><ul>${r.questions.map((q) => `<li>${esc(q[LANG])}</li>`).join("")}</ul>`;
     right += `<div class="pp-actions"><button class="pp-btn" id="reveal">${esc(t("show_answer"))}</button></div>
-      <div class="pp-answer" id="answer" hidden><h3>${esc(t("answer"))}: ${esc(t(r.answer_key_decision))}</h3><p>${esc(r.summary)}</p><p class="pp-muted">${esc(t("answer_note"))}</p></div>`;
+      <div class="pp-answer" id="answer" hidden><h3>${esc(t("answer"))}: ${esc(t(r.answer_key_decision))}</h3><p>${esc(LANG === "es" ? r.summary_es : r.summary)}</p><p class="pp-muted">${esc(t("answer_note"))}</p></div>`;
   }
   right += `<div class="pp-actions"><button class="pp-btn primary" id="send">${esc(t("send"))}</button>
     <a class="pp-btn" href="/api/profiles/${encodeURIComponent(p.id)}/handout.pdf?lang=${LANG}" target="_blank" rel="noopener">${esc(t("pdf"))}</a>

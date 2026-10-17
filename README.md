@@ -1,4 +1,4 @@
-# IHH Care Bridge
+# Lamplight
 
 > For IHH's referral team, nurses and case managers: one app on your own computer that reads hospital
 > referrals, keeps the 2-hour clock, follows up with hospitals, and helps clients find what's next.
@@ -8,6 +8,8 @@
 **Challenge:** All three, as one tool. 1 Referral intake is the core. 2 Finding the right resource
 and 3 Make AI approachable are built in.
 **Built at:** Orange County | Claude Impact Lab, October 17, 2026, with Illumination Health + Home
+
+Lamplight follows the [In our language / En nuestro idioma](campaign/README.md) identity: a warm desk lamp, Public Sans, and people who make every decision. The executable, settings folder and tool identifiers keep their existing `ihh-care-bridge` names for compatibility.
 
 ## Resumen en español
 
@@ -92,7 +94,7 @@ Plus:
   easy-to-see mode (bigger words and buttons, darker lines, no italics, nothing that moves). The
   choice is saved on that computer. There is also a "skip to the main part" link for keyboard users.
 - **Copilot plugin.** The same exe is an MCP server for GitHub Copilot in VS Code and Claude
-  Desktop. In Copilot Chat, pick **IHH Care Bridge** in the agent dropdown, or type `/` and pick
+  Desktop. In Copilot Chat, pick **Lamplight** in the agent dropdown, or type `/` and pick
   a command such as `check_referral`: a pick list offers the practice patients, and the whole
   check shows in the chat. There is also a Microsoft 365 Copilot agent package. See [copilot/README.md](copilot/README.md).
 - **Kipu and Teams.** Referrals waiting in Kipu come onto the board with one click. The team's

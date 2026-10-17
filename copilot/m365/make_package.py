@@ -8,7 +8,7 @@ import json
 import zipfile
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
@@ -78,17 +78,12 @@ def instructions() -> str:
 
 
 def icons():
-    color = Image.new("RGBA", (192, 192), (31, 111, 120, 255))
-    d = ImageDraw.Draw(color)
-    d.arc([28, 70, 164, 210], start=200, end=340, fill="white", width=16)
-    for x, top in ((54, 124), (96, 100), (138, 124)):
-        d.line([x, top, x, 156], fill="white", width=16)
+    mark = Image.open(REPO / "campaign/logo/lamplight-logo-1024.png").convert("RGBA")
+    color = Image.new("RGBA", (192, 192), "#FFF8F0")
+    color.alpha_composite(mark.resize((160, 160), Image.Resampling.LANCZOS), (16, 16))
     color.save(BUILD / "color.png")
-    outline = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
-    d = ImageDraw.Draw(outline)
-    d.arc([3, 11, 29, 36], start=200, end=340, fill="white", width=3)
-    for x, top in ((8, 20), (16, 16), (24, 20)):
-        d.line([x, top, x, 27], fill="white", width=3)
+    outline = Image.new("RGBA", (32, 32), "white")
+    outline.putalpha(mark.resize((32, 32), Image.Resampling.LANCZOS).getchannel("A"))
     outline.save(BUILD / "outline.png")
 
 

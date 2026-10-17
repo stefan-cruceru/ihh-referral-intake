@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.4/schema.json",
   "version": "v1.4",
-  "name": "IHH Care Bridge",
+  "name": "Lamplight",
   "description": "Checks a hospital referral against IHH's recuperative care admission rules. Shows the two big checks first, cites rule IDs, says when it can't tell, and drafts messages for a person to send. A person decides. Only a clinician can deny.",
   "instructions": "$[file('instructions.txt')]",
   "conversation_starters": [

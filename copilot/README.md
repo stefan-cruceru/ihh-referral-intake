@@ -1,6 +1,6 @@
-# Using IHH Care Bridge from Copilot
+# Using Lamplight from Copilot
 
-Care Bridge works three ways. Pick the one your team uses.
+Lamplight works three ways. Pick the one your team uses.
 
 ## 1. GitHub Copilot in VS Code
 
@@ -10,10 +10,10 @@ Run this once:
 ihh-care-bridge.exe install
 ```
 
-It copies the program to your user folder, adds a Start menu shortcut, adds Care Bridge to
+It copies the program to your user folder, adds a Start menu shortcut, adds Lamplight to
 VS Code's `mcp.json`, and adds two files Copilot Chat reads:
 
-- the **IHH Care Bridge** agent (`%APPDATA%\Code\User\prompts\ihh-care-bridge.agent.md`)
+- the **Lamplight** agent (`%APPDATA%\Code\User\prompts\ihh-care-bridge.agent.md`)
 - the **ihh-referral-intake** skill (`%USERPROFILE%\.copilot\skills\ihh-referral-intake\SKILL.md`)
 
 Both come from [`vscode/`](vscode/). Restart VS Code after you install.
@@ -21,7 +21,7 @@ Both come from [`vscode/`](vscode/). Restart VS Code after you install.
 ### Try it
 
 1. Open Copilot Chat (Ctrl+Alt+I) and sign in to GitHub if it asks.
-2. Open the agent dropdown under the chat box and pick **IHH Care Bridge**.
+2. Open the agent dropdown under the chat box and pick **Lamplight**.
 3. Type `/` and pick a command. A box opens with a pick list:
 
 | Command | What it shows in the chat |
@@ -80,10 +80,10 @@ center. For a test, a user with permission can use **Apps > Manage your apps > U
 in Teams.
 
 **What it can and can't do:** The Microsoft 365 agent knows IHH's admission rules and how to
-write about them. It does **not** run Care Bridge's packet checker, because it can't reach a
+write about them. It does **not** run Lamplight's packet checker, because it can't reach a
 program on your computer. So it has no page-by-page quote check.
 
-**For a pilot:** run the Care Bridge engine as a web service inside IHH's Microsoft setup, under
+**For a pilot:** run the Lamplight engine as a web service inside IHH's Microsoft setup, under
 IHH's BAA, and point the agent at it. The app already answers MCP requests at `POST /mcp`, which
 needs a signed-in person's token and checks their role for each tool
 (see [docs/kipu-and-teams.md](../docs/kipu-and-teams.md#sign-in)). That connection is not built yet.
@@ -91,4 +91,4 @@ needs a signed-in person's token and checks their role for each tool
 ## Privacy
 
 Use only de-identified or invented information until IHH has a BAA that covers the AI service.
-Every message Care Bridge writes is a draft. A person checks it and sends it.
+Every message Lamplight writes is a draft. A person checks it and sends it.
