@@ -84,7 +84,10 @@ Plus:
 
 - **Help for clients** (Challenge 2). Describe the situation; Claude picks from the sourced list in
   `challenges/2-finding-the-right-resource/data/`. Phone numbers, hours and rules on screen come
-  from that list, never from Claude. Danger words bring up 988, OC Links and 211 first.
+  from that list, never from Claude. Client guidance uses fixed English or Spanish templates based
+  on the listed access and referral fields; generated or caller-supplied advice is not shown or
+  printed. Staff must still confirm fit, availability and the source facts. Danger words bring up
+  988, OC Links and 211 first.
 - **A take-home PDF for the client.** One or two large-print pages, in color or black and white:
   "Your next steps / Sus próximos pasos". Each step shows what to do first, phone, address and hours
   (from the sourced list only), boxes to tick ("I called", "I went", "Done") and a notes box for

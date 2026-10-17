@@ -1,8 +1,9 @@
 """Finding the right next door (Challenge 2), for IHH clients getting ready to leave care.
 
-Claude only picks resource IDs from the sourced seed list and explains the fit. Every phone
-number, address, hour and eligibility line shown comes from the seed file, never from Claude, so
-nothing can be invented. Each card shows the date it was last checked and its source link.
+Claude only picks resource IDs from the sourced seed list. Client guidance uses fixed English or
+Spanish templates selected by the seed's access and referral fields, never model-written prose.
+Phone numbers, addresses, hours and eligibility come from the seed, which staff must re-verify.
+Each card shows the date it was last checked and its source link.
 """
 
 import re
@@ -20,67 +21,60 @@ PICK_SCHEMA = S({"type": "object", "properties": {
     "needs": {"type": "array", "items": {"type": "string", "enum": NEEDS}},
     "picks": {"type": "array", "items": {"type": "object", "properties": {
         "resource_id": {"type": "string"},
-        "why": {"type": "string"},
-        "first_step": {"type": "string"},
-        "watch_out": {"type": "string"},
     }}},
-    "plan_today": {"type": "string"},
-    "ask_staff": {"type": "array", "items": {"type": "string"}},
 }})
 
 PICK_PROMPT = """You help a case manager at Illumination Health + Home (IHH) find next steps for a client who is
 getting ready to leave recuperative care. You get the client's situation and a list of resources, each with an
 ID. Pick up to 6 resources FROM THE LIST ONLY that fit the client's needs and constraints (language, mobility,
-phone, ID, referral rules). Never mention a service, phone number, address, hour or rule that is not in the
-list; the app shows those details itself. If nothing fits a need, say so in ask_staff.
-Write in {lang}, so the client can follow it.
-- why: one sentence on why this fits.
-- first_step: the first concrete thing to do today, using only what the list says about how to access it.
-- watch_out: referral-only, hours, documents to bring, or "" if nothing.
-- plan_today: 2 to 3 short sentences.
-- ask_staff: what a staff member must confirm or help with.
-No medical, legal or immigration advice: point to staff. If immigration status comes up, do not ask about it.""" + llm.PLAIN
+phone, ID, referral rules). Return only the need codes and ranked resource IDs. If no listed resource
+fits, return an empty picks list. Do not write client advice or invent resource IDs. The app supplies
+the source facts and fixed guidance separately. If immigration status comes up, do not ask about it."""
 
 
-# Facts the client acts on (phone, place, hours) come from the seed fields only. Anything like them in
-# the model's own words is taken out before it is shown or printed.
-_PHONE = re.compile(r"(?<!\d)(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}(?!\d)")
-_ADDRESS = re.compile(r"\b\d{1,6}\s+(?:[NSEW]\.?\s+)?(?:[A-Za-z0-9]+\.?\s+){0,3}?(?:st|street|ave|avenue|blvd|boulevard|"
-                      r"rd|road|dr|drive|ln|lane|way|ct|court|pl|place|calle|avenida)\b\.?(?:\s*(?:#|suite|ste\.?|apt\.?)\s*\w+)?",
-                      re.I)
-_HOURS = [
-    re.compile(r"\b\d{1,2}(?::\d{2})?\s*(?:a\.?\s?m\.?|p\.?\s?m\.?)(?![a-z])(?:\s*(?:-|to|a|hasta)\s*\d{1,2}(?::\d{2})?\s*"
-               r"(?:(?:a\.?\s?m\.?|p\.?\s?m\.?)(?![a-z]))?)?", re.I),
-    re.compile(r"\b\d{1,2}:\d{2}(?:\s*(?:-|to|a|hasta)\s*\d{1,2}:\d{2})?\b"),
-    re.compile(r"\b24\s*/\s*7\b|\b24 hours\b|\b24 horas\b", re.I),
-    re.compile(r"\b(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)(?:day)?s?\s*(?:-|to|through|thru)\s*"
-               r"(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)(?:day)?s?\b", re.I),
-    re.compile(r"\b(?:lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)s?\s*(?:-|a|hasta)\s*"
-               r"(?:lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)s?\b", re.I),
-]
-# Medical, legal or immigration advice is for staff, never the client's page: a field with any of
-# these words is left empty. English and Spanish.
-ADVICE = re.compile(
-    r"\b(?:dose|doses|dosage|dosis|medications?|medicines?|medicamentos?|medicinas?|prescriptions?|"
-    r"stop taking|dejar de tomar|lawyers?|attorneys?|legal advice|consejo legal|asesor[ií]a legal|abogad[oa]s?|"
-    r"immigration|inmigraci[oó]n|immigrant|inmigrante|visas?|green card|tarjeta verde|asylum|asilo|"
-    r"deport\w*|citizenship|ciudadan[ií]a|undocumented|indocumentad[oa]s?)\b", re.I)
+# A word blacklist cannot establish that arbitrary model prose contains no advice or invented
+# facts. Only the templates below reach client guidance; all facts remain in source fields.
+GUIDANCE = {
+    "why": ("Review this option with staff to see whether it fits your needs.",
+            "Revise esta opción con el personal para ver si responde a sus necesidades."),
+    "phone": ("Ask staff to help you call and confirm access.",
+              "Pida al personal ayuda para llamar y confirmar el acceso."),
+    "walk-in": ("Ask staff where to go and whether you can walk in.",
+                "Pregunte al personal adónde ir y si puede acudir sin cita."),
+    "appointment": ("Ask staff to help you contact the service about an appointment.",
+                    "Pida al personal ayuda para contactar al servicio y consultar sobre una cita."),
+    "online": ("Ask staff to help check the service's website and application steps.",
+               "Pida al personal ayuda para revisar el sitio web y los pasos de solicitud."),
+    "referral-only": ("Ask staff to help arrange the required referral.",
+                      "Pida al personal ayuda para tramitar el referido requerido."),
+    "mixed": ("Ask staff to help you contact the service and confirm access.",
+              "Pida al personal ayuda para contactar al servicio y confirmar el acceso."),
+    "watch_out": ("Confirm availability, hours, eligibility and documents with staff before you go.",
+                  "Confirme con el personal la disponibilidad, el horario, los requisitos y los documentos."),
+    "plan": ("Review options with staff; confirm access, availability and eligibility.",
+             "Revise las opciones con el personal; confirme el acceso, la disponibilidad y los requisitos."),
+    "no_options": ("Ask staff to help find and verify another option.",
+                   "Pida al personal ayuda para buscar y verificar otra opción."),
+}
 
 
-def client_text(text: str | None) -> str:
-    """Model-written words for the client (why, first step, watch out, plan for today), made safe to show:
-    phone numbers, street addresses and hours are taken out, and a field that gives medical, legal or
-    immigration advice comes back empty. The one place this is done, for the screen and the PDF."""
-    text = text or ""
-    if ADVICE.search(text):
-        return ""
-    for pat in (_PHONE, _ADDRESS, *_HOURS):
-        text = pat.sub("", text)
-    text = re.sub(r"\(\s*\)", "", text)
-    text = re.sub(r"\s+([,.;:])", r"\1", text)
-    text = re.sub(r"([,;:])(?:\s*[,;:])+", r"\1", text)
-    text = re.sub(r"[,;:]+(?=\.)", "", text)
-    return " ".join(text.split()).strip(" ,;:")
+def _guidance(key: str, lang: str) -> str:
+    return GUIDANCE[key][1 if lang == "es" else 0]
+
+
+def client_guidance(source: dict, lang: str = "en") -> dict:
+    """The caller must pass a canonical catalog record, never a browser/model-supplied record."""
+    access = source.get("how_to_access")
+    if source.get("referral_required") or access == "referral-only":
+        access = "referral-only"
+    if access not in {"phone", "walk-in", "appointment", "online", "referral-only", "mixed"}:
+        access = "mixed"
+    return {"why": _guidance("why", lang), "first_step": _guidance(access, lang),
+            "watch_out": _guidance("watch_out", lang)}
+
+
+def client_plan(lang: str = "en", has_resources: bool = True) -> str:
+    return _guidance("plan" if has_resources else "no_options", lang)
 
 
 def catalog() -> list[dict]:
@@ -95,20 +89,19 @@ def scenarios() -> list[dict]:
     return load_json(SCENARIOS)["scenarios"]
 
 
-def _card(r: dict, why: str = "", first_step: str = "", watch_out: str = "") -> dict:
+def _card(r: dict, lang: str = "en") -> dict:
     keep = ["id", "name", "organization", "category", "description", "services", "eligibility", "how_to_access",
             "referral_required", "phone", "address", "city", "hours", "languages", "cost", "website",
             "source_url", "verified_date", "confidence", "notes"]
-    card = {**{k: r.get(k) for k in keep}, "why": client_text(why), "first_step": client_text(first_step),
-            "watch_out": client_text(watch_out)}
+    card = {**{k: r.get(k) for k in keep}, **client_guidance(r, lang)}
     if {"survivors", "domestic-violence", "confidential-location"} & set(r.get("tags", [])):
         card["address"] = None  # never show where a survivor-serving program is
     return card
 
 
-def safety_cards() -> list[dict]:
+def safety_cards(lang: str = "en") -> list[dict]:
     by_id = {r["id"]: r for r in catalog()}
-    return [_card(by_id[i]) for i in ("988-suicide-and-crisis-lifeline", "oc-links", "211-orange-county") if i in by_id]
+    return [_card(by_id[i], lang) for i in ("988-suicide-and-crisis-lifeline", "oc-links", "211-orange-county") if i in by_id]
 
 
 # Programs only for a group: skipped by the no-AI match unless the situation names that group.
@@ -154,7 +147,7 @@ def needs_from_text(text: str) -> list[str]:
     return [n for n, words in NEED_WORDS.items() if any(normalize(w) in low for w in words)]
 
 
-def offline_match(needs: list[str], limit: int = 6, situation: str = "") -> list[dict]:
+def offline_match(needs: list[str], limit: int = 6, situation: str = "", lang: str = "en") -> list[dict]:
     """No-AI fallback: match by category and tags, leaving out programs for a group the situation
     doesn't mention (a families-only program for a single adult, for example)."""
     low = f" {situation.lower()} "
@@ -173,7 +166,7 @@ def offline_match(needs: list[str], limit: int = 6, situation: str = "") -> list
             fresh = [r for r in pool if r["id"] not in {p["id"] for p in picked}]
             if len(fresh) > 0 and len(picked) < limit and rank < len(pool):
                 picked.append(fresh[0])
-    return [_card(r) for r in picked]
+    return [_card(r, lang) for r in picked]
 
 
 def find(situation: str, lang: str = "en", needs_hint: list[str] | None = None, use_ai: bool = True) -> dict:
@@ -183,12 +176,14 @@ def find(situation: str, lang: str = "en", needs_hint: list[str] | None = None, 
     # Only known need codes go to the model next to the situation, never free text from the request.
     needs_hint = [n for n in (needs_hint or []) if n in NEEDS] or None
     danger = phi.in_danger(situation)
-    result = {"blocked": False, "danger": danger, "safety": safety_cards() if danger else [],
+    result = {"blocked": False, "danger": danger, "safety": safety_cards(lang) if danger else [],
               "disclaimer": disclaimer(), "ai": False}
     if not use_ai:
         # Without a key, typed words still find a match: the needs come from the words themselves.
         needs = needs_hint or needs_from_text(situation)
-        result.update(needs=needs, cards=offline_match(needs, situation=situation), plan_today="", ask_staff=[])
+        cards = offline_match(needs, situation=situation, lang=lang)
+        result.update(needs=needs, cards=cards, plan_today=client_plan(lang, bool(cards)),
+                      ask_staff=[_guidance("watch_out", lang)])
         return result
     listing = "\n".join(
         f"{r['id']} | {r['category']} | {r['name']} | tags: {', '.join(r.get('tags', []))} | eligibility: {r.get('eligibility')} "
@@ -196,7 +191,7 @@ def find(situation: str, lang: str = "en", needs_hint: list[str] | None = None, 
         for r in catalog())
     usage = llm.Usage()
     res = llm.call_json(
-        system=PICK_PROMPT.format(lang="Spanish" if lang == "es" else "English"),
+        system=PICK_PROMPT,
         content=[{"type": "text", "text": f"RESOURCES\n{listing}\n\nCLIENT SITUATION\n{situation}"
                   + (f"\nNEEDS NAMED BY STAFF: {', '.join(needs_hint)}" if needs_hint else "")}],
         schema=PICK_SCHEMA, effort="medium", max_tokens=16000, usage=usage)
@@ -207,7 +202,9 @@ def find(situation: str, lang: str = "en", needs_hint: list[str] | None = None, 
         if r is None:
             dropped.append(p["resource_id"])  # not in the sourced list: never shown
             continue
-        cards.append(_card(r, p["why"], p["first_step"], p["watch_out"]))
-    result.update(ai=True, needs=res["needs"], cards=cards, plan_today=client_text(res["plan_today"]),
-                  ask_staff=res["ask_staff"], dropped=dropped, cost=usage.as_dict())
+        if len(cards) < 6 and r["id"] not in {c["id"] for c in cards}:
+            cards.append(_card(r, lang))
+    result.update(ai=True, needs=[n for n in res["needs"] if n in NEEDS], cards=cards,
+                  plan_today=client_plan(lang, bool(cards)), ask_staff=[_guidance("watch_out", lang)],
+                  dropped=dropped, cost=usage.as_dict())
     return result
