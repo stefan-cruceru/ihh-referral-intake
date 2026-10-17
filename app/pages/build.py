@@ -1,6 +1,7 @@
 """Builds the public GitHub Pages site: python app/pages/build.py [out_dir]  (default _site/).
 
   index.html          the landing page: demo video, architecture, docs, campaign
+  404.html            any other path: installs the service worker so links into app/ work cold
   app/                the working app, run in the browser by sw.js (see README.md here)
   carebridge.zip      the Lamplight source and practice data the app reads, laid out as in the repo
   architecture.html   docs/architecture.html, the system map
@@ -157,7 +158,8 @@ def build(out: Path) -> Path:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    shutil.copy2(HERE / "sw.js", out / "sw.js")
+    for f in ("sw.js", "404.html"):
+        shutil.copy2(HERE / f, out / f)
     (out / ".nojekyll").write_text("")
     _zip_app(out)
     shutil.copy2(REPO / "docs/architecture.html", out / "architecture.html")
