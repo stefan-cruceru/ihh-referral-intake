@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IHH Care Bridge</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 32 32"><path d="M3 22c5-9 21-9 26 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M8 22v5M16 17v10M24 22v5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+    </div>
+    <div><div class="name">IHH Care Bridge</div><div class="tag" data-i18n="app_tag"></div></div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="referrals" class="on" data-i18n="tab_referrals"></button>
+    <button role="tab" data-tab="resources" data-i18n="tab_resources"></button>
+    <button role="tab" data-tab="staff" data-i18n="tab_staff"></button>
+    <button role="tab" data-tab="rules" data-i18n="tab_rules"></button>
+  </nav>
+  <div class="right">
+    <div class="lang" role="group" aria-label="Language">
+      <button data-lang="en">English</button><button data-lang="es">Español</button>
+    </div>
+    <button class="icon" id="open-settings" aria-label="Settings">
+      <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+    </button>
+  </div>
+</header>
+<div class="privacy-bar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5l-8-3Z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="privacy"></span></div>
+
+<main>
+  <!-- Referrals -->
+  <section id="tab-referrals" class="tab on">
+    <div class="hero">
+      <div>
+        <h1 data-i18n="hero_title"></h1>
+        <p data-i18n="hero_sub"></p>
+      </div>
+      <div class="hero-actions">
+        <button class="btn primary big" id="start-demo" data-i18n="start_demo"></button>
+        <label class="btn big ghost" for="file-input"><span data-i18n="add_packet"></span></label>
+        <input type="file" id="file-input" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" hidden>
+      </div>
+    </div>
+    <div id="drop" class="drop" data-i18n="drop_hint"></div>
+    <div id="sim" class="sim hidden"></div>
+    <div class="board-head">
+      <div class="clock"><span data-i18n="clock"></span> <b id="clock-time">–</b>
+        <select id="speed"><option value="1" data-i18n="speed_real"></option><option value="60" data-i18n="speed_fast"></option></select>
+      </div>
+      <div id="stats" class="stats"></div>
+    </div>
+    <div id="peak" class="peak hidden"></div>
+    <div id="queue" class="queue"></div>
+    <div class="panel" id="report-panel">
+      <div class="row" style="justify-content:space-between"><h3 data-i18n="h_report"></h3>
+        <label class="small"><input type="checkbox" id="rep-practice" checked style="width:auto"> <span data-i18n="rep_practice"></span></label></div>
+      <div id="report" class="stats"></div>
+    </div>
+  </section>
+
+  <!-- Resources -->
+  <section id="tab-resources" class="tab">
+    <div class="narrow">
+      <h1 data-i18n="res_title"></h1>
+      <p class="muted" data-i18n="res_sub"></p>
+      <label class="lbl" data-i18n="res_try"></label>
+      <div id="scenarios" class="chips"></div>
+      <textarea id="situation" rows="4"></textarea>
+      <div id="phi-live" class="phi hidden"></div>
+      <div class="row">
+        <button class="btn primary" id="find" data-i18n="res_find"></button>
+        <button class="btn ghost" id="find-offline" data-i18n="res_no_ai"></button>
+      </div>
+      <div id="res-out"></div>
+    </div>
+  </section>
+
+  <!-- Staff -->
+  <section id="tab-staff" class="tab">
+    <div class="narrow">
+      <h1 data-i18n="staff_title"></h1>
+      <p class="muted" data-i18n="staff_sub"></p>
+      <div class="roles">
+        <button class="role on" data-role="lvn"><b data-i18n="role_lvn"></b><span data-i18n="role_lvn_do"></span></button>
+        <button class="role" data-role="coord"><b data-i18n="role_coord"></b><span data-i18n="role_coord_do"></span></button>
+        <button class="role" data-role="cm"><b data-i18n="role_cm"></b><span data-i18n="role_cm_do"></span></button>
+      </div>
+      <div id="role-lvn" class="role-panel">
+        <label class="lbl" data-i18n="jottings"></label>
+        <textarea id="jottings" rows="5"></textarea>
+        <div id="phi-jot" class="phi hidden"></div>
+        <button class="btn primary" id="make-note" data-i18n="make_note"></button>
+        <div id="note-out"></div>
+      </div>
+      <div id="role-coord" class="role-panel hidden">
+        <input id="explain-id" list="rule-ids" placeholder="ADL-2, MOB-4, DOC-6…">
+        <datalist id="rule-ids"></datalist>
+        <button class="btn primary" id="explain" data-i18n="explain"></button>
+        <div id="explain-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rules -->
+  <section id="tab-rules" class="tab">
+    <div class="narrow">
+      <h1 data-i18n="tab_rules"></h1>
+      <p class="muted" data-i18n="gates_why"></p>
+      <input id="rule-search" data-i18n-ph="search_rules">
+      <div id="rules-out"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Referral detail -->
+<div id="detail" class="drawer hidden" role="dialog" aria-modal="true">
+  <div class="drawer-inner" id="detail-body"></div>
+</div>
+
+<!-- Page viewer -->
+<div id="viewer" class="viewer hidden" role="dialog" aria-modal="true">
+  <div class="viewer-bar"><span id="viewer-title"></span><button class="btn ghost" id="viewer-close" data-i18n="close"></button></div>
+  <img id="viewer-img" alt="">
+</div>
+
+<!-- Settings -->
+<div id="settings" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-inner">
+    <h2 data-i18n="settings"></h2>
+    <h3 data-i18n="key_title"></h3>
+    <p class="muted" data-i18n="key_help"></p>
+    <div class="row"><span id="key-status" class="pill"></span></div>
+    <div class="row"><input id="key-input" type="password" placeholder="sk-ant-…" autocomplete="off"><button class="btn primary" id="key-save" data-i18n="save"></button><button class="btn ghost" id="key-clear" data-i18n="remove"></button></div>
+    <h3 data-i18n="provider"></h3>
+    <p class="muted" data-i18n="provider_help"></p>
+    <div class="row"><select id="provider"><option value="anthropic" data-i18n="provider_anthropic"></option><option value="foundry" data-i18n="provider_foundry"></option></select>
+      <input id="foundry-resource" data-i18n-ph="foundry_resource"></div>
+    <h3 data-i18n="loop_title"></h3>
+    <p class="muted" data-i18n="inbox_help"></p>
+    <div class="row"><input id="inbox-dir" data-i18n-ph="inbox_dir" placeholder="C:\Referrals\Inbox"><button class="btn" id="loop-save" data-i18n="save"></button></div>
+    <h3 data-i18n="copilot_title"></h3>
+    <p class="muted" data-i18n="copilot_help"></p>
+    <h3 data-i18n="privacy_title"></h3>
+    <p class="muted" data-i18n="privacy_long"></p>
+    <p><button class="btn" id="ob-again" data-i18n="ob_again"></button></p>
+    <p class="muted small" id="version"></p>
+    <div class="row end"><button class="btn" id="settings-close" data-i18n="close"></button></div>
+  </div>
+</div>
+<!-- First-run walkthrough -->
+<div id="onboard" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="ob-title">
+  <div class="modal-inner onboard" id="onboard-body"></div>
+</div>
+<div id="toast" class="toast hidden"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

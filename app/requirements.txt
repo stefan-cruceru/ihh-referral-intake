@@ -1,0 +1,5 @@
+anthropic>=1.15
+pypdfium2>=5.0
+pillow>=11.0
+keyring>=25.0
+fpdf2>=2.8

@@ -1,124 +1,185 @@
-# Orange County | Claude Impact Lab
+# IHH Care Bridge
 
-**Saturday, October 17, 2026 · EvoNexus Irvine, 101 Academy Way, Suite 110 · with Illumination Health + Home**
+> For IHH's referral team, nurses and case managers: one app on your own computer that reads hospital
+> referrals, keeps the 2-hour clock, follows up with hospitals, and helps clients find what's next.
 
-One day. Three real problems from Illumination Health + Home (IHH), a nonprofit that provides
-housing, healthcare and case management for people experiencing homelessness. Small teams build a
-working prototype with Claude. Everything built today is open source and donated to IHH.
+**Team:** _to fill in_
+**Members:** _to fill in_
+**Challenge:** All three, as one tool. 1 Referral intake is the core. 2 Finding the right resource
+and 3 Make AI approachable are built in.
+**Built at:** Orange County | Claude Impact Lab, October 17, 2026, with Illumination Health + Home
 
-Organized by Claude Community Orange County. Hosted by EvoNexus Irvine.
+## Resumen en español
 
-**First hackathon?** You do not need a team, an idea or coding experience to start. Read
-[your first hackathon](docs/first-hackathon.md). Two minutes.
+**El problema.** Los hospitales mandan referidos de 14 a 34 páginas por fax. IHH promete responder
+en 2 horas. Cerca de una cuarta parte de los referidos se pierden porque la respuesta llega tarde o
+el hospital deja de contestar.
 
-## Bring
+**Lo que hicimos.** Una app que funciona en la computadora de IHH. Pone un reloj de 2 horas cuando
+llega un referido y le da un responsable. Lee las páginas y revisa primero dos cosas: si el paciente
+puede cuidarse solo y si está tranquilo y seguro. Cada punto muestra la página y las palabras
+exactas, y la app vuelve a revisar cada cita. Escribe borradores para el hospital, pero nunca envía
+nada. Nunca dice sí o no: una persona decide, y solo la línea clínica puede decir que no. También
+ayuda a buscar recursos para clientes y deja que el personal practique con ejemplos inventados.
+Todo está en inglés y en español, en palabras sencillas.
 
-- A laptop and its charger
-- A free [GitHub](https://github.com/signup) account. One per team is enough to start
-- A Claude account at [claude.ai](https://claude.ai)
-- Event credits: $100 in Claude API credits per person (API only, not Claude.ai). Scan the QR code on the screen at kickoff (the claim link is also posted here at 9:00 AM). Claim using your Org ID from [console.anthropic.com](https://console.anthropic.com), not your Claude.ai ID. One claim per person
+**Cómo usarla.** Haga doble clic en `ihh-care-bridge.exe`. Se abre en el navegador. Haga clic en
+"Pruebe un lunes ocupado" para practicar sin clave.
 
-Wi-Fi: open network, no password.
+## The problem
 
-## The day
+IHH's referral coordinators read 14 to 34 faxed pages per referral, by hand, against six pages of
+rules, and promise hospitals an answer within 2 hours. About half of referrals end up withdrawn,
+and about a quarter of all referrals go elsewhere or leave the hospital, mostly while IHH waits on a
+quiet hospital. IHH told us fewer withdrawals is the number that matters most.
 
-| Time | What |
-|---|---|
-| 8:30 AM | Doors, check-in, coffee |
-| 9:00 AM | Kickoff. IHH presents the three challenges. Teams form |
-| 9:30 AM | Build |
-| Around noon | Lunch at the tables |
-| **4:00 PM** | **Submissions due.** Judges review every submission and pick the finalists |
-| 4:30 to 5:30 PM | Finalist demos. When called, join the [demo call](https://meet.google.com/ajf-fryh-age) and share your screen |
-| 5:30 PM | Judges rank |
-| 5:45 PM | Winners announced |
-| 6:00 PM | Closing announcement and clean up |
+## What we built
 
-## The three challenges
+One app, one closed loop, running on IHH's own machine:
 
-Teams of up to 4. Each team picks one. At kickoff, say which challenge you want and what you
-bring, and find people who fit.
+1. **In.** A referral PDF lands in a watched inbox folder (or is dragged in). The 2-hour clock
+   starts from when it arrived. It gets an owner right away, round-robin across who is on shift.
+2. **Read.** Claude sorts the pages (type, sideways or upside down, blank, duplicate), turns them
+   upright, reads them, and checks every rule in IHH's criteria by rule ID.
+3. **Two gates first.** IHH has no Title 22 license, so "can take care of themselves" and "calm
+   and safe" lead the screen, each with the page and the exact words.
+4. **Check itself.** A second pass looks at each cited page again and checks the quote is really
+   there. Then plain code drops anything unverified, forces date-based rules to "can't tell"
+   (dates are blacked out), never auto-denies on the sex-offender rule, and records every change.
+5. **Route.** Looks like yes / need more from the hospital / clinical line needs to look / looks
+   like no. A likely no goes to the clinical line at the same time the coordinator sees it.
+   **Only the clinical line can say no** (the app enforces it).
+6. **Chase.** One message to the case manager listing everything missing. Reminder at 30 minutes,
+   a note to their boss at 60, "we need more time" at 15 minutes left. All drafts. Nothing is sent.
+7. **Hand off.** After a yes: the Kipu fields, the census row (CSV) and the site email, drafted.
+8. **Track and learn.** A local log of outcomes (accepted, denied, withdrawn and why, whether the
+   patient arrived, overrides with reasons), a weekly report, and an eval script that scores the
+   reader against IHH's past decisions and shows the cost per packet.
 
-| | Challenge | Who it helps |
-|---|---|---|
-| 1 | [**Referral intake**](challenges/1-referral-intake/) | The referral coordinator, and the patient too sick to recover outside |
-| 2 | [**Finding the right resource**](challenges/2-finding-the-right-resource/) | An IHH client leaving care: shelter, work, a small loan, a way home to family |
-| 3 | [**Make AI approachable**](challenges/3-staff-ai-confidence/) | Frontline staff, LVNs and medical assistants first |
+Plus:
 
-Each challenge page has the problem, who it's for, a short brief and what's in the folder. The
-brief is a direction, not a spec. Build what your team thinks will help.
+- **Help for clients** (Challenge 2). Describe the situation; Claude picks from the sourced list in
+  `challenges/2-finding-the-right-resource/data/`. Phone numbers, hours and rules on screen come
+  from that list, never from Claude. Danger words bring up 988, OC Links and 211 first.
+- **A take-home PDF for the client.** One click makes a large-print "Your next steps / Sus próximos
+  pasos" PDF: each step with what to do first, phone, address and hours (from the sourced list
+  only), boxes to tick ("I called", "I went", "Done"), how to get there, what to bring, a line for
+  the staff contact and space for notes. No name is printed; there is a blank line to write a first
+  name by hand. Copilot can make the same PDF with the `make_client_handout` tool.
+- **Practice** (Challenge 3). Staff try it on invented examples: an LVN turns shift jottings into a
+  note, and every sentence not in the jottings is marked. A coordinator asks what a rule means.
+  They always see exactly what was sent and what it cost.
+- **Plain language, English and Spanish.** One switch. Screens and Claude's writing aim at a
+  4th-grade reading level. Quotes stay word for word.
+- **First-run walkthrough.** Pick a language, pick your job, three short "how it works" and "keep
+  it private" points, then it opens the right screen.
+- **Copilot plugin.** The same exe is an MCP server for GitHub Copilot in VS Code and Claude
+  Desktop, and there is a Microsoft 365 Copilot agent package. See [copilot/README.md](copilot/README.md).
 
-New to this field? The short [background](docs/background.md) and the [glossary](docs/glossary.md)
-cover recuperative care and the terms you will hear.
+**Demo video:** _to add_
 
-Two short films about IHH show who you are building for:
-[Recuperative care](https://www.youtube.com/watch?v=Jyu6g8q7sWY) (5:38, California Health Care Foundation) and
-[Family Emergency Homes](https://www.youtube.com/watch?v=FQWH8vxE25I) (3:45).
+## How Claude is used
 
-## Your first 15 minutes
+- **Built with Claude:** Claude Code wrote the app with our team, from the event repo, IHH's
+  criteria and our notes from the Q&As with IHH (`docs/workflow-and-timing.md`,
+  `docs/closed-loop.md`, `docs/bilingual.md`).
+- **Inside the tool:** `claude-haiku-5-5` sorts pages; `claude-opus-5-5` reads pages, applies the
+  rules and verifies quotes, with structured JSON output. Claude also picks client resources and
+  drafts practice notes. Claude never decides; a person reads the evidence and decides.
+- **What a person checks:** every flag links to its page. Every draft is a draft.
 
-1. **Get the files.** Use this repo as a template for your team, or download it as a ZIP.
-   [Getting started](docs/getting-started.md) shows both, and three ways to work with Claude:
-   in the browser, in the desktop app, or in a terminal.
-2. **IHH staff are in the room all day.**
+## Try it
 
-## The rules
+**The exe (Windows, no install needed):**
 
-1. **No identifiable patient information.** Nothing real about a patient or client, from anyone,
-   for any reason. The Challenge 1 packets are real referrals with every identifier blacked out. Do
-   not copy them into your repo. Everything else is invented or already public.
-2. **Prototypes only.** Nothing connects to or changes IHH's systems.
-3. **Build in quality control.** AI makes mistakes. Build in a way to catch them. How is up to you.
-4. **Start today.** Build after 9:30 AM. Libraries and frameworks are fine.
-5. **Open source.** Public repo, open license, donated to IHH.
-
-The full version, with the reasons, is in [ground rules](docs/ground-rules.md).
-
-## Submit by 4:00 PM
-
-One per team: a public GitHub repo with a README, plus the submission form at [claudesocal.com/oc-impact-lab](https://claudesocal.com/oc-impact-lab#submit). A short
-screen recording helps. [How to submit](docs/submission.md).
-
-## Judging
-
-The judges, including IHH, review every submission and pick the finalists. Each finalist is scored
-from 1 to 5 in three areas. The areas are weighted:
-
-| Weight | Area | The question |
-|---|---|---|
-| **40%** | **Day-one impact** | Is it ready to be used, and would it matter on day one? |
-| **35%** | **Product and idea** | Could the person it is for use it without help? Is it a creative, useful way in? |
-| **25%** | **Clarity of the demo** | Are the problem, the user and the outcome obvious? |
-
-Slides without a working demo do not place. More in [judging](docs/judging.md).
-
-## Help
-
-- **About the problems:** ask IHH staff. Their experience is the most valuable thing in the room.
-- **About the day, the repo or your setup:** find an organizer.
-- **Something looks like real personal information:** stop and tell an organizer right away.
-
-## What is in this repo
-
-```text
-README.md            this page
-CLAUDE.md            instructions Claude Code reads when you open this repo
-docs/
-  first-hackathon.md   what to expect if this is your first one
-  getting-started.md   get the files, set up Claude
-  ground-rules.md      the rules in full
-  submission.md        what to hand in and how
-  judging.md           how winners are picked
-  background.md        recuperative care and IHH in two pages
-  glossary.md          the terms you will hear
-challenges/
-  1-referral-intake/              IHH's criteria and decisions (packets download from Drive)
-  2-finding-the-right-resource/   resource directory, data sources, client scenarios
-  3-staff-ai-confidence/          role cards
-templates/TEAM-README.md          the README your team's repo needs
+```powershell
+cd app
+.\build.ps1                      # makes app\dist\ihh-care-bridge.exe
+.\dist\ihh-care-bridge.exe       # opens the app in your browser
+.\dist\ihh-care-bridge.exe install   # optional: Start menu + Copilot / Claude Desktop
 ```
+
+Click **Try a busy Monday** to run the 4 PM demo with invented patients. No key needed.
+To read real (de-identified) packets, an admin adds a Claude API key in Settings (saved in Windows
+Credential Manager) or sets `ANTHROPIC_API_KEY`. For Claude in IHH's Azure, pick Foundry in
+Settings, or set `CAREBRIDGE_PROVIDER=foundry`, `ANTHROPIC_FOUNDRY_RESOURCE` and
+`ANTHROPIC_FOUNDRY_API_KEY`.
+
+**From source (Python 3.12):**
+
+```bash
+cd app
+pip install -r requirements.txt
+python -m carebridge              # the app
+python -m carebridge mcp          # MCP server on stdio
+python -m pytest tests            # 10 tests on the safety logic
+```
+
+**Docker:** copy `.env.example` to `.env` and add the key (or skip it for the demo), then
+`docker compose up --build -d` and open http://localhost:8780. The port is published on
+127.0.0.1 only. Settings and the outcome log live in the `carebridge-data` volume, packets are
+mounted read-only from `challenges/1-referral-intake/packets/`, and a PDF dropped into `inbox/`
+becomes a card. In Docker the key comes from `.env`, not Settings (no Credential Manager there).
+
+**Packets:** download R01 to R11 into `challenges/1-referral-intake/packets/` (gitignored). The
+demo uses R02 and R07 when they are there, and invented packets when they are not.
+
+**Score it:** `python app/eval_packets.py run`, then `python app/eval_packets.py score`. The
+first step never opens `eval/decisions.json`.
+
+## What is real and what is mocked
+
+| Part | Status |
+|---|---|
+| Page sort, read, rule pass, quote verifier, QC, routing | Working. Live runs need an API key |
+| Two gates, bilingual flags, checklist, conflicts, questions | Working |
+| Drafts (missing items, chase ladder, clinical, decision, handoffs) | Working. Templates filled from the review; never sent |
+| 2-hour tracker, assignment, escalation alerts, peak warning | Working |
+| Watched inbox folder | Working on a local folder. No real fax or email connection |
+| Monday 4 PM demo | Invented hospitals, contacts and 3 invented packets with hand-written sample reviews (labeled "Practice") |
+| Manual vs. tool comparison | Placeholder numbers (40 vs 10 minutes per referral) until IHH gives real ones |
+| Outcome log and weekly report | Working, local SQLite. Practice runs are marked and can be left out |
+| Client resources | Working. Sourced seed list from the event repo, checked 2026-10-13 |
+| Staff practice | Working on invented examples |
+| GitHub Copilot / Claude Desktop (MCP) | Working (stdio tested) |
+| Microsoft 365 Copilot agent | Package builds; not yet validated or uploaded in a tenant. Knows the rules, does not run the packet checker |
+| Azure Foundry endpoint | Setting is there; not tested at the event |
+| Kipu, Excel census, Outlook | Not connected on purpose: copy-ready drafts only |
+
+## Where it gets things wrong
+
+- _To fill in from the eval run on R01 to R11._
+- Rules that depend on hours (insulin under 24 h, 72 h after alcohol, COVID swab within 24 h) are
+  always "can't tell", because dates are blacked out.
+- Absence rules (conservatorship, aggression) are rarely written in a chart. They become questions
+  for the hospital, not answers.
+- Handwriting the page reader can't read is skipped, not guessed. That can miss a fact.
+- The PHI guard catches patterns (dates, phone numbers, record numbers, addresses, "name:" fields).
+  It does not catch a bare name typed on its own.
+- We would not trust it to decide. It points; a person decides.
+
+## Next steps
+
+- Run the eval on all 11 packets with IHH staff in the room, and tune the prompts on the misses.
+- Get IHH's real numbers (minutes per referral, chase timings, withdrawal categories) to replace
+  the placeholders.
+- Pilot inside IHH's Microsoft setup: Claude through IHH's Azure under its BAA, Power Automate
+  feeding the inbox folder, the engine reachable from the Microsoft 365 Copilot agent.
+- A bilingual IHH staff member reviews the Spanish word list and draft templates.
+
+## Data and privacy
+
+This project uses only data from the event repo and public sources. It contains no real patient or
+client information. It does not connect to any Illumination Health + Home system.
+
+- Packet pages and reviews live only in the app's memory and are gone when it closes.
+- The local log keeps case numbers, times, owners, routes, decisions and reasons. Never chart text.
+- Typed text is checked for identifiers before it can reach the model, and blocked if it has any.
+- The page sorter flags any identifier a redaction missed, and the app shows a STOP banner.
+- The model endpoint is the only outside call. It is one setting, so IHH can use an endpoint
+  covered by its BAA.
+- API keys stay in Windows Credential Manager or environment variables, never in git.
 
 ## License
 
-Code in this repo is released under the [MIT License](LICENSE). The made-up scenarios and role cards are dedicated to the public domain (CC0). The admission criteria and referral
-form are Illumination Health + Home's documents and remain theirs.
+[MIT](LICENSE)

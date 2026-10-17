@@ -1,0 +1,35 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.19/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.19",
+  "version": "0.1.0",
+  "id": "4f1b8c2e-6d3a-4e7b-9a51-2c8e0f7d3b19",
+  "developer": {
+    "name": "OC Claude Impact Lab community build",
+    "websiteUrl": "https://github.com/stefan-cruceru/ihh-referral-intake",
+    "privacyUrl": "https://github.com/stefan-cruceru/ihh-referral-intake#data-and-privacy",
+    "termsOfUseUrl": "https://github.com/stefan-cruceru/ihh-referral-intake/blob/main/LICENSE"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "name": {
+    "short": "IHH Care Bridge",
+    "full": "IHH Care Bridge: referral rules helper"
+  },
+  "description": {
+    "short": "Check a hospital referral against IHH's recuperative care rules.",
+    "full": "Helps IHH referral coordinators check a hospital referral against IHH's recuperative care admission rules. It shows the two big checks first (can the person care for themselves, and are they stable), cites rule IDs, says when it can't tell, and drafts messages for a person to check and send. It never decides: a person decides, and only a clinician can deny. English and Spanish."
+  },
+  "accentColor": "#1F6F78",
+  "copilotAgents": {
+    "declarativeAgents": [
+      {
+        "id": "ihhCareBridge",
+        "file": "declarativeAgent.json"
+      }
+    ]
+  },
+  "permissions": [],
+  "validDomains": []
+}

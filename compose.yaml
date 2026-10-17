@@ -1,0 +1,26 @@
+# Run the CareBridge app locally:  docker compose up --build -d   then open http://localhost:8780
+# (8780 so it can run beside a native `python -m carebridge serve 8765`; change with CAREBRIDGE_PORT.)
+services:
+  carebridge:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    image: ihh-care-bridge:dev
+    # 127.0.0.1 only: nothing else on the network can reach the app.
+    ports:
+      - "127.0.0.1:${CAREBRIDGE_PORT:-8780}:8765"
+    # ANTHROPIC_API_KEY (or the Foundry settings) come from .env, which git ignores.
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      # Settings + outcome log. Holds no packet pages or chart text (app/carebridge/store.py).
+      - carebridge-data:/data
+      # De-identified event packets, read by path only and never copied into the image.
+      - ./challenges/1-referral-intake/packets:/packets:ro
+      # Watched inbox: drop a referral PDF here and it becomes a card.
+      - ./inbox:/inbox
+    restart: unless-stopped
+
+volumes:
+  carebridge-data:

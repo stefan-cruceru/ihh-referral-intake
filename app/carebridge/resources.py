@@ -1,0 +1,110 @@
+"""Finding the right next door (Challenge 2), for IHH clients getting ready to leave care.
+
+Claude only picks resource IDs from the sourced seed list and explains the fit. Every phone
+number, address, hour and eligibility line shown comes from the seed file, never from Claude, so
+nothing can be invented. Each card shows the date it was last checked and its source link.
+"""
+
+from . import llm, phi
+from .paths import RESOURCES, SCENARIOS, load_json
+
+S = llm.strict
+
+NEEDS = ["shelter", "housing-navigation", "employment", "microenterprise", "family-reunification-travel",
+         "id-documents", "benefits", "food", "transportation", "legal", "behavioral-health", "veterans",
+         "phone-internet", "health-coverage", "hygiene-mail-storage", "other"]
+
+PICK_SCHEMA = S({"type": "object", "properties": {
+    "needs": {"type": "array", "items": {"type": "string", "enum": NEEDS}},
+    "picks": {"type": "array", "items": {"type": "object", "properties": {
+        "resource_id": {"type": "string"},
+        "why": {"type": "string"},
+        "first_step": {"type": "string"},
+        "watch_out": {"type": "string"},
+    }}},
+    "plan_today": {"type": "string"},
+    "ask_staff": {"type": "array", "items": {"type": "string"}},
+}})
+
+PICK_PROMPT = """You help a case manager at Illumination Health + Home (IHH) find next steps for a client who is
+getting ready to leave recuperative care. You get the client's situation and a list of resources, each with an
+ID. Pick up to 6 resources FROM THE LIST ONLY that fit the client's needs and constraints (language, mobility,
+phone, ID, referral rules). Never mention a service, phone number, address, hour or rule that is not in the
+list; the app shows those details itself. If nothing fits a need, say so in ask_staff.
+Write in {lang}, so the client can follow it.
+- why: one sentence on why this fits.
+- first_step: the first concrete thing to do today, using only what the list says about how to access it.
+- watch_out: referral-only, hours, documents to bring, or "" if nothing.
+- plan_today: 2 to 3 short sentences.
+- ask_staff: what a staff member must confirm or help with.
+No medical, legal or immigration advice: point to staff. If immigration status comes up, do not ask about it.""" + llm.PLAIN
+
+
+def catalog() -> list[dict]:
+    return load_json(RESOURCES)["resources"]
+
+
+def disclaimer() -> str:
+    return load_json(RESOURCES)["disclaimer"]
+
+
+def scenarios() -> list[dict]:
+    return load_json(SCENARIOS)["scenarios"]
+
+
+def _card(r: dict, why: str = "", first_step: str = "", watch_out: str = "") -> dict:
+    keep = ["id", "name", "organization", "category", "description", "services", "eligibility", "how_to_access",
+            "referral_required", "phone", "address", "city", "hours", "languages", "cost", "website",
+            "source_url", "verified_date", "confidence", "notes"]
+    card = {**{k: r.get(k) for k in keep}, "why": why, "first_step": first_step, "watch_out": watch_out}
+    if {"survivors", "domestic-violence", "confidential-location"} & set(r.get("tags", [])):
+        card["address"] = None  # never show where a survivor-serving program is
+    return card
+
+
+def safety_cards() -> list[dict]:
+    by_id = {r["id"]: r for r in catalog()}
+    return [_card(by_id[i]) for i in ("988-suicide-and-crisis-lifeline", "oc-links", "211-orange-county") if i in by_id]
+
+
+def offline_match(needs: list[str], limit: int = 6) -> list[dict]:
+    """No-AI fallback: match by category and tags."""
+    out = []
+    for r in catalog():
+        hay = {r["category"], *r.get("tags", [])}
+        if any(n in hay for n in needs):
+            out.append(_card(r))
+    return out[:limit]
+
+
+def find(situation: str, lang: str = "en", needs_hint: list[str] | None = None, use_ai: bool = True) -> dict:
+    guard = phi.check(situation)
+    if not guard["ok"]:
+        return {"blocked": True, "phi": guard}
+    danger = phi.in_danger(situation)
+    result = {"blocked": False, "danger": danger, "safety": safety_cards() if danger else [],
+              "disclaimer": disclaimer(), "ai": False}
+    if not use_ai:
+        result.update(needs=needs_hint or [], cards=offline_match(needs_hint or []), plan_today="", ask_staff=[])
+        return result
+    listing = "\n".join(
+        f"{r['id']} | {r['category']} | {r['name']} | tags: {', '.join(r.get('tags', []))} | eligibility: {r.get('eligibility')} "
+        f"| access: {r.get('how_to_access')} | referral required: {r.get('referral_required')} | languages: {', '.join(r.get('languages') or [])}"
+        for r in catalog())
+    usage = llm.Usage()
+    res = llm.call_json(
+        system=PICK_PROMPT.format(lang="Spanish" if lang == "es" else "English"),
+        content=[{"type": "text", "text": f"RESOURCES\n{listing}\n\nCLIENT SITUATION\n{situation}"
+                  + (f"\nNEEDS NAMED BY STAFF: {', '.join(needs_hint)}" if needs_hint else "")}],
+        schema=PICK_SCHEMA, effort="medium", max_tokens=16000, usage=usage)
+    by_id = {r["id"]: r for r in catalog()}
+    cards, dropped = [], []
+    for p in res["picks"]:
+        r = by_id.get(p["resource_id"])
+        if r is None:
+            dropped.append(p["resource_id"])  # not in the sourced list: never shown
+            continue
+        cards.append(_card(r, p["why"], p["first_step"], p["watch_out"]))
+    result.update(ai=True, needs=res["needs"], cards=cards, plan_today=res["plan_today"],
+                  ask_staff=res["ask_staff"], dropped=dropped, cost=usage.as_dict())
+    return result
