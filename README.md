@@ -70,11 +70,15 @@ Plus:
 - **Help for clients** (Challenge 2). Describe the situation; Claude picks from the sourced list in
   `challenges/2-finding-the-right-resource/data/`. Phone numbers, hours and rules on screen come
   from that list, never from Claude. Danger words bring up 988, OC Links and 211 first.
-- **A take-home PDF for the client.** One click makes a large-print "Your next steps / Sus próximos
-  pasos" PDF: each step with what to do first, phone, address and hours (from the sourced list
-  only), boxes to tick ("I called", "I went", "Done"), how to get there, what to bring, a line for
-  the staff contact and space for notes. No name is printed; there is a blank line to write a first
-  name by hand. Copilot can make the same PDF with the `make_client_handout` tool.
+- **A take-home PDF for the client.** One or two large-print pages, in color or black and white:
+  "Your next steps / Sus próximos pasos". Each step shows what to do first, phone, address and hours
+  (from the sourced list only), boxes to tick ("I called", "I went", "Done") and a notes box for
+  staff to write in. The page ends with how to get there and what to bring.
+  - **Client's name.** The handout is for the client, so staff can type their name to print on it.
+    The name goes onto the page only: it is not saved, not logged, not sent to Claude, and not used
+    in the file name.
+  - **From Copilot.** Copilot can make the same PDF with the `make_client_handout` tool. It leaves
+    a blank line for the name, because a Copilot chat leaves the computer.
 - **Practice** (Challenge 3). Staff try it on invented examples: an LVN turns shift jottings into a
   note, and every sentence not in the jottings is marked. A coordinator asks what a rule means.
   They always see exactly what was sent and what it cost.

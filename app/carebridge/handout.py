@@ -6,8 +6,11 @@ for, an appointment time, a bus line). Two looks: `color` and `bw` (black and wh
 printer or copier).
 
 Every phone number, address and hour comes from the sourced resource list, looked up by ID here;
-only the "why" and "first step" wording comes from the review. No client name or other
-identifier is ever put in the file: there is a blank line for staff to write a first name by hand.
+only the "why" and "first step" wording comes from the review.
+
+The handout is for the client, so it can carry their name. The name is printed only: the caller
+passes it straight in for this one PDF, and nothing here saves it, logs it or sends it anywhere.
+Without a name there is a blank line to write one by hand.
 """
 
 from datetime import date
@@ -95,8 +98,11 @@ class _PDF(FPDF):
         self.cell(0, 5, _safe(f"{_t('title', self.lang)}  ·  {self.page_no()}/{{nb}}"), align="C")
 
 
-def build(items: list[dict], plan_today: str = "", lang: str = "en", danger: bool = False, style: str = "color") -> bytes:
-    """items: [{resource_id, why, first_step, watch_out}] in the order to do them. style: color | bw."""
+def build(items: list[dict], plan_today: str = "", lang: str = "en", danger: bool = False, style: str = "color",
+          client_name: str = "") -> bytes:
+    """items: [{resource_id, why, first_step, watch_out}] in the order to do them. style: color | bw.
+    client_name: printed on the page, never stored (see the module note)."""
+    client_name = " ".join((client_name or "").split())[:60]
     look = LOOKS.get(style, LOOKS["color"])
     bw = style == "bw"
     by_id = {r["id"]: r for r in resources.catalog()}
@@ -134,7 +140,7 @@ def build(items: list[dict], plan_today: str = "", lang: str = "en", danger: boo
     pdf.cell(W * 0.38, 14, _safe(f"{_t('made', lang)} {date.today():%m/%d/%Y}"), align="R")
     pdf.set_y(top + 27)
 
-    # Name and staff lines (written by hand; nothing identifying is printed).
+    # Name and staff lines. The client's name is printed when given; the rest are written by hand.
     pdf.set_draw_color(*look["line"])
     pdf.set_line_width(0.3)
     y = pdf.get_y()
@@ -144,6 +150,13 @@ def build(items: list[dict], plan_today: str = "", lang: str = "en", danger: boo
         pdf.set_xy(x, y)
         pdf.cell(width, 5, _safe(label))
         pdf.line(x, y + 11, x + width - 4, y + 11)
+    if client_name:
+        pdf.set_xy(L, y + 4.5)
+        pdf.set_font("Helvetica", "B", 13)
+        ink()
+        pdf.cell(60, 6.5, _safe(client_name))
+        pdf.set_font("Helvetica", "", 11)
+        ink("muted")
     pdf.set_y(y + 14)
 
     # ---- safety strip --------------------------------------------------------------------------

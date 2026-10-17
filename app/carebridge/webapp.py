@@ -543,8 +543,10 @@ class Handler(BaseHTTPRequestHandler):
                     return self._json({"error": "not found"}, 404)
             if p == "/api/handout":
                 b = self._jbody()
+                # client_name goes onto the printed page only: not logged, not stored, not sent to Claude,
+                # and not in the file name.
                 pdf = handout.build(b.get("items") or [], b.get("plan_today", ""), b.get("lang", "en"), bool(b.get("danger")),
-                                    b.get("style", "color"))
+                                    b.get("style", "color"), b.get("client_name", ""))
                 name = "sus-proximos-pasos.pdf" if b.get("lang") == "es" else "your-next-steps.pdf"
                 return self._send(200, pdf, "application/pdf", {"Content-Disposition": f'inline; filename="{name}"'})
             if p == "/api/phi-check":
@@ -596,7 +598,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"error": "blocked"}, 400)
             items = [{"resource_id": c["id"], "why": c["why"], "first_step": c["first_step"], "watch_out": c["watch_out"]}
                      for c in res["cards"]]
-            pdf = handout.build(items, res.get("plan_today", ""), lang, res["danger"], style)
+            # The situation sent to Claude has no name; the (made-up) name goes on the printed page only.
+            last, _, first = prof["patient"]["name"].partition(", ")
+            pdf = handout.build(items, res.get("plan_today", ""), lang, res["danger"], style, f"{first} {last}".title().strip())
             name = f"{pid}-{'proximos-pasos' if lang == 'es' else 'next-steps'}{'-bw' if style == 'bw' else ''}.pdf"
             return self._send(200, pdf, "application/pdf", {"Content-Disposition": f'inline; filename="{name}"'})
         if len(parts) == 3 and parts[1] == "pages":
