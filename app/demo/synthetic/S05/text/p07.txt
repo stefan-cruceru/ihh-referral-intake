@@ -1,0 +1,43 @@
+09/01/2026 09:30 FROM: PACIFIC CREST MED CTR CASE MGMT FAX 714-555-0142 TO: IHH RECUP                                                         P.7/13
+
+
+
+
+
+
+PRUITT, DWAYNE (MRN: SYN-118903) DOB: 07/19/1987 39y M                                                   Pacific Crest Medical Center · 6 East Medical
+
+
+Laboratory Results
+Collected 08/31/2026 05:20
+
+COMPLETE BLOOD COUNT
+        Test                                          Result                          Reference                                     Units
+        WBC                                           8.2                             4.0-11.0                                      K/uL
+        Hemoglobin                                    13.8                            12.0-17.0                                     g/dL
+        Hematocrit                                    41.4                            36-50                                         %
+        Platelets                                     215                             150-400                                       K/uL
+
+BASIC METABOLIC PANEL
+        Test                                    Result                        Reference                                   Units
+        Sodium                                  139                           135-145                                     mmol/L
+        Potassium                               4.2                           3.5-5.1                                     mmol/L
+        Chloride                                105                           98-107                                      mmol/L
+        CO2                                     24                            22-29                                       mmol/L
+        BUN                                     13                            7-20                                        mg/dL
+        Creatinine                              0.9                           0.6-1.3                                     mg/dL
+        Glucose                                 92                            70-99                                       mg/dL
+
+TRENDS
+        Test             Collected                                   Result                                              Reference
+        WBC              08/29, 08/31                                12.1, 8.2 K/uL                                      4.0-11.0
+
+MICROBIOLOGY
+        Test                                                Collected                                     Result
+        MRSA nares PCR                                      08/29/2026 18:20                              NOT DETECTED
+        SARS-CoV-2 antigen                                  09/01/2026 07:45                              NEGATIVE
+
+
+
+
+                                     SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

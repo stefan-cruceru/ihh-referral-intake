@@ -1,0 +1,39 @@
+08/20/2026 10:12 FROM: LOS OLIVOS REGIONAL CASE MGMT FAX 949-555-0177 TO: IHH RECUP                                                          P.3/14
+
+
+
+
+
+
+WHITLOCK, GREGORY (MRN: SYN-318255) DOB: 11/02/1978 47y M                                         Los Olivos Regional Hospital · Orthopedic Unit 2B
+
+
+Patient Face Sheet
+Printed 08/20/2026 10:12 by Dana Whitfield
+
+PATIENT INFORMATION
+       Patient                WHITLOCK, GREGORY                                                   Sex                        M
+       DOB                    11/02/1978                                                          Age                        47y
+       Address                NO FIXED ADDRESS                                                    Language                   English
+       Phone                  NONE                                                                Marital Status             Single
+       Emergency Contact None listed                                                              Interpreter                No
+
+INSURANCE INFORMATION
+       Primary                Medi-Cal managed care plan                         Member ID                   SYN-M-803164
+       Secondary              None                                               Financial Class             Medi-Cal Managed Care
+
+ENCOUNTER INFORMATION
+       Admit Date/Time        08/17/2026 19:05                                                        Mode of Arrival            Ambulance
+       Patient Class          Inpatient                                                               Unit                       Orthopedic
+                                                                                                                                 Unit 2B
+       Admitting              Closed right bimalleolar ankle fracture, status post open               Diagnosis Code             S82.841A,
+       Diagnosis              reduction and internal fixation 08/18/2026                                                         Z59.02
+       Attending              Elena Vasquez-Ruiz, DO                                                  Expected                   08/21/2026
+                                                                                                      Discharge
+
+Los Olivos Regional Hospital, 880 Mission Ridge Road, Orange County, CA. Main 949-555-0120.
+
+
+
+
+                                   SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

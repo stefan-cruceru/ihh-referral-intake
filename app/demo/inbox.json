@@ -1,106 +1,122 @@
 {
-  "about": "Mock inbox for the Monday 4:00 PM demo (docs/workflow-and-timing.md section 6). Every hospital, person, phone number and email address here is invented. Nothing is ever sent. R-packets are read by path only when present on this machine; otherwise the fallback demo packet is used.",
-  "start": "Monday 16:00",
-  "referrals": [
-    {
-      "case_no": "DEMO-101",
-      "arrives_min": 0,
-      "channel": "fax",
-      "hospital": "Harbor View Medical Center (invented)",
-      "subject": "Recup referral DEMO-101: cellulitis, ready for d/c today",
-      "body": "Fax received through the e-fax service. 8 pages.",
-      "packet": "D01",
-      "fallback_packet": "D01",
-      "withdraw_after_silence_min": null
-    },
-    {
-      "case_no": "DEMO-102",
-      "arrives_min": 2,
-      "channel": "email",
-      "hospital": "Mesa Ridge Hospital (invented)",
-      "subject": "Referral DEMO-102: post-op appendectomy, Spanish speaking",
-      "body": "Hi team, attached is a referral for a patient recovering from surgery. Home health is ordered. Please let us know. Thanks.",
-      "packet": "D02",
-      "fallback_packet": "D02",
-      "withdraw_after_silence_min": null
-    },
-    {
-      "case_no": "DEMO-103",
-      "arrives_min": 5,
-      "channel": "fax",
-      "hospital": "Coastline Community Hospital (invented)",
-      "subject": "Recup referral DEMO-103: pneumonia",
-      "body": "Fax received through the e-fax service. 7 pages. No referral form attached.",
-      "packet": "D03",
-      "fallback_packet": "D03",
-      "withdraw_after_silence_min": 75
-    },
-    {
-      "case_no": "DEMO-104",
-      "arrives_min": 9,
-      "channel": "email",
-      "hospital": "Saddleback Valley Hospital (invented)",
-      "subject": "Referral DEMO-104",
-      "body": "Please review the attached packet for recuperative care. Patient is medically cleared for discharge.",
-      "packet": "R02",
-      "fallback_packet": "D02",
-      "withdraw_after_silence_min": null
-    },
-    {
-      "case_no": "DEMO-105",
-      "arrives_min": 14,
-      "channel": "fax",
-      "hospital": "Harbor View Medical Center (invented)",
-      "subject": "Recup referral DEMO-105",
-      "body": "Fax received through the e-fax service.",
-      "packet": "R07",
-      "fallback_packet": "D01",
-      "withdraw_after_silence_min": 90
-    }
-  ],
-  "contacts": [
-    {
-      "hospital": "Harbor View Medical Center (invented)",
-      "case_manager": "Jordan Example",
-      "cm_email": "jordan.cm@example.org",
-      "cm_phone": "555-0142",
-      "supervisor": "Pat Example",
-      "sup_email": "pat.supervisor@example.org",
-      "sup_phone": "555-0143"
-    },
-    {
-      "hospital": "Mesa Ridge Hospital (invented)",
-      "case_manager": "Luz Ejemplo",
-      "cm_email": "luz.cm@example.org",
-      "cm_phone": "555-0151",
-      "supervisor": "Sam Example",
-      "sup_email": "sam.supervisor@example.org",
-      "sup_phone": "555-0152"
-    },
-    {
-      "hospital": "Coastline Community Hospital (invented)",
-      "case_manager": "Riley Example",
-      "cm_email": "riley.cm@example.org",
-      "cm_phone": "555-0161",
-      "supervisor": "Morgan Example",
-      "sup_email": "morgan.supervisor@example.org",
-      "sup_phone": "555-0162"
-    },
-    {
-      "hospital": "Saddleback Valley Hospital (invented)",
-      "case_manager": "Casey Example",
-      "cm_email": "casey.cm@example.org",
-      "cm_phone": "555-0171",
-      "supervisor": "Drew Example",
-      "sup_email": "drew.supervisor@example.org",
-      "sup_phone": "555-0172"
-    }
-  ],
-  "staff": [
-    {"id": "lead", "name": "Avery (lead)", "role": "lead", "shift": "08:00-17:00"},
-    {"id": "c1", "name": "Bea", "role": "coordinator", "shift": "07:00-15:30"},
-    {"id": "c2", "name": "Carlos", "role": "coordinator", "shift": "12:00-20:30"},
-    {"id": "c3", "name": "Dana", "role": "coordinator", "shift": "15:00-23:30"},
-    {"id": "clinical", "name": "Clinical line (24/7)", "role": "clinical_line", "shift": "00:00-24:00"}
-  ]
+ "about": "Mock inbox for the Monday 4:00 PM demo (docs/workflow-and-timing.md section 6). Each referral is one of the organizers' synthetic patients in demo/synthetic/: every person, hospital, phone number and email is invented. Nothing is ever sent.",
+ "start": "Monday 16:00",
+ "referrals": [
+  {
+   "case_no": "DEMO-101",
+   "arrives_min": 0,
+   "channel": "fax",
+   "hospital": "Los Olivos Regional Hospital",
+   "subject": "Recuperative care referral S06: Acute ischemic stroke, left middle cerebral artery territory, with right-sided weakness",
+   "body": "Recuperative care referral. 71-year-old woman, stroke 09/02, medically stable. Walks with a walker. Unhoused with no family. Rehab facilities have not accepted. Please consider.",
+   "packet": "S06",
+   "fallback_packet": null,
+   "withdraw_after_silence_min": null
+  },
+  {
+   "case_no": "DEMO-102",
+   "arrives_min": 2,
+   "channel": "email",
+   "hospital": "Pacific Crest Medical Center",
+   "subject": "Recuperative care referral S01: Cellulitis of left lower leg",
+   "body": "Referral for recuperative care. 54-year-old man with left leg cellulitis, now on oral antibiotics and medically ready for discharge 08/07. Unhoused, no place to elevate the leg or keep it clean. Independent with all care. Please review and advise.",
+   "packet": "S01",
+   "fallback_packet": null,
+   "withdraw_after_silence_min": null
+  },
+  {
+   "case_no": "DEMO-103",
+   "arrives_min": 5,
+   "channel": "fax",
+   "hospital": "Pacific Crest Medical Center",
+   "subject": "Recuperative care referral S09: Abscess of right forearm with cellulitis, status post incision and drainage",
+   "body": "Recuperative care referral for today if possible. 33-year-old woman, forearm abscess drained 09/13, on oral antibiotics. Unhoused. Independent. Remaining documents available on request.",
+   "packet": "S09",
+   "fallback_packet": null,
+   "withdraw_after_silence_min": 75
+  },
+  {
+   "case_no": "DEMO-104",
+   "arrives_min": 9,
+   "channel": "email",
+   "hospital": "Pacific Crest Medical Center",
+   "subject": "Recuperative care referral S05: Cellulitis of right hand",
+   "body": "Recuperative care referral. 39-year-old man with right hand cellulitis, improving on oral antibiotics. Unhoused. Independent. History of schizoaffective disorder. Medically cleared.",
+   "packet": "S05",
+   "fallback_packet": null,
+   "withdraw_after_silence_min": null
+  },
+  {
+   "case_no": "DEMO-105",
+   "arrives_min": 14,
+   "channel": "fax",
+   "hospital": "Bayfront University Medical Center",
+   "subject": "Recuperative care referral S04: Community-acquired pneumonia, right lower lobe, with COPD exacerbation",
+   "body": "Recuperative care referral. 66-year-old man with pneumonia and COPD. Off oxygen since 08/26, on oral antibiotics, walking on his own. No home oxygen needed. Unhoused. Ready 08/28.",
+   "packet": "S04",
+   "fallback_packet": null,
+   "withdraw_after_silence_min": 90
+  }
+ ],
+ "contacts": [
+  {
+   "hospital": "Los Olivos Regional Hospital",
+   "case_manager": "Dana Whitfield, LCSW",
+   "cm_email": "dwhitfield@losolivos.example.org",
+   "cm_phone": "949-555-0178",
+   "supervisor": "Case management supervisor (invented)",
+   "sup_email": "cm.supervisor@losolivos.example.org",
+   "sup_phone": null
+  },
+  {
+   "hospital": "Pacific Crest Medical Center",
+   "case_manager": "Karen Lindqvist, RN, CCM",
+   "cm_email": "klindqvist@pacificcrest.example.org",
+   "cm_phone": "714-555-0143",
+   "supervisor": "Case management supervisor (invented)",
+   "sup_email": "cm.supervisor@pacificcrest.example.org",
+   "sup_phone": null
+  },
+  {
+   "hospital": "Bayfront University Medical Center",
+   "case_manager": "Rachel Imani, RN Case Manager",
+   "cm_email": "rimani@bayfrontumc.example.org",
+   "cm_phone": "714-555-0189",
+   "supervisor": "Case management supervisor (invented)",
+   "sup_email": "cm.supervisor@bayfrontumc.example.org",
+   "sup_phone": null
+  }
+ ],
+ "staff": [
+  {
+   "id": "lead",
+   "name": "Avery (lead)",
+   "role": "lead",
+   "shift": "08:00-17:00"
+  },
+  {
+   "id": "c1",
+   "name": "Bea",
+   "role": "coordinator",
+   "shift": "07:00-15:30"
+  },
+  {
+   "id": "c2",
+   "name": "Carlos",
+   "role": "coordinator",
+   "shift": "12:00-20:30"
+  },
+  {
+   "id": "c3",
+   "name": "Dana",
+   "role": "coordinator",
+   "shift": "15:00-23:30"
+  },
+  {
+   "id": "clinical",
+   "name": "Clinical line (24/7)",
+   "role": "clinical_line",
+   "shift": "00:00-24:00"
+  }
+ ]
 }

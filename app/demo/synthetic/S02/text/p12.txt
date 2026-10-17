@@ -1,0 +1,28 @@
+08/12/2026 13:20 FROM: ST BRENDAN COMM HOSP CASE MGMT FAX 657-555-0163 TO: IHH RECUP                                       P.12/13
+
+
+
+
+
+FARROW, DENISE (MRN: SYN-220836) DOB: 05/23/1965                     61y F                St. Brendan Community Hospital · 3 North
+                                                                                                                           Medical
+
+
+Case Management / Social Work Note
+Miguel Ortega, MSW - 08/12/2026 12:40
+Patient has been unhoused for 8 months. Her insulin and supplies were stolen while she slept outside.
+She wants a place where she can keep insulin safe while her sugars settle. She is agreeable to
+recuperative care and manages all of her own diabetes care.
+
+DISCHARGE PLANNING
+         Item                                Status
+         Housing                             Unhoused 8 months.
+         Disposition                         Recuperative care referral faxed 08/12/2026.
+         Medications                         Self-manages, including insulin.
+         Follow-up                           Primary care, community health center, 08/18/2026 09:00.
+         Health plan authorization           Submitted 08/12/2026. Pending.
+
+
+
+
+                                SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

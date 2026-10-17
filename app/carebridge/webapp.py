@@ -19,7 +19,7 @@ from urllib.parse import parse_qs, urlparse
 
 from . import APP_NAME, __version__, config, drafts, guard, handout, intake, llm, mcp, phi, resources, rules, staff, store, tracker
 from .pages import load_packet
-from .paths import BUNDLE, DEMO_DIR, FROZEN, load_json, packets_dir, user_dir
+from .paths import BUNDLE, DEMO_DIR, FROZEN, load_json, packets_dir
 
 if not FROZEN:
     sys.path.insert(0, str(BUNDLE.parent))  # app/, so `demo` imports in a source checkout
@@ -32,31 +32,43 @@ LOCK = threading.Lock()
 
 
 def _demo_samples() -> dict:
+    """Practice reviews for the synthetic patients, built from the organizers' answer key."""
     if not SAMPLES:
         try:
-            from demo import samples
+            from demo import synthetic
 
-            SAMPLES.update(samples.sample_reports())
+            SAMPLES.update(synthetic.sample_reports())
         except Exception:
             traceback.print_exc()
     return SAMPLES
 
 
 def _demo_packet(pid: str) -> tuple[bytes, str] | None:
-    """Invented demo packets (D01...), or a de-identified event packet (R01...) read by path."""
+    """A synthetic practice patient (S01...), or a de-identified event packet (R01...) read by path."""
     if pid.startswith("R"):
         d = packets_dir()
         p = d / f"{pid}.pdf" if d else None
-        return (p.read_bytes(), p.name) if p and p.is_file() else None
-    p = DEMO_DIR / f"{pid}.pdf"
-    if not p.is_file():
-        cache = user_dir() / "demo-packets"  # invented content only
-        p = cache / f"{pid}.pdf"
-        if not p.is_file():
-            from demo import packets
+    else:
+        from demo import synthetic
 
-            packets.build(cache)
-    return (p.read_bytes(), p.name) if p.is_file() else None
+        p = synthetic.packet_path(pid)
+    return (p.read_bytes(), f"{pid}.pdf") if p and p.is_file() else None
+
+
+def send_profile(pid: str) -> dict:
+    """Put one synthetic patient on the board now, as a practice referral with its practice review."""
+    from demo import synthetic
+
+    prof = next((p for p in synthetic.profiles() if p["id"] == pid), None)
+    if not prof:
+        raise KeyError(pid)
+    cm = prof["case_manager"]
+    case = f"{pid}-{sum(1 for c in TRACK.cards if c.startswith(pid)) + 1}"
+    card = TRACK.add({"id": case, "case_no": case, "channel": "fax", "hospital": prof["hospital"],
+                      "packet_id": pid, "case_manager": f"{cm['name']}, {cm['title']}", "cm_email": cm["email"],
+                      "cm_phone": cm["phone"], "practice": True, "synthetic": True})
+    _on_land(card)
+    return TRACK.view(card["id"])
 
 
 def load_demo(start_hour: int = 16, speed: float = 60.0) -> dict:
@@ -85,7 +97,7 @@ def load_demo(start_hour: int = 16, speed: float = 60.0) -> dict:
                 "fallback_packet": r.get("fallback_packet"), "case_manager": c.get("case_manager"),
                 "cm_email": c.get("cm_email"), "cm_phone": c.get("cm_phone"), "supervisor": c.get("supervisor"),
                 "sup_email": c.get("sup_email"), "sup_phone": c.get("sup_phone"), "site": r.get("site", "Orange County"),
-                "practice": True}
+                "practice": True, "synthetic": r.get("packet", "").startswith("S")}
         TRACK.schedule(card, t0 + r["arrives_min"] * 60)
     arrivals = [r["arrives_min"] for r in inbox["referrals"]]
     walk = [r.get("withdraw_after_silence_min") for r in inbox["referrals"]]
@@ -102,7 +114,7 @@ def _on_land(card: dict):
     got = _demo_packet(pid) or (_demo_packet(card["fallback_packet"]) if card.get("fallback_packet") else None)
     if got:
         PACKETS[card["id"]] = got
-    used = pid if pid.startswith("D") or not card.get("fallback_packet") or (got and got[1].startswith(pid)) else card["fallback_packet"]
+    used = pid if not card.get("fallback_packet") or (got and got[1].startswith(pid)) else card["fallback_packet"]
     card["packet_used"] = used
     sample = _demo_samples().get(used)
     if sample:
@@ -283,6 +295,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"rules": list(rules.all_rules().values()), "gaps": rules.GAPS, "gates": rules.GATES})
             if p == "/api/scenarios":
                 return self._json({"scenarios": resources.scenarios(), "examples": staff.EXAMPLES})
+            if p == "/api/profiles" or p.startswith("/api/profiles/"):
+                return self._profiles(p.strip("/").split("/")[2:], q.get("lang", ["en"])[0])
             if p == "/api/report":
                 return self._json(store.weekly_report(int(q.get("days", ["7"])[0]), q.get("practice", ["0"])[0] == "1"))
             if p == "/api/audit":
@@ -360,6 +374,11 @@ class Handler(BaseHTTPRequestHandler):
                 b = self._jbody()
                 return self._json(resources.find(b.get("situation", ""), b.get("lang", "en"), b.get("needs") or None,
                                                  use_ai=bool(b.get("use_ai", True)) and bool(config.get_api_key())))
+            if p.startswith("/api/profiles/") and p.endswith("/send"):
+                try:
+                    return self._json({"card": send_profile(p.split("/")[3])})
+                except KeyError:
+                    return self._json({"error": "not found"}, 404)
             if p == "/api/handout":
                 b = self._jbody()
                 pdf = handout.build(b.get("items") or [], b.get("plan_today", ""), b.get("lang", "en"), bool(b.get("danger")))
@@ -391,6 +410,38 @@ class Handler(BaseHTTPRequestHandler):
         if ctype.startswith("text/") or ctype in ("application/javascript", "application/json"):
             ctype += "; charset=utf-8"
         return self._send(200, f.read_bytes(), ctype)
+
+    def _profiles(self, parts: list[str], lang: str = "en"):
+        """Synthetic practice patients: the list, one profile with its practice review, a page image,
+        or the patient's take-home next-steps PDF."""
+        from demo import synthetic
+
+        if not parts:
+            return self._json({"profiles": synthetic.profiles()})
+        pid = parts[0]
+        prof = next((x for x in synthetic.profiles() if x["id"] == pid), None)
+        if not prof:
+            return self._json({"error": "not found"}, 404)
+        if len(parts) == 1:
+            return self._json({"profile": prof, "review": _demo_samples().get(pid)})
+        if len(parts) == 2 and parts[1] == "handout.pdf":
+            situation, needs = synthetic.client_situation(pid)
+            res = resources.find(situation, lang, needs, use_ai=bool(config.get_api_key()))
+            if res["blocked"]:
+                return self._json({"error": "blocked"}, 400)
+            items = [{"resource_id": c["id"], "why": c["why"], "first_step": c["first_step"], "watch_out": c["watch_out"]}
+                     for c in res["cards"]]
+            pdf = handout.build(items, res.get("plan_today", ""), lang, res["danger"])
+            name = f"{pid}-{'proximos-pasos' if lang == 'es' else 'next-steps'}.pdf"
+            return self._send(200, pdf, "application/pdf", {"Content-Disposition": f'inline; filename="{name}"'})
+        if len(parts) == 3 and parts[1] == "pages":
+            n = int(parts[2].split(".")[0])
+            path = synthetic.packet_path(pid)
+            pages = load_packet(path.read_bytes(), path.name) if path else []
+            if not 1 <= n <= len(pages):
+                return self._json({"error": "not found"}, 404)
+            return self._send(200, pages[n - 1].jpeg(long_edge=1400), "image/jpeg")
+        return self._json({"error": "not found"}, 404)
 
     def _page(self, cid: str, n: int):
         r = REVIEWS.get(cid)

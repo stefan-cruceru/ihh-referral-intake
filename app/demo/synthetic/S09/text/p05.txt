@@ -1,0 +1,21 @@
+09/15/2026 08:20 FROM: PACIFIC CREST MED CTR CASE MGMT FAX 714-555-0142 TO: IHH RECUP                                                        P.5/6
+
+
+
+
+
+
+ROWLAND, TAMIKA (MRN: SYN-127364) DOB: 04/27/1993 33y F                                                Pacific Crest Medical Center · 5 West Medical
+
+
+Vital Signs Flowsheet
+         Date/Time                              BP                 HR         RR         Temp F               SpO2           O2
+         09/14/2026 20:05                       118/74             82         16         98.8                 99%            Room air
+         09/15/2026 06:30                       116/72             76         16         98.3                 99%            Room air
+
+Two sets shown. Complete flowsheet available from the unit.
+
+
+
+
+                                    SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

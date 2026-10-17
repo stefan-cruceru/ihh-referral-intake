@@ -1,0 +1,21 @@
+08/27/2026 11:05 FROM: BAYFRONT UNIV MED CTR CASE MGMT FAX 714-555-0188 TO: IHH RECUP                                               P.7/15
+
+BENNING, HAROLD (MRN: SYN-407192) DOB: 01/30/1960                        66y M                 Bayfront University Medical Center · 5 Tower
+                                                                                                                                Pulmonary
+
+
+Diagnostic Imaging Report
+Chest X-ray, 1 view - 08/27/2026 07:20
+Indication: Follow-up pneumonia.
+FINDINGS
+Right lower lobe consolidation is smaller and less dense than on 08/24. No effusion. No pneumothorax.
+
+IMPRESSION
+Improving right lower lobe pneumonia.
+
+Electronically signed by D. Okafor, MD
+
+
+
+
+                                 SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

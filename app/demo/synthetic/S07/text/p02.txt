@@ -1,0 +1,37 @@
+09/08/2026 10:48 FROM: ST BRENDAN COMM HOSP CASE MGMT FAX 657-555-0163 TO: IHH RECUP                                                 P.2/12
+
+
+
+
+
+KESSLER, BERNARD (MRN: SYN-245571) DOB: 12/14/1967                     58y M              St. Brendan Community Hospital · 2 South
+                                                                                                                           Medical
+
+
+Patient Face Sheet
+Printed 09/08/2026 10:48 by Miguel Ortega
+
+PATIENT INFORMATION
+        Patient             KESSLER, BERNARD                                            Sex                           M
+        DOB                 12/14/1967                                                  Age                           58y
+        Address             NO FIXED ADDRESS                                            Language                      English
+        Phone               NONE                                                        Marital Status                Single
+        Emergency Contact   None listed                                                 Interpreter                   No
+
+INSURANCE INFORMATION
+        Primary             Medi-Cal managed care plan                       Member ID                   SYN-M-730946
+        Secondary           None                                             Financial Class             Medi-Cal Managed Care
+
+ENCOUNTER INFORMATION
+        Admit Date/Time     09/05/2026 03:25                                       Mode of Arrival                 Ambulance
+        Patient Class       Inpatient                                              Unit                            2 South Medical
+        Admitting           Dehydration and acute kidney injury                    Diagnosis Code                  A04.72, E86.0, N17.9,
+        Diagnosis           from diarrhea                                                                          Z59.02
+        Attending           Thomas Achterberg, MD                                  Expected Discharge              09/09/2026
+
+St. Brendan Community Hospital, 2250 Citrus Grove Avenue, Orange County, CA. Main 657-555-0110.
+
+
+
+
+                               SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

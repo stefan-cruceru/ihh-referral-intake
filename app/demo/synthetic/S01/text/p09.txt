@@ -1,0 +1,22 @@
+08/06/2026 15:42 FROM: PACIFIC CREST MED CTR CASE MGMT FAX 714-555-0142 TO: IHH RECUP                                               P.9/13
+
+
+
+
+
+
+ELLERY, MARCUS (MRN: SYN-104417) DOB: 02/11/1972 54y M                                Pacific Crest Medical Center · 4 West Medical-Surgical
+
+
+Vital Signs Flowsheet
+         Date/Time                     BP                  HR         RR          Temp F              SpO2           O2
+         08/05/2026 20:00              128/78              82         16          98.4                97%            Room air
+         08/06/2026 00:10              122/74              76         16          98.1                98%            Room air
+         08/06/2026 04:05              118/72              72         14          97.9                97%            Room air
+         08/06/2026 08:00              126/80              78         16          98.2                98%            Room air
+         08/06/2026 12:15              130/82              80         16          98.6                98%            Room air
+
+
+
+
+                            SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

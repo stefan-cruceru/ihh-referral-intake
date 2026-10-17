@@ -1,0 +1,22 @@
+08/20/2026 10:12 FROM: LOS OLIVOS REGIONAL CASE MGMT FAX 949-555-0177 TO: IHH RECUP                                                P.10/14
+
+
+
+
+
+
+WHITLOCK, GREGORY (MRN: SYN-318255) DOB: 11/02/1978 47y M                                  Los Olivos Regional Hospital · Orthopedic Unit 2B
+
+
+Vital Signs Flowsheet
+         Date/Time                      BP                  HR          RR         Temp F               SpO2          O2
+         08/19/2026 16:00               126/78              76          16         98.4                 98%           Room air
+         08/19/2026 20:00               122/76              74          16         98.6                 98%           Room air
+         08/20/2026 00:00               118/72              68          14         98.2                 97%           Room air
+         08/20/2026 04:00               120/74              70          14         98.0                 98%           Room air
+         08/20/2026 08:00               124/78              72          16         98.3                 98%           Room air
+
+
+
+
+                            SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

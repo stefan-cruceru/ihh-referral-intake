@@ -1,0 +1,54 @@
+09/01/2026 09:30 FROM: PACIFIC CREST MED CTR CASE MGMT FAX 714-555-0142 TO: IHH RECUP                                                          P.2/13
+
+
+
+
+
+
+Recuperative Care Referral Form
+Illumination Health + Home. Submit this form with supporting documents by fax to 888-555-0155.
+
+REFERRING PARTY
+       Referring Hospital           Pacific Crest Medical Center                                    Dept/Floor                6 East Medical
+       SW/CM/RN                     Karen Lindqvist                                                 Phone/Pager #             714-555-0143
+       Email                        klindqvist@pacificcrest.example.org                             Nursing Station #         714-555-0100
+       Authorized by                Priya Nandakumar, MD                                            Phone #                   714-555-0100
+
+PATIENT INFORMATION
+       Patient Name                 DWAYNE PRUITT                                      MRN                          SYN-118903
+       Date of Birth                07/19/1987                                         Ethnicity                    Black/African American
+       Insurance                    Medi-Cal managed care plan                         Preferred Language           English
+Gender: X Male                  Female   Transgender        Other    Last 4 # of Social Security: xxx-xx-0000
+Housing Situation: X Currently Unhoused                     4+ episodes of homelessness in the past 3 years
+HOSPITAL ADMISSION DETAILS
+Chief Complaint / Admitting Diagnosis: Cellulitis of right hand
+Admit Date: 08/29/2026               Any Wounds?        Yes X No
+If yes, explain the number, location, size and stage:
+Independent with Wound Care?                  Yes       No If no, will Home Health be ordered?             Yes       No
+Was PPD/TB Test or Chest X-Ray Performed?                       Yes X No Date: Results:
+HISTORY OF HEALTH & LIVING SITUATION
+     O2                                                              Yes X No                 Active Infection                X Yes     No
+     Self Administer All Meds                                     X Yes       No              Ambulatory                      X Yes     No
+     Continent of Bowel & Bladder                                 X Yes       No              Assistive Device                   Yes X No
+     Colostomy/Ileostomy                                             Yes X No                 Hospice                            Yes X No
+     Foley Catheter                                                  Yes X No                 Car                                Yes X No
+     Diabetes                                                        Yes X No                 Service Animal                     Yes X No
+     Insulin                                                         Yes      No
+     Diabetes related Oral Meds                                      Yes      No
+Explain (O2 / infection / device / hospice): Right hand cellulitis on oral antibiotics
+BEHAVIORAL AND MENTAL HEALTH STATUS
+Does the patient have any limitations, behavioral or mental health challenges? X Yes                           No
+  X Mental Health DX If checked, what type? Schizoaffective disorder, stable on meds
+               Non-compliant     Forgetful     Cognitive Impairment          Registered Sex Offender
+               Other Explain:
+                                             Length of Stay Authorized in Recuperative Care: 30 Days
+
+        ILLUMINATION STAFF ONLY
+        Date Received: ____________ Reviewed by: ____________
+        Approved: [ ] Yes [ ] No Date: ________ Authorization #: ________ Reason for Denial: ____________
+        Admission Date: ________ Admission Time: ________ Exit Date: ________
+
+
+
+
+                                         SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026
