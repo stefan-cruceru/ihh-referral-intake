@@ -28,8 +28,9 @@ designers, and healthcare and nonprofit people. Some have never used a terminal.
 ## Where things are
 
 - `docs/intake-context.md`: our team's Challenge 1 working brief. Read it first in any new session.
-- `docs/workflow-and-timing.md`: what IHH staff told us on the day (two-step approval, email intake,
-  2-hour clock, short staffing), the tracker design, gaps, liability guardrails and open questions.
+- `docs/workflow-and-timing.md`: our Q&A with IHH's referral lead (fax and email intake, clock on
+  arrival, withdrawals, clinical check on every denial, the three handoffs after a yes), the build
+  design, gaps, liability guardrails and open questions. Keep business figures out of the repo.
 
 - `docs/ground-rules.md`: the event rules in full.
 - `docs/background.md`, `docs/glossary.md`: what recuperative care is and what the terms mean.
