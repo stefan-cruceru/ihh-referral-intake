@@ -87,8 +87,8 @@ accepts an MP4 as `--audio`; FFmpeg selects its audio stream. No speech-service 
 media URL or downloaded narration manifest is required.
 
 ```powershell
-gh release download demo-lamplight-2026-10-17 --repo stefan-cruceru/ihh-referral-intake --pattern "Lamplight - Demo.mp4" --dir "$demoScratch"
-python docs/demo/render_lamplight.py --raw "$demoScratch/lamplight-raw.webm" --audio "$demoScratch/Lamplight - Demo.mp4" --timeline docs/demo/lamplight-timeline.json --scratch "$demoScratch" --video-offset 0 --output "$demoScratch/Lamplight - Remade.mp4"
+gh release download demo-lamplight-2026-10-17 --repo stefan-cruceru/ihh-referral-intake --pattern "Lamplight-Demo-1080p.mp4" --dir "$demoScratch"
+python docs/demo/render_lamplight.py --raw "$demoScratch/lamplight-raw.webm" --audio "$demoScratch/Lamplight-Demo-1080p.mp4" --timeline docs/demo/lamplight-timeline.json --scratch "$demoScratch" --video-offset 0 --output "$demoScratch/Lamplight - Remade.mp4"
 python docs/demo/encode_lamplight_share.py --source "$demoScratch/Lamplight - Remade.mp4" --output "$demoScratch/Lamplight - Remade (720p).mp4"
 ```
 
