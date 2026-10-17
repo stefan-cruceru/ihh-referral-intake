@@ -121,7 +121,8 @@ class Tracker:
         c["review_state"] = code
         c["suggested_route"] = code
         c["review_usd"] = (report.get("cost") or {}).get("usd")
-        c["status"] = {"likely_no": "likely_no", "clinical_check": "clinical_check", "needs_info": "needs_info"}.get(code, "reviewing")
+        c["status"] = {"likely_no": "likely_no", "clinical_check": "clinical_check", "needs_info": "needs_info",
+                       "security_hold": "clinical_check"}.get(code, "reviewing")
         self.log(cid, "Claude", "flagged", f"route {code}; blockers {report['recommendation']['blockers']}")
         if report["recommendation"]["route_clinical"]:
             c["clinical_sent_at"] = self.clock.now()
@@ -155,7 +156,7 @@ class Tracker:
             if action == "withdrawn":
                 c["withdraw_reason"] = reason
             route = c.get("suggested_route")
-            if (action == "accepted" and route in ("likely_no", "clinical_check")) or \
+            if (action == "accepted" and route in ("likely_no", "clinical_check", "security_hold")) or \
                     (action == "denied" and route in ("likely_yes", "needs_info")):
                 # A person went against the suggested route: keep the reason so the checks improve.
                 c["override"], c["override_reason"] = 1, reason or None

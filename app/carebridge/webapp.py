@@ -7,6 +7,7 @@ disk except settings, and nothing is sent anywhere except the Claude API calls a
 import json
 import mimetypes
 import os
+import re
 import sys
 import threading
 import time
@@ -16,7 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import APP_NAME, __version__, config, drafts, handout, intake, llm, mcp, phi, resources, rules, staff, store, tracker
+from . import APP_NAME, __version__, config, drafts, guard, handout, intake, llm, mcp, phi, resources, rules, staff, store, tracker
 from .pages import load_packet
 from .paths import BUNDLE, DEMO_DIR, FROZEN, load_json, packets_dir, user_dir
 
@@ -112,7 +113,20 @@ def _on_land(card: dict):
 
 def start_review(cid: str) -> None:
     data, name = PACKETS[cid]
-    review = intake.Review(load_packet(data, name), name, TRACK.cards[cid]["arrived_at"])
+    threat = guard.scan_file(data, name)
+    TRACK.cards[cid]["security"] = threat["verdict"]
+    if threat["verdict"] == guard.BLOCK:
+        # Isolate: the file is dropped from memory, never rendered and never sent anywhere.
+        PACKETS.pop(cid, None)
+        review = intake.Review([], name, TRACK.cards[cid]["arrived_at"], threat)
+        review.error, review.stage = "security_block", "error"
+        REVIEWS[cid] = review
+        TRACK.cards[cid]["review_state"] = "error"
+        TRACK.log(cid, "system", "security block", ", ".join(f["code"] for f in threat["findings"]))
+        return
+    if threat["verdict"] == guard.HOLD:
+        TRACK.log(cid, "system", "security hold", ", ".join(f["code"] for f in threat["findings"]))
+    review = intake.Review(load_packet(data, name), name, TRACK.cards[cid]["arrived_at"], threat)
     REVIEWS[cid] = review
     TRACK.cards[cid]["sample"] = False
     TRACK.cards[cid]["review_state"] = "running"
@@ -194,6 +208,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def _body(self) -> bytes:
         n = int(self.headers.get("Content-Length") or 0)
+        if n > guard.MAX_BYTES:
+            raise guard.Blocked({"verdict": guard.BLOCK, "kind": None, "pages": {},
+                                 "findings": [{"code": "too_big", "level": guard.BLOCK}]})
         return self.rfile.read(n) if n else b""
 
     def _jbody(self) -> dict:
@@ -305,10 +322,15 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"speed": TRACK.clock.speed})
             if p == "/api/upload":
                 data = self._body()
-                name = self.headers.get("X-Filename", "packet.pdf")
+                name = re.sub(r"[^\w .()-]", "_", Path(self.headers.get("X-Filename") or "packet.pdf").name)[:120]
                 if not data:
                     return self._json({"error": "empty file"}, 400)
-                case = self.headers.get("X-Case") or f"REF-{len(TRACK.cards) + 1:03d}"
+                threat = guard.scan_file(data, name)
+                if threat["verdict"] == guard.BLOCK:
+                    raise guard.Blocked(threat)
+                case = self.headers.get("X-Case") or ""
+                if not re.fullmatch(r"[A-Za-z0-9-]{1,24}", case) or case in TRACK.cards:
+                    case = f"REF-{len(TRACK.cards) + 1:03d}"
                 card = TRACK.add({"id": case, "case_no": case, "channel": "upload",
                                   "hospital": self.headers.get("X-Hospital") or "unknown", "packet_used": name})
                 PACKETS[card["id"]] = (data, name)
@@ -352,6 +374,8 @@ class Handler(BaseHTTPRequestHandler):
                 b = self._jbody()
                 return self._json(staff.explain_rule(b.get("rule_id", ""), b.get("lang", "en")))
             return self._json({"error": "not found"}, 404)
+        except guard.Blocked as e:
+            return self._json({"error": "security_block", "findings": e.threat["findings"]}, 422)
         except llm.LLMError as e:
             return self._json({"error": str(e)}, 502)
         except Exception as e:

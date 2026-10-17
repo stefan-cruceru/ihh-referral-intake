@@ -5,6 +5,10 @@ from dataclasses import dataclass
 
 from PIL import Image
 
+from . import guard
+
+Image.MAX_IMAGE_PIXELS = 80_000_000  # a decompression bomb raises instead of filling memory
+
 LONG_EDGE = 1600  # px; enough to read handwriting on a 200 dpi fax without huge requests
 
 
@@ -27,8 +31,8 @@ class Page:
 
 
 def load_packet(data: bytes, filename: str = "") -> list[Page]:
-    name = filename.lower()
-    if data[:5] == b"%PDF-" or name.endswith(".pdf"):
+    guard.ensure_openable(data)  # executables and fakes never reach a parser
+    if data[:5] == b"%PDF-":
         return _from_pdf(data)
     return _from_image(data)
 
@@ -39,6 +43,9 @@ def _from_pdf(data: bytes) -> list[Page]:
     pdf = pdfium.PdfDocument(data)
     pages = []
     try:
+        if len(pdf) > guard.MAX_PAGES:
+            raise guard.Blocked({"verdict": guard.BLOCK, "kind": "pdf", "pages": {},
+                                 "findings": [{"code": "too_many_pages", "level": guard.BLOCK}]})
         for i in range(len(pdf)):
             page = pdf[i]
             w, h = page.get_size()

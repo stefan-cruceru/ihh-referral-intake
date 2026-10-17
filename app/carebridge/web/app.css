@@ -135,7 +135,7 @@ button.chip:hover { background: var(--brand-soft); color: var(--brand); }
 .d-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
 .route { border-radius: var(--radius); padding: 1.1rem 1.3rem; margin: 1rem 0; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--gray-soft); }
 .route b { font-size: 1.3rem; font-weight: 600; }
-.route.likely_no { background: var(--red-soft); } .route.clinical_check, .route.needs_info { background: var(--yellow-soft); } .route.likely_yes { background: var(--green-soft); }
+.route.likely_no, .route.security_hold { background: var(--red-soft); } .route.clinical_check, .route.needs_info { background: var(--yellow-soft); } .route.likely_yes { background: var(--green-soft); }
 .gates { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
 .gate { background: var(--panel); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.2rem; }
 .gate.met { border-color: color-mix(in srgb, var(--green) 55%, var(--line)); } .gate.not_met { border-color: color-mix(in srgb, var(--red) 55%, var(--line)); } .gate.cant_tell { border-color: color-mix(in srgb, #b7791f 55%, var(--line)); }
