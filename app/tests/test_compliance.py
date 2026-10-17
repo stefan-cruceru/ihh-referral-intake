@@ -58,9 +58,9 @@ def test_missing_document_on_a_date_rule_still_stands():
 TRANSCRIPT = "Nursing note. Pt ambulates 150 ft with rolling walker, steady gait. BP 128/76 HR 82. [redacted]"
 
 
-def test_quote_match_allows_ocr_noise_not_new_words_or_numbers():
+def test_quote_match_requires_words_and_numbers_without_fuzzy_substitutions():
     assert intake.quote_in_text("ambulates 150 ft with rolling walker", TRANSCRIPT)
-    assert intake.quote_in_text("Pt ambulates 150 ft with rollinq walker,", TRANSCRIPT)  # one OCR slip
+    assert not intake.quote_in_text("Pt ambulates 150 ft with rollinq walker,", TRANSCRIPT)  # unconfirmed OCR slip
     assert not intake.quote_in_text("patient walks independently around the unit", TRANSCRIPT)
     assert not intake.quote_in_text("BP 128/76 HR 92", TRANSCRIPT)  # a changed number is not a match
     assert not intake.quote_in_text("anything", "")
