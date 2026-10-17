@@ -2,7 +2,8 @@ Lamplight - presentation demo
 
 Two-minute working-app demonstration:
 https://github.com/stefan-cruceru/ihh-referral-intake
-Source revision: be8fd8e5a6f23f62d46ec9d6fa941c79d0d55001.
+Main referral recording revision: a8e52e5db69955a8a15ed3ceed6ac09f96a4fa02.
+Client-resource PDF insert revision: 95e22a9.
 
 Sam's In our language / En nuestro idioma identity governs the film: Public Sans,
 warm cream, brown, amber and terracotta, and her desk-lamp concept refined for
@@ -11,12 +12,16 @@ small sizes. The canonical logo lives in campaign/logo/ in the repository.
 The recording uses only the supplied fictional practice patients. Practice reviews
 are seeded from the organizers' answer key and passed through the app's checks.
 This is not a recording of live AI extraction or measured time savings.
+Lamplight helps staff work toward IHH's two-hour response goal; the goal is
+aspirational and does not promise or guarantee a turnaround time.
 Staff make decisions; only the clinical reviewer can deny. Messages and handoffs
 shown are drafts. There are no real IHH system connections. Bilingual IHH review
 and accuracy validation remain prerequisites for a pilot.
 
 Voice: synthesized narration, Runway speech / Leslie, with a quiet original
-synthesized underscore. English narration and English/Spanish captions.
+synthesized underscore. English narration. English and Spanish narration
+subtitles are optional sidecar files/player tracks; no narration captions are
+burned into either video. The app and artwork retain their bilingual labels.
 
 Opening and closing: illustrative licensed stock footage of people at work.
 The people are not represented as IHH staff, patients or endorsers.
@@ -37,8 +42,10 @@ Requirements followed: CLAUDE.md, docs/bilingual.md and docs/workflow-and-timing
 The original event submission, judging and ground rules remain archived at:
 https://github.com/stefan-cruceru/ihh-referral-intake/tree/d4b772170dfca3cfcd2f90533f2cd41ba3f840c6/docs
 The same referral card and follow-up draft appear in English, then Spanish.
+The client-resource insert shows the real app plan and its PDF-print function,
+then a clearly labeled preview rendered from the actual returned PDF.
 Evidence quotes retain their original wording; AI translations need staff review.
 
-Deliverables: 1080p and 720p H.264/AAC MP4s, cover image, English and Spanish SRTs,
+Deliverables: 1080p and 720p H.264/AAC MP4s, cover image, optional English and Spanish SRTs,
 refined SVG and transparent 1024px PNG logo, and an offline interactive architecture
 HTML with its font license. Both videos are exactly 120 seconds.

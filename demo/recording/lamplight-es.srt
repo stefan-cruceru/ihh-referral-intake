@@ -1,0 +1,119 @@
+﻿1
+00:00:00,250 --> 00:00:04,224
+Lamplight ayuda al equipo de IHH a trabajar para alcanzar su meta de respuesta de dos horas.
+
+2
+00:00:04,224 --> 00:00:09,983
+Para quien coordina, hay páginas de fax, expedientes pendientes y otro hospital al que llamar.
+
+3
+00:00:09,983 --> 00:00:14,321
+Lamplight reúne la evidencia y el próximo paso en un solo lugar.
+
+4
+00:00:15,250 --> 00:00:18,861
+Empiece con cuatro pasos de bienvenida, pensados para el personal.
+
+5
+00:00:18,861 --> 00:00:22,080
+Después, una lista con responsables y plazos.
+
+6
+00:00:22,080 --> 00:00:28,439
+Estos pacientes ficticios usan revisiones basadas en las respuestas de referencia y comprobadas por la app; no muestran extracción de IA en vivo.
+
+7
+00:00:30,250 --> 00:00:33,830
+Abrimos este referido por un derrame cerebral. El formulario sugiere independencia.
+
+8
+00:00:33,830 --> 00:00:37,813
+Pero la página once indica que la paciente necesita ayuda física para caminar, trasladarse, bañarse,
+
+9
+00:00:37,813 --> 00:00:40,443
+vestirse o ir al baño.
+
+10
+00:00:40,443 --> 00:00:45,631
+Quien coordina puede abrir esa página exacta y comprobarlo, sin depender solo del formulario.
+
+11
+00:00:46,250 --> 00:00:49,694
+Cada alerta conecta una regla con las palabras originales.
+
+12
+00:00:49,694 --> 00:00:52,755
+Las contradicciones quedan visibles. Sin evidencia, la respuesta es desconocida.
+
+13
+00:00:52,755 --> 00:00:57,243
+Las reglas que requieren contar horas quedan sin determinar cuando se eliminan las fechas.
+
+14
+00:00:57,243 --> 00:00:59,643
+Solo la persona encargada de la revisión clínica puede denegar.
+
+15
+00:01:00,250 --> 00:01:03,013
+Los expedientes pendientes se re?nen en un borrador claro.
+
+16
+00:01:03,013 --> 00:01:05,376
+El personal lo revisa y lo env?a.
+
+17
+00:01:05,376 --> 00:01:06,937
+Lamplight no env?a nada.
+
+18
+00:01:08,750 --> 00:01:14,137
+Para los clientes, el personal puede revisar recursos locales e imprimir una gu?a clara en PDF para llevar.
+
+19
+00:01:17,750 --> 00:01:21,041
+El mismo referido y borrador, en ingl?s.
+
+20
+00:01:21,041 --> 00:01:25,737
+Cambiamos a Espa?ol: se traducen las etiquetas, los res?menes, las preguntas y los borradores.
+
+21
+00:01:25,737 --> 00:01:27,302
+Las citas conservan el idioma original.
+
+22
+00:01:27,302 --> 00:01:31,637
+El personal revisa las traducciones de IA. Sigue pendiente la revisi?n biling?e de IHH.
+
+23
+00:01:34,250 --> 00:01:36,830
+El personal aclara las dudas y registra la aceptación.
+
+24
+00:01:36,830 --> 00:01:38,812
+Siguen los borradores de entrega: los campos del expediente,
+
+25
+00:01:38,812 --> 00:01:41,879
+la fila del censo y el correo al centro.
+
+26
+00:01:41,879 --> 00:01:45,581
+Un admin puede revisar quién hizo qué y cuándo.
+
+27
+00:01:47,250 --> 00:01:50,877
+Nunca dice sí o no. Usted decide.
+
+28
+00:01:50,877 --> 00:01:54,541
+Este prototipo local no conecta con sistemas reales de IHH.
+
+29
+00:01:54,541 --> 00:01:57,464
+El personal debe validar la precisión antes de una prueba piloto.
+
+30
+00:01:57,464 --> 00:01:59,648
+La meta: perder menos referidos.

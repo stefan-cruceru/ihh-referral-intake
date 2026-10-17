@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lamplight — You decide</title>
+<style>
+@font-face{font-family:"Public Sans";src:url("../../app/carebridge/web/fonts/PublicSans-Variable.ttf") format("truetype");font-weight:100 900;font-display:block}
+:root{--ink:#3B2B22;--es:#A0461F;--amber:#E39235;--cream:#FFF8F0;--peach:#FBE3CC;--sand:#F4EADB}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--cream)}
+body{font-family:"Public Sans",sans-serif;color:var(--ink)}
+.frame{position:relative;width:1600px;height:760px;isolation:isolate;overflow:hidden;background:var(--cream);transform-origin:top left}
+.film{position:absolute;inset:0 0 0 49%;z-index:-3;background:var(--peach);overflow:hidden}
+.film video{width:100%;height:100%;object-fit:cover;object-position:52% 47%;filter:saturate(.72) brightness(.98);animation:camera 13s ease-out both}
+.film:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--cream),rgba(255,248,240,.14) 32%,rgba(160,70,31,.03)),linear-gradient(0deg,rgba(59,43,34,.63),transparent 60%)}
+.brand{position:absolute;left:73px;top:43px;display:flex;align-items:center;gap:12px;font-size:32px;font-weight:650;letter-spacing:-1px}.brand img{height:54px;width:54px;object-fit:contain}
+h1,p{margin:0}.headline{position:absolute;left:78px;top:165px;max-width:870px;animation:headline 13s linear both}
+h1{font-size:78px;line-height:1.06;font-weight:640;letter-spacing:-4.5px;max-width:820px}h1 span{display:block}
+.translation{margin-top:22px;color:var(--es);font-size:28px;font-weight:450;line-height:1.3;letter-spacing:-.5px;max-width:730px}
+.flow{position:absolute;left:80px;bottom:119px;display:flex;align-items:flex-start;gap:0;animation:flow 13s linear both}
+.step{width:205px;padding-top:14px;border-top:2px solid #DFC6AA;position:relative}
+.step:before{content:"";position:absolute;left:0;right:0;top:-2px;height:2px;background:var(--amber);transform-origin:left;animation:connect 13s linear both}
+.step:nth-child(2):before{animation-delay:.8s}.step:nth-child(3):before{animation-delay:1.6s}
+.step strong{font-size:22px;font-weight:620;letter-spacing:-.4px;display:block;line-height:1.3}.step span{display:block;font-size:17px;line-height:1.4;margin-top:4px;color:var(--es)}
+.lamp-scene{position:absolute;right:96px;bottom:124px;width:250px;height:237px;animation:lamp 13s linear both}
+.lamp-scene:before{content:"";position:absolute;width:470px;height:100px;left:-113px;bottom:-15px;background:radial-gradient(ellipse,rgba(227,146,53,.77),rgba(227,146,53,.25) 38%,transparent 68%);animation:glow 4s ease-in-out infinite alternate}
+.lamp-scene img{position:relative;display:block;width:250px;height:250px;object-fit:contain;filter:drop-shadow(0 9px 30px #3B2B2222)}
+.desk-line{position:absolute;right:48px;bottom:117px;height:1px;width:400px;background:#FFF8F073}
+.bottom{position:absolute;left:80px;right:71px;bottom:30px;display:flex;align-items:flex-end;justify-content:space-between;font-size:13px;font-weight:450;line-height:1.5;gap:50px}
+.truth{color:#705744;max-width:700px}.truth span{color:var(--es)}.stock{text-align:right;color:var(--cream);text-shadow:0 1px 4px #3B2B2266}
+@keyframes camera{from{transform:scale(1.08)}to{transform:scale(1.16) translateX(-10px)}}
+@keyframes headline{0%{opacity:0;transform:translateY(10px)}6%,100%{opacity:1;transform:translateY(0)}}
+@keyframes flow{0%,5%{opacity:0;transform:translateY(5px)}12%,100%{opacity:1;transform:translateY(0)}}
+@keyframes connect{0%,12%{transform:scaleX(0)}30%,100%{transform:scaleX(1)}}
+@keyframes lamp{0%,13%{opacity:0;transform:translateY(7px)}24%,100%{opacity:1;transform:translateY(0)}}
+@keyframes glow{from{opacity:.7}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}.step:before{transform:scaleX(1)}}
+</style>
+</head>
+<body>
+<main class="frame" aria-label="Lamplight. It never says yes or no. You do. Nunca dice sí o no. Usted decide.">
+  <div class="film"><video autoplay muted playsinline loop preload="auto" aria-hidden="true"><source src="stock-footage/team-computers-pexels-8048240.mp4" type="video/mp4"></video></div>
+  <div class="brand"><img src="../../campaign/logo/lamplight-logo.svg" alt="">Lamplight</div>
+  <section class="headline"><h1><span>It never says</span><span>yes or no.</span><span>You do.</span></h1><p class="translation" lang="es">Nunca dice sí o no.<br>Usted decide.</p></section>
+  <div class="flow" aria-label="Gather evidence, prepare a draft, hand off to staff">
+    <div class="step"><strong>Evidence</strong><span lang="es">Evidencia</span></div>
+    <div class="step"><strong>One draft</strong><span lang="es">Un borrador</span></div>
+    <div class="step"><strong>A clear handoff</strong><span lang="es">Una entrega clara</span></div>
+  </div>
+  <div class="desk-line" aria-hidden="true"></div><div class="lamp-scene" aria-hidden="true"><img src="../../campaign/logo/lamplight-logo.svg" alt=""></div>
+  <footer class="bottom"><p class="truth">Local prototype · No real IHH connections<br><span lang="es">Prototipo local · Sin conexiones reales con IHH</span></p><p class="stock">Illustrative stock footage<br><span lang="es">Imágenes ilustrativas</span></p></footer>
+</main>
+<script>
+function resizeFrame(){document.querySelector('.frame').style.transform=`scale(${Math.min(innerWidth/1600,innerHeight/760)})`}
+addEventListener('resize',resizeFrame);resizeFrame();
+window.seekScene=async seconds=>{await document.fonts.ready;document.getAnimations().forEach(a=>{a.pause();a.currentTime=seconds*1000});let v=document.querySelector('video');v.pause();if(v.readyState>0)v.currentTime=Math.min(seconds,v.duration-.1)};
+</script>
+</body>
+</html>

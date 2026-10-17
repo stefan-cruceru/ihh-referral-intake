@@ -30,14 +30,15 @@ INCLUDE = ["app/carebridge", "demo/pages/bridge.py", "challenges", "m365", "copi
 DATA = re.findall(r'_data\(\s*"[^"]*"\s*,\s*"([^"]+)"\s*\)', (REPO / "app/carebridge/paths.py").read_text(encoding="utf-8"))
 SKIP_DIRS = {"__pycache__", "packets"}
 # The demo folder ships its practice data, not the site itself or the video (those are copied separately).
-SKIP_PREFIXES = ("demo/media/", "demo/pages/")
+SKIP_PREFIXES = ("demo/media/", "demo/pages/", "demo/recording/")
 # Rendered docs, in the order the landing page lists them: (repo path, page name).
 DOCS = [("README.md", "readme"), ("docs/closed-loop.md", "closed-loop"), ("docs/workflow-and-timing.md", "workflow-and-timing"),
         ("docs/kipu-and-teams.md", "kipu-and-teams"), ("docs/notifications.md", "notifications"), ("docs/bilingual.md", "bilingual"),
         ("copilot/README.md", "copilot"), ("m365/README.md", "m365"),
         ("docs/run-with-docker.md", "run-with-docker"),
         ("challenges/1-referral-intake/README.md", "challenge-1"), ("challenges/2-finding-the-right-resource/README.md", "challenge-2"),
-        ("challenges/3-staff-ai-confidence/README.md", "challenge-3"), ("campaign/README.md", "campaign"), ("docs/glossary.md", "glossary")]
+        ("challenges/3-staff-ai-confidence/README.md", "challenge-3"), ("campaign/README.md", "campaign"), ("docs/glossary.md", "glossary"),
+        ("demo/recording/README.md", "demo-recording")]
 
 PAGE = """<!doctype html>
 <html lang="en">
@@ -47,6 +48,7 @@ PAGE = """<!doctype html>
 <title>{title}</title>
 <link rel="icon" href="../campaign/logo/lamplight-logo.svg">
 <style>
+  @font-face {{ font-family: "Public Sans"; src: url("../fonts/PublicSans-Variable.ttf") format("truetype"); font-weight: 100 900; font-display: swap; }}
   :root {{ --bg: #fff8f0; --panel: #fffdf9; --ink: #3b2b22; --muted: #715d50; --line: #dfd0bf; --brand: #3b2b22; --lamp: #e39235; --link: #a0461f; }}
   * {{ box-sizing: border-box; }}
   body {{ margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }}
@@ -165,9 +167,14 @@ def build(out: Path) -> Path:
         shutil.copy2(HERE / f, out / f)
     (out / ".nojekyll").write_text("")
     _zip_app(out)
-    shutil.copy2(REPO / "docs/architecture.html", out / "architecture.html")
+    shutil.copytree(REPO / "app/carebridge/web/fonts", out / "fonts")
+    architecture = (REPO / "docs/architecture.html").read_text(encoding="utf-8")
+    architecture = architecture.replace("../app/carebridge/web/fonts/", "fonts/").replace("../campaign/logo/", "campaign/logo/")
+    (out / "architecture.html").write_text(architecture, encoding="utf-8")
     shutil.copytree(REPO / "demo/media", out / "media")
     shutil.copytree(REPO / "campaign", out / "campaign", ignore=shutil.ignore_patterns("README.md"))
+    campaign = out / "campaign/in-our-language.html"
+    campaign.write_text(campaign.read_text(encoding="utf-8").replace("../app/carebridge/web/fonts/", "../fonts/"), encoding="utf-8")
     docs = _render_docs(out)
     items = "\n".join(f'      <li><a href="{d["href"]}">{html.escape(d["title"])}</a> <span class="path">{d["path"]}</span></li>'
                       for d in docs)
