@@ -33,6 +33,7 @@ p { margin: .3rem 0 .9rem; }
 .muted { color: var(--muted); }
 .small { font-size: .88rem; }
 .hidden { display: none !important; }
+body.production .practice-only { display: none !important; }
 button, input, select, textarea { font: inherit; color: inherit; }
 input, select, textarea { background: var(--panel); border: 1.5px solid var(--line); border-radius: var(--radius-sm); padding: .7rem .85rem; width: 100%; }
 input:hover, select:hover, textarea:hover { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); }
@@ -65,8 +66,6 @@ details > summary { cursor: pointer; }
 .tabs a.tab-link { padding: .7rem 1.1rem .85rem; color: var(--muted); font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; gap: .5rem; border-bottom: 4px solid transparent; border-radius: 10px 10px 0 0; text-decoration: none; }
 .tabs a.tab-link svg { width: 22px; height: 22px; flex: none; }
 .tabs a.tab-link:hover { color: var(--ink); background: var(--gray-soft); }
-.privacy-bar { display: flex; gap: .55rem; align-items: center; justify-content: center; padding: .55rem 1.5rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg); color: var(--muted); font-size: .9rem; text-align: center; }
-.privacy-bar svg { width: 18px; height: 18px; flex: none; color: var(--brand); }
 
 main { padding: 1.6rem 1.5rem 3rem; max-width: 1180px; margin: 0 auto; }
 .tab { display: none; }

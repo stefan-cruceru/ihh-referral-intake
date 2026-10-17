@@ -72,6 +72,16 @@ def inbox_dir() -> str | None:
     return os.environ.get("CAREBRIDGE_INBOX") or load_settings().get("inbox_dir")
 
 
+def production() -> bool:
+    """IHH's own secure setup with real referrals (CAREBRIDGE_PRODUCTION=1, or "production" in settings).
+    There are no practice patients or demo board, and packets are not blacked out, so a name on a page
+    is expected, not a stop. Referrals come in only by drag and drop, the inbox folder, email and /send."""
+    v = (os.environ.get("CAREBRIDGE_PRODUCTION") or "").strip().lower()
+    if v:
+        return v in ("1", "true", "yes", "on")
+    return bool(load_settings().get("production"))
+
+
 def get_api_key() -> str | None:
     env = os.environ.get("ANTHROPIC_FOUNDRY_API_KEY") if provider() == "foundry" else None
     if env:

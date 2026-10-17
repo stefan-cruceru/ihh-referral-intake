@@ -12,6 +12,8 @@ const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const t = (k, vars) => {
+  // In production (IHH's secure setup) a "<key>_prod" string replaces wording about practice or blacked-out pages.
+  if (STATE.production && S[k + "_prod"]) k += "_prod";
   let s = (S[k] && (S[k][LANG] ?? S[k].en)) ?? k;
   for (const [a, b] of Object.entries(vars || {})) s = s.replaceAll(`{${a}}`, b);
   return s;
@@ -664,7 +666,7 @@ async function loadScenarios() {
     const j = await api("/api/scenarios");
     SCEN = j.scenarios;
     EXAMPLES = j.examples;
-    if (!$("#jottings").value) $("#jottings").value = EXAMPLES.note[LANG];
+    if (!$("#jottings").value) $("#jottings").value = (EXAMPLES.note || {})[LANG] || "";
   }
   $("#scenarios").innerHTML = SCEN.map((s) => `<button class="chip" data-s="${esc(s.id)}">${esc(s.id)} · ${esc(s.title)}</button>`).join("");
   $$("#scenarios [data-s]").forEach((b) => b.addEventListener("click", () => {
@@ -809,6 +811,9 @@ async function loadState() {
   $("#kipu-url").value = STATE.kipu_url || "";
   $("#overnight-clock").value = STATE.overnight_clock || "arrival";
   $("#auto-msgs").checked = !!STATE.auto_hospital_messages;
+  // Production has no practice: no made-up referrals, made-up clients, practice patients or report toggle.
+  document.body.classList.toggle("production", !!STATE.production);
+  if (STATE.production) $("#rep-practice").checked = false;
 }
 $("#overnight-clock").addEventListener("change", async (e) => { await post("/api/settings", { overnight_clock: e.target.value }); toast(t("saved")); });
 $("#auto-msgs").addEventListener("change", async (e) => { await post("/api/settings", { auto_hospital_messages: e.target.checked }); toast(t("saved")); });

@@ -55,10 +55,6 @@
   "en": "Skip to the main part",
   "es": "Ir a la parte principal"
  },
- "privacy": {
-  "en": "This app stays on this computer. Do not type names, birth dates or ID numbers. It never sends anything. You send it.",
-  "es": "Esta app se queda en esta computadora. No escriba nombres, fechas de nacimiento ni números de ID. La app nunca envía nada. Usted lo envía."
- },
  "tab_referrals": {
   "en": "Patients",
   "es": "Pacientes"
@@ -70,6 +66,10 @@
  "tab_staff": {
   "en": "Practice",
   "es": "Práctica"
+ },
+ "tab_staff_prod": {
+  "en": "Notes",
+  "es": "Notas"
  },
  "tab_rules": {
   "en": "The rules",
@@ -227,6 +227,10 @@
   "en": "Drag a PDF here, or click here to pick one. Only use pages with names blacked out.",
   "es": "Arrastre un PDF aquí, o haga clic para escoger uno. Use solo páginas con los nombres tachados."
  },
+ "drop_hint_prod": {
+  "en": "Drag a referral PDF here, or click here to pick one.",
+  "es": "Arrastre aquí el PDF de un referido, o haga clic para escoger uno."
+ },
  "clock": {
   "en": "Time",
   "es": "Hora"
@@ -242,6 +246,10 @@
  "queue_empty": {
   "en": "No referrals yet. Add a referral PDF above. To look around first, click \"Practice with made-up referrals\".",
   "es": "Todavía no hay referidos. Agregue el PDF de un referido arriba. Para conocer la app primero, haga clic en \"Practique con referidos inventados\"."
+ },
+ "queue_empty_prod": {
+  "en": "No referrals yet. Drag a referral PDF above. Faxes and emails saved to the inbox folder show up here on their own.",
+  "es": "Todavía no hay referidos. Arrastre arriba el PDF de un referido. Los faxes y correos guardados en la carpeta de entrada aparecen aquí solos."
  },
  "arriving": {
   "en": "still coming in",
@@ -338,6 +346,10 @@
  "need_key": {
   "en": "To read new referrals, an admin needs to add a key in Settings. Practice mode works without it.",
   "es": "Para leer referidos nuevos, un administrador debe agregar una clave en Ajustes. El modo práctica funciona sin ella."
+ },
+ "need_key_prod": {
+  "en": "To read new referrals, an admin needs to add a key in Settings.",
+  "es": "Para leer referidos nuevos, un administrador debe agregar una clave en Ajustes."
  },
  "st_received": {
   "en": "New",
@@ -466,6 +478,10 @@
  "date_redacted": {
   "en": "Needs a date, and dates are blacked out",
   "es": "Necesita una fecha, y las fechas están tachadas"
+ },
+ "date_redacted_prod": {
+  "en": "Needs a date. A person checks it on the page.",
+  "es": "Necesita una fecha. Una persona la revisa en la página."
  },
  "human_decision": {
   "en": "A person must decide this",
@@ -779,6 +795,10 @@
   "en": "Practice with made-up examples. You see exactly what goes out and what it costs. You stay in charge.",
   "es": "Practique con ejemplos inventados. Usted ve exactamente lo que sale y cuánto cuesta. Usted decide."
  },
+ "staff_sub_prod": {
+  "en": "Turn your notes into drafts. You see exactly what goes out and what it costs. You stay in charge.",
+  "es": "Convierta sus notas en borradores. Usted ve exactamente lo que sale y cuánto cuesta. Usted decide."
+ },
  "role_lvn": {
   "en": "LVN or medical assistant",
   "es": "LVN o asistente médico"
@@ -859,6 +879,10 @@
   "en": "Needed to read new referrals and to write drafts. It is saved only on this computer. Practice mode and the rules work without it.",
   "es": "Se necesita para leer referidos nuevos y escribir borradores. Se guarda solo en esta computadora. El modo práctica y las reglas funcionan sin ella."
  },
+ "key_help_prod": {
+  "en": "Needed to read new referrals and to write drafts. It is saved only on this computer. The rules work without it.",
+  "es": "Se necesita para leer referidos nuevos y escribir borradores. Se guarda solo en esta computadora. Las reglas funcionan sin ella."
+ },
  "key_saved": {
   "en": "Key is saved",
   "es": "La clave está guardada"
@@ -894,6 +918,10 @@
  "privacy_long": {
   "en": "Pages and results are kept only while the app is open. When you close it, they are gone. The app keeps a small log on this computer: case number, times, who decided and the outcome. It never keeps names or chart pages. Before anything you type goes out, the app checks it for names, dates, phone numbers and ID numbers. This is a test version. Use only pages with names blacked out, or made-up examples.",
   "es": "Las páginas y los resultados se guardan solo mientras la app está abierta. Al cerrarla, se borran. La app guarda un registro pequeño en esta computadora: número de caso, horas, quién decidió y el resultado. Nunca guarda nombres ni páginas del expediente. Antes de que salga algo que usted escribe, la app busca nombres, fechas, teléfonos y números de ID. Esta es una versión de prueba. Use solo páginas con nombres tachados o ejemplos inventados."
+ },
+ "privacy_long_prod": {
+  "en": "Pages and results are kept only while the app is open. When you close it, they are gone. The app keeps a small log on this computer: case number, times, who decided and the outcome. It never keeps names or chart pages. Before anything you type goes out, the app checks it for names, dates, phone numbers and ID numbers.",
+  "es": "Las páginas y los resultados se guardan solo mientras la app está abierta. Al cerrarla, se borran. La app guarda un registro pequeño en esta computadora: número de caso, horas, quién decidió y el resultado. Nunca guarda nombres ni páginas del expediente. Antes de que salga algo que usted escribe, la app busca nombres, fechas, teléfonos y números de ID."
  },
  "h_report": {
   "en": "This week",
