@@ -2,7 +2,8 @@
 
 [Watch or download the two-minute demo](https://github.com/stefan-cruceru/ihh-referral-intake/releases/tag/demo-lamplight-2026-10-17).
 The release includes the 1080p film, 720p copy, cover, English and Spanish subtitles, source credits,
-and logo exports. These sources recreate its artwork, practice-app recording and compositor.
+logo exports and a standalone interactive architecture map. These sources recreate its artwork,
+practice-app recording and compositor.
 
 **Recorded application revision:** `b710731af1f3d18dfbe0ef1ffa4864bd89d23658`.
 The film follows [submission](../submission.md), [judging](../judging.md),
@@ -13,13 +14,15 @@ The film follows [submission](../submission.md), [judging](../judging.md),
 
 | Time | What the audience sees | Workflow improvement shown |
 |---|---|---|
-| 0:00–0:15 | Real-person stock footage and animated paper/clock/lamp artwork | Establishes the referral coordinator’s two-hour response target |
-| 0:15–0:30 | The working queue, owners and deadlines | One visible place to track each referral and its next action |
+| 0:00–0:13 | Real-person stock footage and animated paper/clock/lamp artwork | Establishes the referral coordinator’s two-hour response target |
+| 0:13–0:19 | Sam’s four-step welcome | Staff pick their role and see what they control before using the tool |
+| 0:19–0:30 | The working queue, owners and deadlines | One visible place to track each referral and its next action |
 | 0:30–0:46 | A stroke referral and the original page 11 | Staff check the underlying evidence when the form tells a different story |
 | 0:46–1:00 | Rule-linked findings and unknowns | Conflicts and missing evidence remain visible for human review |
 | 1:00–1:16 | Missing records, hospital questions and follow-up drafts | Staff can review one assembled request for the missing pieces |
 | 1:16–1:32 | The same referral and draft in English and Spanish | The same work is available in either language; quotes stay original |
-| 1:32–1:47 | A staff acceptance action and handoff drafts | The person’s decision connects to chart, census and site-email drafts |
+| 1:32–1:43 | A staff acceptance action and handoff drafts | The person’s decision connects to chart, census and site-email drafts |
+| 1:43–1:47 | A separate fictional admin reviews the audit view | Who did what and when remains visible to the permitted role |
 | 1:47–2:00 | People at work, a connected workflow and the lamp | Human authority and prototype limitations remain explicit |
 
 The recording uses invented practice patients and made-up practice staff. Practice reviews come
