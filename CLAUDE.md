@@ -21,6 +21,10 @@ designers, and healthcare and nonprofit people. Some have never used a terminal.
   "unknown".
 - **No medical, legal or immigration advice** in anything client-facing. Point to staff.
 - **No secrets in git.** API keys go in environment variables. `.env` is ignored.
+- **Open source, donated to IHH.** MIT license. IHH may use, change and build on it. Respect the
+  terms of any data source or API.
+- **Be straight in the demo.** Show what works, say what is mocked, and say where it gets things
+  wrong. For Challenge 1, judges may hand over a packet the tool has not seen.
 - **Standalone project.** This is a community build donated to IHH. No company names, product
   branding or commercial pitches in the repo, the demo, commit messages or anything shared with
   IHH.
@@ -38,7 +42,6 @@ designers, and healthcare and nonprofit people. Some have never used a terminal.
 - `docs/notifications.md`: staff alerts by Outlook and Teams, per person. Staff only, drafts only,
   no patient text.
 
-- `docs/ground-rules.md`: the event rules in full.
 - `docs/background.md`, `docs/glossary.md`: what recuperative care is and what the terms mean.
 - `challenges/1-referral-intake/`: admission criteria as markdown and JSON with rule IDs,
   eleven real de-identified referral packets (`packets/R01.pdf` to `R11.pdf`, image-only faxes,
@@ -48,7 +51,6 @@ designers, and healthcare and nonprofit people. Some have never used a terminal.
   IHH named (shelter, work, microloans, travel home), a guide to larger data sources, and twelve
   client scenarios. The challenge is about IHH clients leaving care, not a general OC directory.
 - `challenges/3-staff-ai-confidence/`: role cards.
-- `templates/TEAM-README.md`: what the team's README must cover before they submit.
 
 ## How to work today
 
@@ -60,7 +62,9 @@ designers, and healthcare and nonprofit people. Some have never used a terminal.
   Spanish summary in the README. No hard-coded English in the UI. Follow `docs/bilingual.md`.
 - **One closed loop that IHH runs itself.** No partner tools or outside services. All state in one
   local store, and no network calls except the model endpoint. Follow `docs/closed-loop.md`.
-- Keep the team's README current as you go. Submissions are due at 4:00 PM.
+- Keep the team's README current as you go. Submissions are due at 4:00 PM. The README covers: who
+  it is for, what it does, how Claude is used, how to run it, what is real and what is mocked, where
+  it gets things wrong, next steps, and data and privacy.
 - Commit often with clear messages. The team's own work starts after 9:30 AM on the day.
 
 ## Challenge 1 specifics

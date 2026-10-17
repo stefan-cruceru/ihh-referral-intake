@@ -31,8 +31,8 @@ SKIP_DIRS = {"__pycache__", "packets"}
 # Rendered docs, in the order the landing page lists them: (repo path, page name).
 DOCS = [("README.md", "readme"), ("docs/closed-loop.md", "closed-loop"), ("docs/workflow-and-timing.md", "workflow-and-timing"),
         ("docs/kipu-and-teams.md", "kipu-and-teams"), ("docs/notifications.md", "notifications"), ("docs/bilingual.md", "bilingual"),
-        ("copilot/README.md", "copilot"), ("m365/README.md", "m365"), ("docs/getting-started.md", "getting-started"),
-        ("docs/run-with-docker.md", "run-with-docker"), ("app/demo/synthetic/README.md", "practice-patients"),
+        ("copilot/README.md", "copilot"), ("m365/README.md", "m365"),
+        ("docs/run-with-docker.md", "run-with-docker"),
         ("challenges/1-referral-intake/README.md", "challenge-1"), ("challenges/2-finding-the-right-resource/README.md", "challenge-2"),
         ("challenges/3-staff-ai-confidence/README.md", "challenge-3"), ("campaign/README.md", "campaign"), ("docs/glossary.md", "glossary")]
 

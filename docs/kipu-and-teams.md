@@ -1,6 +1,6 @@
 # Kipu and Teams
 
-How Care Bridge works with IHH's Kipu and signs staff in with their Teams account. Today it runs
+How Lamplight works with IHH's Kipu and signs staff in with their Teams account. Today it runs
 against a **practice Kipu** with made-up patients and a **practice sign-in**. Nothing touches
 IHH's real Kipu or Microsoft until IHH IT turns it on.
 
@@ -12,9 +12,9 @@ IHH's real Kipu or Microsoft until IHH IT turns it on.
 
 ## What it does
 
-The intake director's steps today, and what Care Bridge does for each:
+The intake director's steps today, and what Lamplight does for each:
 
-| Step today | In Care Bridge | Who starts it |
+| Step today | In Lamplight | Who starts it |
 |---|---|---|
 | A referral comes in | **Pull referrals from Kipu**: each referral waiting in Kipu becomes a card with its timer, owner and packet. Fax, email and upload still work too | A person (button) |
 | Check Kipu: has this person been with IHH before? | **Check Kipu**: first name, last name and birth date must all match. A person confirms the match | A person |
@@ -39,7 +39,7 @@ Teams on its own.
 `off` are refused whatever the setting says, since practice sign-in lets anyone pick a made-up
 clinician. There is no switch in the app to turn sign-in off.
 
-**Agents and MCP.** Copilot in VS Code and Claude Desktop start Care Bridge on the same computer
+**Agents and MCP.** Copilot in VS Code and Claude Desktop start Lamplight on the same computer
 (stdio) and run as the Windows user who started them. An agent that calls the app over the network
 (`POST /mcp`, for example a Microsoft 365 Copilot agent in a pilot) must sign in. A signed-in
 person makes a personal token (`POST /api/me/token`), and the agent sends it as
@@ -49,7 +49,7 @@ A pilot that wants agents to sign in with Entra directly needs Entra-issued acce
 against Microsoft's signing keys. Not built.
 
 Microsoft says **who** you are. **What you may do** comes from IHH's own Microsoft Entra ID: IT
-gives each person (or a security group) a Care Bridge app role, and the role arrives in the sign-in
+gives each person (or a security group) a Lamplight app role, and the role arrives in the sign-in
 token. If IT has not set up app roles yet, IHH's staff list decides instead. Only the `clinical`
 role can say no to a referral. The app checks the role on the server for every action, not the
 person's name and not what the screen shows.
@@ -83,16 +83,17 @@ that is not in the table is refused, so a new feature has to be added to it on p
    - which status IHH uses for a referral that isn't admitted yet,
    - how to attach a document to an existing chart.
    Public Kipu clients don't show these.
-4. **Teams sign-in.** In Entra ID, register an app ("mobile and desktop", redirect
+4. **Teams sign-in.** In Entra ID, register an app named Lamplight ("mobile and desktop", redirect
    `http://localhost:<port>/auth/callback` or the pilot's own address). Then set
    `CAREBRIDGE_TEAMS_TENANT` and `CAREBRIDGE_TEAMS_CLIENT_ID`, and `CAREBRIDGE_AUTH=teams`.
 5. **Roles in Entra (recommended).** In the app registration, open **App roles** and create four,
    allowed for **Users/Groups**, with these exact values:
    `CareBridge.Coordinator`, `CareBridge.Lead`, `CareBridge.Clinical`, `CareBridge.Admin`.
-   Then in **Enterprise applications → Care Bridge → Users and groups**, assign people or security
+   These keep the app's old name on purpose: the app looks for these exact words.
+   Then in **Enterprise applications → Lamplight → Users and groups**, assign people or security
    groups to a role. Turn on **Assignment required** so only assigned staff can sign in.
    - The `roles` claim only appears in the token after someone is assigned a role. Someone who
-     signs in with no Care Bridge role is refused.
+     signs in with no Lamplight role is refused.
    - Assigning a whole group may need an Entra ID P1 or P2 licence. Confirm with IHH IT.
    - Changing someone's role in Entra takes effect at their next sign-in (sessions last 12 hours).
 6. **Staff list (only without app roles).** Put IHH's list in `staff.json` in the app's settings folder:

@@ -274,7 +274,7 @@ review pipeline in `intake-context.md` section 6 stays the core. Around it:
     is a test case.
 
 **Judging constraint:** features that need IHH's live systems to mean anything do not place
-(`docs/judging.md`). Everything here has to run on its own, with a mock inbox and packets read by
+(the event's judging rules). Everything here has to run on its own, with a mock inbox and packets read by
 path. Section 8 covers how it could plug into IHH's Microsoft setup later.
 
 ### Why minutes per referral matter (placeholder numbers)

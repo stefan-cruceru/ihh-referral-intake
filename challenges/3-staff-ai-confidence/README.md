@@ -18,4 +18,4 @@ useful for their own work, and feels safe trying it.
 [`roles.md`](roles.md): role cards for an LVN or medical assistant, a referral coordinator and a
 case manager.
 
-Made-up clients only. See the [ground rules](../../docs/ground-rules.md).
+Made-up clients only. See the rules in [CLAUDE.md](../../CLAUDE.md).

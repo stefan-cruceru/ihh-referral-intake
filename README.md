@@ -8,9 +8,9 @@
 **Challenge:** All three, as one tool. 1 Referral intake is the core. 2 Finding the right resource
 and 3 Make AI approachable are built in.
 **Built at:** Orange County | Claude Impact Lab, October 17, 2026, with Illumination Health + Home
-**Live demo:** https://stefan-cruceru.github.io/ihh-referral-intake/ (the working app in your browser, practice patients only, plus the video, system map and docs)
+**Live demo:** https://stefan-cruceru.github.io/ihh-referral-intake/ (the video, the system map and these guides)
 
-Lamplight follows the [In our language / En nuestro idioma](campaign/README.md) identity: a warm desk lamp, Public Sans, and people who make every decision. The executable, settings folder and tool identifiers keep their existing `ihh-care-bridge` names for compatibility.
+Lamplight follows the [In our language / En nuestro idioma](campaign/README.md) identity: a warm desk lamp, Public Sans, and people who make every decision. The program file, settings folder and tool names still say `ihh-care-bridge` (the app's old name) so nothing that is already installed breaks.
 
 **The campaign is a draft.** The name "Lamplight", the posters and the letters in [campaign/](campaign/README.md)
 are a proposal from our hackathon team. IHH has not approved them. The letters are drafts for IHH
@@ -35,7 +35,7 @@ para que una persona lo revise.
 
 **Cómo usarla.** Primero hay que crear el programa: en la carpeta `app`, corra `.\build.ps1` (vea
 "Try it" más abajo). Luego haga doble clic en `app\dist\ihh-care-bridge.exe`. Se abre en el
-navegador. Haga clic en "Practique con referidos inventados" para practicar sin clave.
+navegador. Para leer referidos, un administrador agrega la clave de la IA en Configuración.
 
 **Conexiones apagadas.** Por defecto, la app solo se conecta al modelo de IA. Como decisión del
 equipo, el código también trae una conexión con Kipu (el sistema de registros de IHH), el inicio de
@@ -107,8 +107,7 @@ Plus:
   choice is saved on that computer. There is also a "skip to the main part" link for keyboard users.
 - **Copilot plugin.** The same exe is an MCP server for GitHub Copilot in VS Code and Claude
   Desktop. In Copilot Chat, pick **Lamplight** in the agent dropdown, or type `/` and pick
-  a command such as `check_referral`: a pick list offers the practice patients, and the whole
-  check shows in the chat. There is also a Microsoft 365 Copilot agent package. See [copilot/README.md](copilot/README.md).
+  a command such as `check_referral`, give it a packet file, and the whole check shows in the chat. There is also a Microsoft 365 Copilot agent package. See [copilot/README.md](copilot/README.md).
 - **Kipu and Teams.** Referrals waiting in Kipu come onto the board with one click. The team's
   Kipu steps are one click each: check for a returning client, make the chart, file the packet,
   add the intake note. Each is started by a person. Staff sign in with their Teams account. The
@@ -152,13 +151,6 @@ cd app
 cd ..                            # back to the repo root
 ```
 
-Click **Practice with made-up referrals** to run the demo with the synthetic practice
-patients (the event demos are Saturday, October 17, from 4:30 PM). No key needed. Open **Practice patients** to see each made-up patient's profile, their
-faxed pages, what the app points out, the organizers' answer, and a printable next-steps PDF made
-for that patient.
-To see the security check, upload `app/demo/attack/attack-packet.pdf`: an invented packet with an
-order to the AI printed on page 2 and hidden white text on page 3. With an API key set, it comes
-back as a red "Security hold" with those pages set aside.
 To read real (de-identified) packets, an admin adds a Claude API key in Settings (saved in Windows
 Credential Manager) or sets `ANTHROPIC_API_KEY`. For Claude in IHH's Azure, pick Foundry in
 Settings, or set `CAREBRIDGE_PROVIDER=foundry`, `ANTHROPIC_FOUNDRY_RESOURCE` and
@@ -171,18 +163,17 @@ cd app
 pip install -r requirements.txt
 python -m carebridge              # the app
 python -m carebridge mcp          # MCP server on stdio
-python -m pytest tests            # tests on the safety logic and the practice patients
+python -m pytest tests            # tests on the safety logic
 cd ..                             # back to the repo root
 ```
 
 **Docker (one command):** `.\start.ps1` on Windows or `./start.sh` on Mac or Linux. It builds the
 container and opens http://localhost:8780 (this computer only). Add `ANTHROPIC_API_KEY` to `.env`
-or in Settings to read packets; the demo works without it. Stop with `.\start.ps1 -Stop` or `./start.sh stop`.
+or in Settings to read packets. Stop with `.\start.ps1 -Stop` or `./start.sh stop`.
 See [docs/run-with-docker.md](docs/run-with-docker.md).
 
-**Packets:** download R01 to R11 into `challenges/1-referral-intake/packets/` (gitignored). The
-practice demo never needs them: it uses the organizers' 10 synthetic patients in
-`app/demo/synthetic/`.
+**Packets:** download R01 to R11 into `challenges/1-referral-intake/packets/` (gitignored). Never
+copy them anywhere in the repo.
 
 **Score it:** `python app/eval_packets.py run`, then `python app/eval_packets.py score`. Run both from the repo root. The
 first step never opens `challenges/1-referral-intake/eval/decisions.json`.
@@ -202,8 +193,7 @@ first step never opens `challenges/1-referral-intake/eval/decisions.json`.
 | Critical values (EF, glucose, SpO2, wound, swab, dialysis chair) | Working, plain code over the review. The list is the team's starting set, not IHH policy |
 | Clinical reviewer notes and turnaround | Working. Notes stay in memory; the log keeps only that a note was added |
 | Overnight packets | Marked. Whether the 2 hours start on arrival or at the 7 AM shift is a setting until IHH answers |
-| Event demo (Saturday, October 17, from 4:30 PM) and practice patients | The organizers' 10 synthetic patients (S01-S10): invented people with realistic faxed packets. Practice reviews come from the organizers' answer key, run through the app's own checks |
-| Per-patient next-steps PDF | Working. Needs come from the patient's story; resources come only from the sourced list (Claude picks them when a key is set, otherwise matched by need) |
+| Client next-steps PDF | Working. Resources come only from the sourced list (Claude picks them when a key is set, otherwise matched by need) |
 | Manual vs. tool comparison | Placeholder numbers (40 vs 10 minutes per referral) until IHH gives real ones |
 | Outcome log and weekly report | Working, local SQLite. Practice runs are marked and can be left out |
 | Client resources | Working. Sourced seed list from the event repo, checked 2026-10-13 |
@@ -270,8 +260,7 @@ system. We built them so IHH can pick them up after the event.
 - Typed text is checked for identifiers before it can reach the model, and blocked if it has any.
 - The page sorter flags any identifier a redaction missed, and the app shows a STOP banner.
 - Production mode (`CAREBRIDGE_PRODUCTION=1`, or `"production": true` in settings) is for IHH's own
-  secure setup with real, named referrals. It turns off the practice patients, the made-up demo board
-  and the fast clock, drops every "blacked out" note and the STOP banner for names on a page, and tells
+  secure setup with real, named referrals. It turns off the practice tools, drops every "blacked out" note and the STOP banner for names on a page, and tells
   the model that names are expected but must stay out of facts and summaries. Referrals come in only
   by drag and drop, the watched inbox folder, email and the `/send` page. Typed text is still checked.
 - Packets that try to give the AI orders, or carry active PDF content, are caught, isolated and put

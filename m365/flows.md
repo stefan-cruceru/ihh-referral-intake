@@ -67,9 +67,9 @@ the submitter at 30 minutes and alert the owner at 60, as in `docs/workflow-and-
 section 4. New uploads from the hospital come through the same form with the case code typed in
 a "Case code (if adding documents)" field, which flow 1 attaches to the existing row.
 
-## Feeding the Care Bridge dashboard
+## Feeding the Lamplight dashboard
 
-While IHH runs the local Care Bridge app, flow 1 can also save the packet into the app's watched
+While IHH runs the local Lamplight app, flow 1 can also save the packet into the app's watched
 inbox folder (a OneDrive or SharePoint folder synced to that PC), with the form's details next
 to it as `<same name>.json`:
 

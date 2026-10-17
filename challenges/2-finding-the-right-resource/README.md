@@ -35,4 +35,4 @@ The starter list is a starting point, not a source of truth. Programs close and 
 Shelter and work are well covered by public sources. Small loans and travel home to family are thin,
 and how IHH handles them today is an open question.
 
-Made-up clients only. See the [ground rules](../../docs/ground-rules.md).
+Made-up clients only. See the rules in [CLAUDE.md](../../CLAUDE.md).

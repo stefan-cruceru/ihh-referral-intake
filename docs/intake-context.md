@@ -2,7 +2,7 @@
 
 Reference for any Claude session that works on our Challenge 1 (referral intake) build. Read this
 first, then `CLAUDE.md`. It condenses the event repo. When this file and a source file disagree,
-the source file wins: `CLAUDE.md`, `docs/ground-rules.md`, and
+the source file wins: `CLAUDE.md` and
 `challenges/1-referral-intake/criteria/*`. When the written rules and IHH staff in the room
 disagree, IHH staff win.
 
@@ -390,7 +390,7 @@ credits are $100 per person, API only, claimed with a Console Org ID.
 ## 7. Before submitting (4:00 PM)
 
 - [ ] Our own **public** repo with an MIT `LICENSE`.
-- [ ] README follows `templates/TEAM-README.md`: problem, what we built, how Claude is used, how to
+- [ ] README covers the problem, what we built, how Claude is used, how to
       run it, real vs. mocked, where it gets things wrong, next steps, data and privacy.
 - [ ] **No packet PDFs, page images or extracted packet text in the repo or its history.** Check
       cached outputs and screenshots too.

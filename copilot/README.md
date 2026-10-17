@@ -30,21 +30,19 @@ Both come from [`vscode/`](vscode/). Restart VS Code after you install.
 |---|---|
 | `/mcp.ihh-care-bridge.check_referral` | The full check: suggested route, the two big checks, each flag with page and quote, missing documents, questions for the hospital |
 | `/mcp.ihh-care-bridge.missing_documents` | What is missing, plus a DRAFT note to the case manager |
-| `/mcp.ihh-care-bridge.practice_patients` | The 10 invented practice patients |
 | `/mcp.ihh-care-bridge.explain_rule` | One rule word for word, in plain words, and any known gap |
 | `/mcp.ihh-care-bridge.document_checklist` | DOC-1 to DOC-10 |
 | `/mcp.ihh-care-bridge.client_next_steps` | Next steps in Orange County for a client |
 | `/mcp.ihh-care-bridge.client_handout` | A large-print PDF for the client |
 | `/mcp.ihh-care-bridge.progress_note` | A progress note draft from shift jottings |
 
-Or just type in plain words, for example "check S06" or "what does MOB-4 say?".
+Or just type in plain words, for example "what does MOB-4 say?", or give it the path to a packet PDF.
 
 A referral that came by email works too: save it as `.eml` (in Outlook, drag it to a folder) and
 give Copilot the path. The email text becomes page 1 and each attachment follows, the same as in
 the app.
 
-The practice patients (S01 to S10) answer at once and need no API key. A real packet file needs a
-Claude API key: run `ihh-care-bridge.exe set-key` once.
+Reading a packet needs the AI key. IT sets it once on each computer (`ihh-care-bridge.exe set-key`).
 
 To add it by hand, put this in `%APPDATA%\Code\User\mcp.json`:
 
@@ -60,7 +58,7 @@ To add it by hand, put this in `%APPDATA%\Code\User\mcp.json`:
 }
 ```
 
-Tools: check a referral packet (or a practice patient), list the practice patients, look up a rule, search the rules, the document checklist, find
+Tools: check a referral packet, look up a rule, search the rules, the document checklist, find
 client resources, and draft a progress note.
 
 ## 2. Claude Desktop

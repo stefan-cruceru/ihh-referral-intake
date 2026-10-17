@@ -3,7 +3,7 @@
 Typed text is checked before it can reach the Claude API. Clear identifiers (SSN, phone, email,
 full dates, record numbers, street addresses, "name:" fields) are blocked, not silently scrubbed:
 the person sees what was caught and rewrites it. This prototype is for de-identified and invented
-data only (docs/ground-rules.md); a pilot needs a BAA with every vendor that sees PHI.
+data only (see CLAUDE.md); a pilot needs a BAA with every vendor that sees PHI.
 Text that tries to give the AI orders ("ignore your instructions") is blocked the same way (guard.py).
 """
 
