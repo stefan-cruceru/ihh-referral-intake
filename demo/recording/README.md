@@ -7,8 +7,8 @@ practice-app recording and compositor.
 
 **Recorded application revision:** `a8e52e5db69955a8a15ed3ceed6ac09f96a4fa02`.
 This records the synthetic practice workflow available at that revision. The film follows
-[project rules](../../CLAUDE.md), [bilingual requirements](../bilingual.md), and
-[workflow and timing](../workflow-and-timing.md), with Sam’s Lamplight campaign and Public Sans.
+[project rules](../../CLAUDE.md), [bilingual requirements](../../docs/bilingual.md), and
+[workflow and timing](../../docs/workflow-and-timing.md), with Sam’s Lamplight campaign and Public Sans.
 The original event [submission](https://github.com/stefan-cruceru/ihh-referral-intake/blob/d4b772170dfca3cfcd2f90533f2cd41ba3f840c6/docs/submission.md),
 [judging](https://github.com/stefan-cruceru/ihh-referral-intake/blob/d4b772170dfca3cfcd2f90533f2cd41ba3f840c6/docs/judging.md), and
 [ground rules](https://github.com/stefan-cruceru/ihh-referral-intake/blob/d4b772170dfca3cfcd2f90533f2cd41ba3f840c6/docs/ground-rules.md)
@@ -49,10 +49,10 @@ recorded revision in a separate checkout, using the recording sources from this 
 ```powershell
 python -m venv "$demoScratch/venv"
 & "$demoScratch/venv/Scripts/Activate.ps1"
-python -m pip install -r app/requirements.txt -r docs/demo/requirements.txt
+python -m pip install -r app/requirements.txt -r demo/recording/requirements.txt
 $env:PLAYWRIGHT_BROWSERS_PATH = "$demoScratch/browsers"
 python -m playwright install chromium
-python docs/demo/prepare_lamplight_fonts.py --destination "$demoScratch"
+python demo/recording/prepare_lamplight_fonts.py --destination "$demoScratch"
 ```
 
 Download the two licensed clips from the source pages below into `$demoScratch/stock-footage/`,
@@ -76,8 +76,8 @@ resets the synthetic practice queue. Session cookies remain in memory. The small
 starts and stops with the capture command.
 
 ```powershell
-python docs/demo/capture_lamplight.py --app-url http://127.0.0.1:8780 --assets-dir "$demoScratch/stock-footage" --scratch "$demoScratch" --quick
-python docs/demo/capture_lamplight.py --app-url http://127.0.0.1:8780 --assets-dir "$demoScratch/stock-footage" --scratch "$demoScratch" --output "$demoScratch/lamplight-raw.webm"
+python demo/recording/capture_lamplight.py --app-url http://127.0.0.1:8780 --assets-dir "$demoScratch/stock-footage" --scratch "$demoScratch" --quick
+python demo/recording/capture_lamplight.py --app-url http://127.0.0.1:8780 --assets-dir "$demoScratch/stock-footage" --scratch "$demoScratch" --output "$demoScratch/lamplight-raw.webm"
 ```
 
 The capture prints a `video_offset` after finding the first clean frame. Use that number in the
@@ -91,8 +91,8 @@ media URL or downloaded narration manifest is required.
 
 ```powershell
 gh release download demo-lamplight-2026-10-17 --repo stefan-cruceru/ihh-referral-intake --pattern "Lamplight-Demo-1080p.mp4" --dir "$demoScratch"
-python docs/demo/render_lamplight.py --raw "$demoScratch/lamplight-raw.webm" --audio "$demoScratch/Lamplight-Demo-1080p.mp4" --timeline docs/demo/lamplight-timeline.json --scratch "$demoScratch" --video-offset 0 --cover-time 3 --output "$demoScratch/Lamplight - Remade.mp4"
-python docs/demo/encode_lamplight_share.py --source "$demoScratch/Lamplight - Remade.mp4" --output "$demoScratch/Lamplight - Remade (720p).mp4"
+python demo/recording/render_lamplight.py --raw "$demoScratch/lamplight-raw.webm" --audio "$demoScratch/Lamplight-Demo-1080p.mp4" --timeline demo/recording/lamplight-timeline.json --scratch "$demoScratch" --video-offset 0 --cover-time 3 --output "$demoScratch/Lamplight - Remade.mp4"
+python demo/recording/encode_lamplight_share.py --source "$demoScratch/Lamplight - Remade.mp4" --output "$demoScratch/Lamplight - Remade (720p).mp4"
 ```
 
 Replace `--video-offset 0` with the reported value. The result is exactly 120 seconds at
@@ -106,7 +106,7 @@ Export the interactive architecture map as one offline file, including its canon
 Public Sans license:
 
 ```powershell
-python docs/demo/export_architecture.py --output "$demoScratch/Lamplight - Architecture.html"
+python demo/recording/export_architecture.py --output "$demoScratch/Lamplight - Architecture.html"
 ```
 
 ## Sources and credits

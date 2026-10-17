@@ -20,7 +20,7 @@ Build and try it locally:
 
 ```
 pip install markdown
-python app/pages/build.py _site/ihh-referral-intake
+python demo/pages/build.py _site/ihh-referral-intake
 python -m http.server 8811 --directory _site
 ```
 

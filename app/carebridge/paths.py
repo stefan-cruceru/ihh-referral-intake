@@ -18,6 +18,9 @@ if FROZEN:
 else:
     BUNDLE = Path(__file__).resolve().parent
     REPO = BUNDLE.parent.parent
+    # The practice patients live in demo/ at the repo root, apart from the app: `from demo import synthetic`.
+    if str(REPO) not in sys.path:
+        sys.path.append(str(REPO))
 
 WEB_DIR = BUNDLE / "web" if FROZEN else BUNDLE / "web"
 
@@ -32,7 +35,7 @@ CRITERIA = _data("admission-criteria.json", "challenges/1-referral-intake/criter
 LOGO = _data("lamplight-logo.svg", "campaign/logo/lamplight-logo.svg")
 RESOURCES = _data("oc-resources.seed.json", "challenges/2-finding-the-right-resource/data/oc-resources.seed.json")
 SCENARIOS = _data("client-scenarios.json", "challenges/2-finding-the-right-resource/scenarios/client-scenarios.json")
-DEMO_DIR = _data("demo", "app/demo")
+DEMO_DIR = _data("demo", "demo")
 # What the hospital hears at each step: the same texts the Microsoft 365 kit's flows send.
 STATUS_MESSAGES = _data("status-messages.json", "m365/status-messages.json")
 # The Copilot Chat agent (the "Lamplight" choice in the agent dropdown) and its skill.

@@ -49,7 +49,7 @@ function boot() {
     await py.pyimport("micropip").install(["fpdf2"]);
     const zip = await (await fetch(SCOPE + "carebridge.zip", { cache: "no-cache" })).arrayBuffer();
     py.unpackArchive(zip, "zip", { extractDir: HOME });
-    py.runPython(`import sys; sys.path[:0] = ["${HOME}/app", "${HOME}/app/pages"]`);
+    py.runPython(`import sys; sys.path[:0] = ["${HOME}/app", "${HOME}", "${HOME}/demo/pages"]`);
     const handle = py.pyimport("bridge").handle;
     started = true;
     return handle;

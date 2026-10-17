@@ -86,9 +86,11 @@ that is not in the table is refused, so a new feature has to be added to it on p
 4. **Teams sign-in.** In Entra ID, register an app named Lamplight ("mobile and desktop", redirect
    `http://localhost:<port>/auth/callback` or the pilot's own address). Then set
    `CAREBRIDGE_TEAMS_TENANT` and `CAREBRIDGE_TEAMS_CLIENT_ID`, and `CAREBRIDGE_AUTH=teams`.
-5. **Roles in Entra (recommended).** In the app registration, open **App roles** and create four,
+5. **Roles in Entra (recommended).** In the app registration, open **App roles** and create these,
    allowed for **Users/Groups**, with these exact values:
-   `CareBridge.Coordinator`, `CareBridge.Lead`, `CareBridge.Clinical`, `CareBridge.Admin`.
+   `CareBridge.Coordinator`, `CareBridge.Lead`, `CareBridge.Clinical`, `CareBridge.Admin`, and for the
+   onsite jobs `CareBridge.Nursing` (LVN or medical assistant), `CareBridge.CaseManager` and
+   `CareBridge.Staff` (anyone else). The onsite roles get the staff tools, not the referral board.
    These keep the app's old name on purpose: the app looks for these exact words.
    Then in **Enterprise applications → Lamplight → Users and groups**, assign people or security
    groups to a role. Turn on **Assignment required** so only assigned staff can sign in.

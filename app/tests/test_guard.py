@@ -247,8 +247,8 @@ def test_every_packet_review_goes_through_the_security_scan():
 
 
 def test_demo_attack_packet_is_held_and_safe_to_open():
-    """app/demo/attack/attack-packet.pdf is what we hand people to see the security hold."""
-    data = (APP / "demo" / "attack" / "attack-packet.pdf").read_bytes()
+    """demo/attack/attack-packet.pdf is what we hand people to see the security hold."""
+    data = (APP.parent / "demo" / "attack" / "attack-packet.pdf").read_bytes()
     t = guard.scan_file(data, "attack-packet.pdf")
     assert t["verdict"] == guard.HOLD and list(t["pages"]) == [3]
     # Only text: no JavaScript, actions or embedded files, so anyone can open it.
@@ -262,7 +262,7 @@ def test_packets_are_scanned_when_they_land_even_without_a_key(monkeypatch):
 
     monkeypatch.setattr(config, "get_api_key", lambda: None)
     webapp.TRACK.reset()
-    attack = (APP / "demo" / "attack" / "attack-packet.pdf").read_bytes()
+    attack = (APP.parent / "demo" / "attack" / "attack-packet.pdf").read_bytes()
     for cid, data, name, verdict in (("SEC-1", b"MZ" + b"\0" * 64, "fax-1.pdf", guard.BLOCK),
                                      ("SEC-2", attack, "fax-2.pdf", guard.HOLD),
                                      ("SEC-3", _pdf([(CLINICAL, "")]), "fax-3.pdf", guard.OK)):

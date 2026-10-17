@@ -123,7 +123,7 @@ returning-client and background checks are steps a person ticks, and the tool ne
 the receipt, reminders and "escalated" messages to the hospital carry no decision and no patient
 detail, and stay drafts unless IHH agrees to send them on their own.
 
-**Demo video:** [Watch it on the demo site](https://stefan-cruceru.github.io/ihh-referral-intake/), [download the 720p MP4](docs/media/demo-720p.mp4), or [get the 1080p/720p presentation release](https://github.com/stefan-cruceru/ihh-referral-intake/releases/tag/demo-lamplight-2026-10-17). The two-minute film uses fictional practice patients, English narration and English/Spanish captions. It does not demonstrate live AI extraction or measured time savings. [Recording sources and credits](docs/demo/README.md).
+**Demo video:** [Watch it on the demo site](https://stefan-cruceru.github.io/ihh-referral-intake/), [download the 720p MP4](demo/media/demo.mp4), or [get the 1080p/720p presentation release](https://github.com/stefan-cruceru/ihh-referral-intake/releases/tag/demo-lamplight-2026-10-17). The two-minute film uses fictional practice patients, English narration and English/Spanish captions. It does not demonstrate live AI extraction or measured time savings. [Recording sources and credits](demo/recording/README.md).
 
 **Architecture:** [Interactive system map and referral walkthrough](docs/architecture.html). Download and open the HTML, or use the standalone copy included with the demo release.
 
@@ -141,6 +141,17 @@ detail, and stay drafts unless IHH agrees to send them on their own.
   has the page sorter flag text written to an AI, and re-checks everything Claude writes. Pages
   that try to give orders are set aside and never read, and the referral goes on a security hold
   for a person.
+
+## Where things are
+
+| Folder | What it is |
+|---|---|
+| [`app/`](app) | The app itself: engine, server and screens (`app/carebridge`), tests, and the exe and Docker builds |
+| [`demo/`](demo/README.md) | Everything for showing it: the made-up practice patients, the security test packet, the public demo site and the demo video |
+| [`docs/`](docs) | How it works: the closed loop, workflow, Kipu and Teams, English and Spanish |
+| [`copilot/`](copilot/README.md), [`m365/`](m365/README.md) | Copilot Chat agent and Microsoft 365 plan |
+| [`campaign/`](campaign/README.md) | Draft staff rollout material (not approved by IHH) |
+| [`challenges/`](challenges) | The event's criteria, resource seed data and role cards |
 
 ## Try it
 

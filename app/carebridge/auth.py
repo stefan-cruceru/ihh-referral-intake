@@ -26,12 +26,15 @@ import time
 from . import config
 from .paths import user_dir
 
-ROLES = ("coordinator", "lead", "clinical", "admin")
+ROLES = ("coordinator", "lead", "clinical", "nursing", "casemanager", "other", "admin")
 # Entra app role values (the `value` field in the app registration) -> our roles.
 ENTRA_ROLES = {"CareBridge.Coordinator": "coordinator", "CareBridge.Lead": "lead",
-               "CareBridge.Clinical": "clinical", "CareBridge.Admin": "admin"}
+               "CareBridge.Clinical": "clinical", "CareBridge.Nursing": "nursing",
+               "CareBridge.CaseManager": "casemanager", "CareBridge.Staff": "other", "CareBridge.Admin": "admin"}
 
 _STAFF = ("coordinator", "lead", "clinical")
+# Onsite jobs (LVN or medical assistant, case manager, anyone else): the staff tools, not the referral board.
+_ONSITE = ("nursing", "casemanager", "other")
 # Which roles may do what. Admin is IT: settings and people, never a clinical decision.
 PERMISSIONS = {
     # the referral board
@@ -56,9 +59,9 @@ PERMISSIONS = {
     # the sealed audit log: who did what, what was approved, every AI step. Read-only for everyone.
     "audit_view": ("admin",),
     # a personal token so an agent (Microsoft 365 Copilot) can call /mcp as the person who made it
-    "mcp_token": _STAFF + ("admin",),
+    "mcp_token": _STAFF + _ONSITE + ("admin",),
     # help for clients, practice, rules: anyone signed in
-    "staff_tools": _STAFF + ("admin",),
+    "staff_tools": _STAFF + _ONSITE + ("admin",),
 }
 # What each MCP tool needs over HTTP (/mcp). Tools not listed need "staff_tools".
 MCP_TOOLS = {"review_referral_packet": "review"}
@@ -68,13 +71,15 @@ PRACTICE_OPEN = {"demo"}
 SESSION_HOURS = 12
 COOKIE = "cb_session"
 
-# Invented staff for practice mode. A pilot replaces this with IHH's list (Settings or staff.json).
+# Invented staff for practice mode, one for each job plus a lead. A pilot replaces this with IHH's
+# list (Settings or staff.json).
 PRACTICE_STAFF = [
-    {"email": "avery.lead@ihh.example.org", "name": "Avery (lead)", "role": "lead"},
     {"email": "bea.coordinator@ihh.example.org", "name": "Bea", "role": "coordinator"},
-    {"email": "carlos.coordinator@ihh.example.org", "name": "Carlos", "role": "coordinator"},
-    {"email": "dana.coordinator@ihh.example.org", "name": "Dana", "role": "coordinator"},
     {"email": "rene.clinical@ihh.example.org", "name": "Rene (clinical reviewer)", "role": "clinical"},
+    {"email": "marisol.lvn@ihh.example.org", "name": "Marisol", "role": "nursing"},
+    {"email": "tuan.casemanager@ihh.example.org", "name": "Tuan", "role": "casemanager"},
+    {"email": "jordan.staff@ihh.example.org", "name": "Jordan", "role": "other"},
+    {"email": "avery.lead@ihh.example.org", "name": "Avery (lead)", "role": "lead"},
 ]
 
 _sessions: dict[str, dict] = {}
@@ -252,7 +257,7 @@ def roles_from_claims(claims: dict) -> list[str] | None:
 
 def primary_role(roles: list[str]) -> str:
     """The one role shown next to a name. Clinical first, since it is the one that can deny."""
-    return next((r for r in ("clinical", "lead", "coordinator", "admin") if r in roles), "")
+    return next((r for r in ("clinical", "lead", "coordinator", "nursing", "casemanager", "other", "admin") if r in roles), "")
 
 
 def can(person: dict | None, action: str) -> bool:
