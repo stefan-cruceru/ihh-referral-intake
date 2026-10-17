@@ -240,3 +240,12 @@ details.admin p { margin: .4rem 0; }
   .card .side { display: none; }
   .sim-row { grid-template-columns: 1fr; }
 }
+
+/* ---- staff alerts and people ---- */
+.tabs .count { margin-left: .35rem; min-width: 1.4rem; padding: 0 .4rem; border-radius: 999px; background: var(--red); color: var(--brand-ink); font-size: .78rem; font-weight: 600; text-align: center; }
+.alert-item .alert-subject { font-weight: 600; margin: .5rem 0 .2rem; }
+.alert-item.done { opacity: .7; }
+.person-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .2rem 1rem; align-items: end; }
+.person-grid label { display: block; }
+.person-grid input[readonly] { background: var(--gray-soft); }
+#tab-outbox .row input[type="checkbox"] { flex: none; min-width: 0; width: auto; }
