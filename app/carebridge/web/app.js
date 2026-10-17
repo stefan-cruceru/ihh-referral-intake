@@ -47,6 +47,7 @@ async function setLang(l) {
   applyI18n();
   post("/api/settings", { lang: l }).catch(() => {});
   renderQueue(LAST_Q);
+  if (LAST_SIM) renderSim(LAST_SIM);
   if (OPEN) openCard(OPEN, true);
   renderRules();
   loadScenarios();
@@ -277,7 +278,9 @@ async function poll() {
 
 $("#speed").addEventListener("change", (e) => post("/api/clock", { speed: Number(e.target.value) }));
 
+let LAST_SIM = null; // the practice run's before/after chart, redrawn when the language changes
 function renderSim(sim) {
+  LAST_SIM = sim;
   const max = Math.max(150, ...sim.manual.map((r) => r.done), ...sim.tool.map((r) => r.done));
   const lane = (rows) =>
     rows
