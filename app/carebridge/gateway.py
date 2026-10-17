@@ -78,7 +78,7 @@ def _page(h, title: str, body: str, code: int = 200, extra: dict | None = None):
 .gw h1{{font-size:1.5rem;margin:0 0 .6rem}}.gw .who{{display:grid;gap:.5rem;margin:1rem 0}}
 .gw button,.gw a.b{{font:inherit;font-weight:600;padding:.8rem 1rem;border-radius:10px;border:1px solid var(--line);background:var(--panel);cursor:pointer;text-align:left;color:inherit;text-decoration:none;display:block}}
 .gw button.primary{{background:var(--brand);color:var(--brand-ink,#fff);border-color:var(--brand)}}.gw .m{{color:var(--muted);font-size:.92rem}}
-.gw .teams{{background:#4b53bc;color:#fff;border-color:#4b53bc;text-align:center}}</style></head>
+.gw .teams,.gw a.b.teams{{background:#4b53bc;color:#fff;border-color:#4b53bc;text-align:center}}</style></head>
 <body><main class="gw">{body}</main></body></html>"""
     h._send(code, html.encode("utf-8"), "text/html; charset=utf-8", extra)
 
