@@ -123,7 +123,7 @@ returning-client and background checks are steps a person ticks, and the tool ne
 the receipt, reminders and "escalated" messages to the hospital carry no decision and no patient
 detail, and stay drafts unless IHH agrees to send them on their own.
 
-**Demo video:** [watch it on the demo site](https://stefan-cruceru.github.io/ihh-referral-intake/) (2 minutes, English and Spanish subtitles), or [download the MP4](docs/media/demo-720p.mp4). System map: [docs/architecture.html](https://stefan-cruceru.github.io/ihh-referral-intake/architecture.html).
+**Demo video:** [watch it on the demo site](https://stefan-cruceru.github.io/ihh-referral-intake/) (2 minutes, English and Spanish subtitles), or [download the MP4](docs/media/demo.mp4). System map: [docs/architecture.html](https://stefan-cruceru.github.io/ihh-referral-intake/architecture.html).
 
 ## How Claude is used
 

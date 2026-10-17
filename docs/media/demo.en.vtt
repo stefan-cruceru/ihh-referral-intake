@@ -1,28 +1,28 @@
 WEBVTT
 
 1
-00:00:00.250 --> 00:00:04.281
-At Illumination Health and Home, every referral starts a two-hour clock.
+00:00:00.250 --> 00:00:04.881
+At Illumination Health and Home, coordinators work toward a two-hour response goal.
 
 2
-00:00:04.281 --> 00:00:09.502
+00:00:04.881 --> 00:00:10.425
 For the coordinator, that means faxed pages, missing records, and another hospital to call.
 
 3
-00:00:09.502 --> 00:00:13.764
-Care Bridge brings the evidence and the next step into one place.
+00:00:10.425 --> 00:00:14.600
+Lamplight brings the evidence and the next step into one place.
 
 4
-00:00:15.250 --> 00:00:20.032
-Here is the working app: an owner and a deadline for every referral.
+00:00:15.250 --> 00:00:18.861
+Start with a four-step welcome, built for staff.
 
 5
-00:00:20.032 --> 00:00:24.229
-These are invented patients. Practice reviews use the organizers' answer key,
+00:00:18.861 --> 00:00:22.080
+Then one queue, with owners and deadlines.
 
 6
-00:00:24.229 --> 00:00:29.321
-passed through the app's checks. This recording does not show live AI extraction.
+00:00:22.080 --> 00:00:28.439
+These invented practice patients use answer-key reviews passed through app checks, not live AI extraction.
 
 7
 00:00:30.250 --> 00:00:33.830
@@ -57,61 +57,61 @@ Rules that need elapsed hours remain can't tell when dates are removed.
 Only the clinical reviewer can deny.
 
 15
-00:01:00.250 --> 00:01:02.617
+00:01:00.250 --> 00:01:02.664
 Now open the referral missing records.
 
 16
-00:01:02.617 --> 00:01:07.385
+00:01:02.664 --> 00:01:07.528
 The app gathers what the hospital must send or clarify into one draft.
 
 17
-00:01:07.385 --> 00:01:13.114
-Follow-up reminders are ready too. Staff review and send them. Care Bridge sends nothing.
+00:01:07.528 --> 00:01:13.021
+Follow-up reminders are ready too. Staff review and send them. Lamplight sends nothing.
 
 18
-00:01:16.250 --> 00:01:20.295
-Here is the same referral card and follow-up draft in English.
+00:01:16.250 --> 00:01:20.411
+The same referral card and follow-up draft, in English.
 
 19
-00:01:20.295 --> 00:01:24.306
-Switch to Español. The labels and follow-up template translate together.
+00:01:20.411 --> 00:01:24.816
+Switch to Español: labels, summaries, questions, and drafts translate.
 
 20
-00:01:24.306 --> 00:01:28.658
-Evidence quotes stay original. Some practice summaries still need translation review.
+00:01:24.816 --> 00:01:26.815
+Evidence quotes stay original.
 
 21
-00:01:28.658 --> 00:01:31.343
-Staff check every draft before using it.
+00:01:26.815 --> 00:01:31.629
+Staff check AI translations. IHH bilingual review is still pending.
 
 22
-00:01:32.250 --> 00:01:35.833
-After staff resolve open questions, they can record acceptance.
+00:01:34.250 --> 00:01:36.830
+Staff resolve questions and record acceptance.
 
 23
-00:01:35.833 --> 00:01:38.749
-Then the handoff drafts are ready: chart fields,
+00:01:36.830 --> 00:01:38.812
+Handoff drafts follow: chart fields,
 
 24
-00:01:38.749 --> 00:01:41.630
+00:01:38.812 --> 00:01:41.879
 the census row, and the site email.
 
 25
-00:01:41.630 --> 00:01:45.810
-The decision and who made it stay in the local log.
+00:01:41.879 --> 00:01:45.581
+An admin can review who did what and when.
 
 26
-00:01:47.250 --> 00:01:50.577
-Evidence. One draft. A clear handoff.
+00:01:47.250 --> 00:01:50.877
+It never says yes or no. You do.
 
 27
-00:01:50.577 --> 00:01:54.363
+00:01:50.877 --> 00:01:54.541
 This local prototype connects to no real IHH systems.
 
 28
-00:01:54.363 --> 00:01:57.384
+00:01:54.541 --> 00:01:57.464
 Staff must validate accuracy before a pilot.
 
 29
-00:01:57.384 --> 00:01:59.640
+00:01:57.464 --> 00:01:59.648
 The goal: fewer lost referrals.
