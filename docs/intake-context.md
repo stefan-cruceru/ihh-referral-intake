@@ -378,6 +378,9 @@ mentions it.
 **Language:** every screen and every draft works in English and Spanish, with one switch. Statuses
 stay language-free codes in the data, and quotes stay word for word. See `docs/bilingual.md`.
 
+**Shape:** one closed loop IHH runs in its own environment, from intake to outcome to learning.
+All state stays local, and the model is the only outside call. See `docs/closed-loop.md`.
+
 **Stack (proposed):** Python, the Anthropic SDK (vision; model `claude-opus-5-5` or
 `claude-sonnet-5-5`), Streamlit for the UI, and `ANTHROPIC_API_KEY` from the environment. Event
 credits are $100 per person, API only, claimed with a Console Org ID.
@@ -395,6 +398,8 @@ credits are $100 per person, API only, claimed with a Console Org ID.
 - [ ] Someone outside the team can run it from the README.
 - [ ] Every screen and draft works in English and Spanish, and the README has a short Spanish
       summary (`docs/bilingual.md`).
+- [ ] The app makes no network calls except the model, and keeps all state in one local store
+      (`docs/closed-loop.md`).
 - [ ] An optional 2-minute screen recording, linked in the README.
 - [ ] The submission form is filled in.
 - [ ] The demo works on an **unseen packet**.

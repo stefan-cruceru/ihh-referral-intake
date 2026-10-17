@@ -6,9 +6,6 @@ Spanish.** This file says what that covers, how to build it, and which words to 
 The team's working notes in `docs/` stay in English. They are for us, not for IHH staff or
 hospitals.
 
-Clients who need health information explained, or a language beyond English and Spanish, go to
-My Happy Health, which covers about 30 languages (`docs/myhappyhealth.md`).
-
 ---
 
 ## 1. What has to be bilingual

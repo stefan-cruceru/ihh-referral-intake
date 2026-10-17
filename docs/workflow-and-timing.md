@@ -181,9 +181,9 @@ packet review pipeline in `intake-context.md` section 6 stays the core. Around i
    is about the same worry.
 8. **Cost shown up front.** The eval logs tokens and cost per packet, so IHH can see what running
    it would take. Cost is one of IHH's two barriers to AI tools.
-9. **Alongside My Happy Health, not against it.** It explains health information to clients in
-   their language; we handle the staff-side referral work. They meet after a "yes"
-   (`docs/myhappyhealth.md`).
+9. **A closed loop IHH runs itself.** Intake, review, follow-up, decision, handoff, outcome and
+   learning in one app. IHH's data stays on IHH's systems, and the model is the only outside call
+   (`docs/closed-loop.md`).
 
 **Judging constraint:** features that need IHH's live systems to mean anything do not place
 (`docs/judging.md`). Everything here has to run on its own, with a mock inbox and packets read by
@@ -342,7 +342,7 @@ leads with them, above everything else, each marked met, not met or can't tell, 
 |---|---|---|
 | Create the client in Kipu from the face sheet and referral info | The Kipu fields, filled from the packet, with page references | A field list on screen. Redacted fields show "removed for privacy" |
 | Add a row to the Excel census, one tab per facility | The census row for the right facility tab | A CSV row |
-| Email the site's operations list | The ops email, including the patient's preferred language and a line to offer My Happy Health at intake (`docs/myhappyhealth.md`) | A draft. Never sent |
+| Email the site's operations list | The ops email, including the patient's preferred language | A draft. Never sent |
 
 A coordinator checks each draft before anything is entered or sent.
 
@@ -352,6 +352,8 @@ A coordinator checks each draft before anything is entered or sent.
 
 The team proposed this in the Q&A. It is not part of today's build, which must run on its own.
 
+- The loop itself runs as-is on IHH's machine, calling Claude through IHH's own Azure (Microsoft
+  Foundry) if IHH's BAA covers it (`docs/closed-loop.md`). The steps below are optional add-ons.
 - IHH already runs Microsoft 365, with Copilot under a BAA for every employee.
 - Power Automate could watch the referral inbox and start the review chain when a packet lands.
 - The review could run on Claude models selected inside Microsoft's Copilot tools. Confirm what
