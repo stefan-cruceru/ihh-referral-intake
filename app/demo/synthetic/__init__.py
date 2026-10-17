@@ -124,7 +124,9 @@ def _report(pid: str) -> dict:
         "summary": _no_verdict(key["summary"]), "summary_es": _no_verdict(key["summary"]),
     }
     # The organizers' typed text of each page, so the viewer and the critical-value check can read it.
-    typed = {m["page"]: {"transcript": page_text(pid, m["page"]), "handwriting": "none"} for m in key["page_map"]}
+    # A person typed it, so it is read for sure (100) and clears the OCR gate.
+    typed = {m["page"]: {"transcript": page_text(pid, m["page"]), "handwriting": "none", "ocr_confidence": 100}
+             for m in key["page_map"]}
     rep = intake.quality_control(assessment, facts, sorted_pages, {m["page"]: m["title"] for m in key["page_map"]}, typed)
     rep.update(id=f"sample-{pid}", packet=f"{pid}.pdf", received_at=None, reviewed_at=None, model="organizers' answer key",
                fast_model="", sample=True, synthetic=True, answer_key_decision=key["decision"])

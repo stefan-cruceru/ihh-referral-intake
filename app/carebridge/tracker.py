@@ -237,6 +237,10 @@ class Tracker:
             clinical = role == "clinical" if role is not None else who.lower().startswith("clinic")
             if action == "denied" and not clinical:
                 raise ValueError("Only the clinical line can deny a referral.")
+            # Hard gate: pages the AI could not read for sure need the clinical line before any yes.
+            if action == "accepted" and c.get("illegible_pages") and not clinical and not c.get("clinical_done_at"):
+                pages = ", ".join(str(p) for p in c["illegible_pages"])
+                raise ValueError(f"A clinical reviewer must read page(s) {pages} before this can be accepted.")
             c["status"], c["decision"] = action, action
             c["decision_reason"] = reason
             c["decided_at"] = now

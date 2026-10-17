@@ -1304,8 +1304,8 @@
   "es": "necesita una persona"
  },
  "odds_illegible": {
-  "en": "handwriting to read",
-  "es": "letra a mano por leer"
+  "en": "page a person must read",
+  "es": "página que una persona debe leer"
  },
  "odds_missing_doc": {
   "en": "missing paper",
@@ -1320,12 +1320,12 @@
   "es": "no se sabe"
  },
  "illegible_chip": {
-  "en": "Handwriting to read: page {p}",
-  "es": "Letra a mano por leer: página {p}"
+  "en": "A person must read: page {p}",
+  "es": "Una persona debe leer: página {p}"
  },
  "illegible_panel": {
-  "en": "The AI could not read some handwriting. A person must read these pages before any yes:",
-  "es": "La IA no pudo leer parte de la letra a mano. Una persona debe leer estas páginas antes de decir que sí:"
+  "en": "The AI is not sure it read these pages right. It could not read some handwriting, or it was less than 80% sure. A person must read these pages before any yes:",
+  "es": "La IA no está segura de haber leído bien estas páginas. No pudo leer parte de la letra a mano, o estaba menos de 80% segura. Una persona debe leer estas páginas antes de decir que sí:"
  },
  "illegible_mark": {
   "en": "[can't read]",
