@@ -252,9 +252,12 @@ class Review:
         self.error: str | None = None
         self.report: dict | None = None
         self.usage = llm.Usage()
+        self.on_log = None  # webapp sets this so each step also lands in the audit log
 
     def log(self, msg: str):
         self.progress.append(msg)
+        if self.on_log:
+            self.on_log(self.stage, msg)
 
 
 def review_file(data: bytes, name: str, received_at: float | None = None) -> Review:

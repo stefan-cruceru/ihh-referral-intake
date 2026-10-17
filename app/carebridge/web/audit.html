@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en" translate="no">
+<head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit log</title>
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/display.js"></script>
+<style>
+  body { margin: 0; background: var(--bg); }
+  .a-top { display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: .8rem 1.2rem; background: var(--panel); border-bottom: 1px solid var(--line); }
+  .a-top a { color: var(--brand); font-weight: 600; text-decoration: none; }
+  .a-wrap { max-width: 1180px; margin: 0 auto; padding: 1.2rem; display: grid; gap: 1rem; }
+  .a-box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1rem 1.2rem; }
+  .a-box h2 { margin: 0 0 .5rem; font-size: 1.15rem; }
+  .a-m { color: var(--muted); font-size: .92rem; }
+  .a-row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .5rem 0; }
+  .a-row input, .a-row select { font: inherit; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: inherit; width: auto; }
+  .a-btn { font: inherit; font-weight: 600; padding: .55rem .9rem; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; color: inherit; text-decoration: none; }
+  .a-pill { display: inline-block; padding: .2rem .6rem; border-radius: 999px; background: var(--gray-soft); font-size: .85rem; font-weight: 600; }
+  .a-pill.ok { background: var(--green-soft); color: var(--green); }
+  .a-pill.bad { background: var(--red-soft); color: var(--red); }
+  .a-scroll { overflow-x: auto; }
+  table.a-t { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  table.a-t td, table.a-t th { text-align: left; padding: .4rem .4rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.a-t td.n { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.a-t tr.ai td { background: var(--brand-soft); }
+  table.a-t tr.decision td { font-weight: 600; }
+  code.h { font-size: .78rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="a-top">
+  <a href="/" id="back"></a>
+  <strong id="title"></strong>
+  <span><button class="a-btn" id="lang"></button></span>
+</header>
+<main class="a-wrap">
+  <section class="a-box">
+    <h2 id="h-check"></h2>
+    <div class="a-row"><span id="check" class="a-pill"></span></div>
+    <p class="a-m" id="why"></p>
+  </section>
+  <section class="a-box">
+    <div class="a-row">
+      <input id="case" maxlength="24" aria-label="case">
+      <select id="kind" aria-label="kind"></select>
+      <label class="a-m"><input type="checkbox" id="practice" checked> <span id="l-practice"></span></label>
+      <button class="a-btn" id="go"></button>
+      <a class="a-btn" id="csv" href="/api/audit-log?format=csv"></a>
+    </div>
+    <div class="a-scroll"><table class="a-t" id="rows"></table></div>
+    <p class="a-m" id="empty"></p>
+  </section>
+</main>
+<div id="toast" class="toast hidden"></div>
+<script>
+// The audit log for admins: who did what, what was approved, and every step the AI took.
+// Read-only. The server has no way to change or remove a line, and each line is sealed to the one before.
+const T = {
+  back: ["← Back to the patients", "← Volver a los pacientes"], title: ["Audit log", "Registro de auditoría"],
+  h_check: ["Is the log whole?", "¿Está completo el registro?"],
+  ok: ["Whole: {n} lines, none changed or removed", "Completo: {n} líneas, ninguna cambiada ni borrada"],
+  bad: ["Broken at line {at}. Someone changed or removed lines. Tell IT.", "Roto en la línea {at}. Alguien cambió o borró líneas. Avise a TI."],
+  why: ["Nobody can change or delete a line here, not even an admin. Each line is sealed to the one before it, so if someone edits the file directly, this check turns red. Packet text and clinical notes are never kept here, only who, what and when.",
+        "Nadie puede cambiar o borrar una línea, ni un admin. Cada línea está sellada a la anterior; si alguien edita el archivo, esta revisión se pone roja. Aquí nunca se guarda el texto del paquete ni las notas clínicas, solo quién, qué y cuándo."],
+  case_ph: ["Case number", "Número de caso"], l_practice: ["Show practice", "Mostrar práctica"],
+  go: ["Show", "Mostrar"], csv: ["Download (CSV)", "Descargar (CSV)"],
+  k_all: ["Everything", "Todo"], k_decision: ["Decisions only", "Solo decisiones"], k_ai: ["AI steps only", "Solo pasos de la IA"], k_people: ["Sign-in, roles, settings", "Entradas, roles, ajustes"],
+  th_n: ["#", "#"], th_t: ["When", "Cuándo"], th_case: ["Case", "Caso"], th_who: ["Who", "Quién"], th_role: ["Role", "Rol"],
+  th_what: ["What", "Qué"], th_detail: ["Details", "Detalles"], th_seal: ["Seal", "Sello"],
+  empty: ["Nothing yet.", "Nada todavía."], practice: ["practice", "práctica"],
+  r_ai: ["AI", "IA"], r_coordinator: ["Coordinator", "Coordinador(a)"], r_lead: ["Lead", "Líder"], r_clinical: ["Clinical", "Clínico"], r_admin: ["Admin (IT)", "Admin (TI)"],
+  not_allowed: ["Only an admin can see the audit log.", "Solo un admin puede ver el registro."],
+};
+const DECISIONS = new Set(["accepted", "denied", "withdrawn", "intake_cleared", "staff_check", "clinical_done", "handoff"]);
+let LANG = window.cbLang?.get() || "en";
+let D = null;
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const t = (k, kw = {}) => (T[k] ? T[k][LANG === "es" ? 1 : 0] : k).replace(/\{(\w+)\}/g, (_, x) => kw[x] ?? "");
+const when = (s) => new Date(s * 1000).toLocaleString(LANG === "es" ? "es-US" : "en-US");
+function toast(msg) {
+  const el = $("#toast"); el.textContent = msg; el.classList.remove("hidden");
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.add("hidden"), 2600);
+}
+function kindOf(r) {
+  if (r.role === "ai") return "ai";
+  if (DECISIONS.has(r.what)) return "decision";
+  return r.case_no ? "case" : "people";
+}
+
+function render() {
+  document.documentElement.lang = LANG;
+  for (const id of ["back", "title", "go", "csv", "why"]) $("#" + id).textContent = t(id);
+  $("#h-check").textContent = t("h_check");
+  $("#l-practice").textContent = t("l_practice");
+  $("#lang").textContent = LANG === "es" ? "English" : "Español";
+  $("#case").placeholder = t("case_ph");
+  const k = $("#kind").value || "all";
+  $("#kind").innerHTML = ["all", "decision", "ai", "people"].map((x) => `<option value="${x}"${x === k ? " selected" : ""}>${esc(t("k_" + x))}</option>`).join("");
+  if (!D) return;
+  const c = $("#check");
+  c.textContent = D.check.ok ? t("ok", { n: D.check.rows }) : t("bad", { at: D.check.broken_at });
+  c.className = "a-pill " + (D.check.ok ? "ok" : "bad");
+  const rows = D.rows.filter((r) => k === "all" || kindOf(r) === k);
+  $("#rows").innerHTML = `<tr>${["th_n", "th_t", "th_case", "th_who", "th_role", "th_what", "th_detail", "th_seal"].map((h) => `<th>${esc(t(h))}</th>`).join("")}</tr>` +
+    rows.map((r) => `<tr class="${kindOf(r)}"><td class="n">${r.seq}</td><td class="n">${esc(when(r.t))}</td>
+      <td>${esc(r.case_no || "")}${r.practice ? ` <span class="a-m">(${esc(t("practice"))})</span>` : ""}</td>
+      <td>${esc(r.who)}</td><td>${esc(r.role ? t("r_" + r.role) : "")}</td><td>${esc(r.what)}</td><td>${esc(r.detail)}</td>
+      <td><code class="h" title="${esc(r.hash)}">${esc((r.hash || "").slice(0, 8))}</code></td></tr>`).join("");
+  $("#empty").textContent = rows.length ? "" : t("empty");
+}
+
+function query() {
+  const q = new URLSearchParams({ practice: $("#practice").checked ? "1" : "0" });
+  if ($("#case").value.trim()) q.set("case", $("#case").value.trim());
+  return q;
+}
+async function load() {
+  const q = query();
+  $("#csv").href = "/api/audit-log?format=csv&" + q;
+  const r = await fetch("/api/audit-log?" + q);
+  if (r.status === 401) { location.href = "/auth/signin?next=/static/audit.html"; return; }
+  if (r.status === 403) { toast(t("not_allowed")); $("#empty").textContent = t("not_allowed"); return; }
+  D = await r.json();
+  render();
+}
+
+$("#lang").addEventListener("click", () => { LANG = LANG === "es" ? "en" : "es"; window.cbLang?.set(LANG); render(); });
+$("#go").addEventListener("click", () => load().catch((e) => toast(e.message)));
+$("#kind").addEventListener("change", render);
+$("#practice").addEventListener("change", () => load().catch((e) => toast(e.message)));
+$("#case").addEventListener("keydown", (e) => { if (e.key === "Enter") load().catch((er) => toast(er.message)); });
+(async () => {
+  try { const s = await (await fetch("/api/state")).json(); if (s.lang && !window.cbLang?.get()) LANG = s.lang; } catch (e) {}
+  render();
+  load().catch((e) => toast(e.message));
+})();
+</script>
+</body>
+</html>

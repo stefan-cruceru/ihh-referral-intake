@@ -4,8 +4,11 @@ A SQLite file on IHH's own machine. It holds case numbers, times, owners, routes
 outcomes and reasons. It never holds packet pages, quotes or anything else from the chart.
 """
 
+import hashlib
+import hmac
 import json
 import os
+import secrets
 import sqlite3
 import threading
 import time
@@ -19,6 +22,10 @@ _conn: sqlite3.Connection | None = None
 FIELDS = ["case_no", "channel", "arrived_at", "owner", "suggested_route", "status", "decision", "decided_by",
           "decided_at", "minutes", "withdraw_reason", "patient_arrived", "override", "override_reason",
           "review_usd", "practice"]
+
+# The audit log: who did what, what was approved, and each step the AI took. Append-only and sealed
+# (see _seal). Like the rest of this file it holds no packet text, quotes or clinical notes.
+AUDIT_FIELDS = ["seq", "t", "case_no", "who", "role", "what", "detail", "practice"]
 
 # Staff alerts (notify.py). Drafts only: the status says whether a person sent it, never the app.
 NOTE_FIELDS = ["case_no", "card_id", "event", "person", "channel", "lang", "urgency", "to", "subject", "body",
@@ -34,7 +41,11 @@ def conn() -> sqlite3.Connection:
     if _conn is None:
         _conn = sqlite3.connect(db_path(), check_same_thread=False)
         _conn.execute(f"CREATE TABLE IF NOT EXISTS outcomes ({', '.join(f + ' PRIMARY KEY' if f == 'case_no' else f for f in FIELDS)})")
-        _conn.execute("CREATE TABLE IF NOT EXISTS events (t REAL, case_no TEXT, who TEXT, what TEXT, detail TEXT, practice INTEGER)")
+        _conn.execute(f"CREATE TABLE IF NOT EXISTS audit (seq INTEGER PRIMARY KEY, {', '.join(AUDIT_FIELDS[1:])}, prev TEXT, hash TEXT)")
+        # Append-only: the database itself refuses to change or remove a row, whoever asks.
+        for op in ("UPDATE", "DELETE"):
+            _conn.execute(f"CREATE TRIGGER IF NOT EXISTS audit_no_{op.lower()} BEFORE {op} ON audit "
+                          "BEGIN SELECT RAISE(ABORT, 'the audit log cannot be changed'); END")
         _conn.execute("CREATE TABLE IF NOT EXISTS people (name TEXT PRIMARY KEY, role TEXT, email TEXT, teams TEXT, channel TEXT, lang TEXT)")
         text_cols = ", ".join(f'"{n}" TEXT' for n in NOTE_FIELDS if n not in ("ready", "practice"))
         _conn.execute(f"CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY, key TEXT UNIQUE, t REAL, {text_cols}, "
@@ -53,11 +64,65 @@ def save_card(card: dict) -> None:
         c.commit()
 
 
-def log_event(case_no: str | None, who: str, what: str, detail: str, practice: bool) -> None:
+def _audit_key() -> bytes:
+    f = db_path().with_name("audit.key")
+    if not f.is_file():
+        f.write_bytes(secrets.token_bytes(32))
+        try:
+            os.chmod(f, 0o600)
+        except OSError:
+            pass
+    return f.read_bytes()
+
+
+def _seal(prev: str, row: dict) -> str:
+    """Each row's seal covers the row and the seal before it, so changing, removing or reordering any
+    row breaks every seal after it. Keyed, so someone editing the file can't just recompute them."""
+    body = json.dumps([prev] + [row[f] for f in AUDIT_FIELDS], separators=(",", ":"), ensure_ascii=False)
+    return hmac.new(_audit_key(), body.encode(), hashlib.sha256).hexdigest()
+
+
+def append_audit(case_no: str | None, who: str, role: str | None, what: str, detail: str, practice: bool,
+                 t: float | None = None) -> None:
+    """Add one line to the audit log. There is no function to change or remove one."""
     with _lock:
         c = conn()
-        c.execute("INSERT INTO events VALUES (?,?,?,?,?,?)", (time.time(), case_no, who, what, detail, 1 if practice else 0))
+        last = c.execute("SELECT seq, hash FROM audit ORDER BY seq DESC LIMIT 1").fetchone()
+        row = {"seq": (last[0] + 1) if last else 1, "t": t or time.time(), "case_no": case_no, "who": who or "",
+               "role": role or "", "what": what, "detail": detail or "", "practice": 1 if practice else 0}
+        prev = last[1] if last else ""
+        c.execute(f"INSERT INTO audit ({', '.join(AUDIT_FIELDS)}, prev, hash) VALUES ({', '.join('?' * (len(AUDIT_FIELDS) + 2))})",
+                  [row[f] for f in AUDIT_FIELDS] + [prev, _seal(prev, row)])
         c.commit()
+
+
+def read_audit(case_no: str | None = None, include_practice: bool = True, limit: int = 1000) -> list[dict]:
+    q, args = "SELECT * FROM audit WHERE (practice = 0 OR ?)", [1 if include_practice else 0]
+    if case_no:
+        q, args = q + " AND case_no = ?", args + [case_no]
+    with _lock:
+        c = conn()
+        c.row_factory = sqlite3.Row
+        rows = [dict(r) for r in c.execute(q + " ORDER BY seq DESC LIMIT ?", args + [limit])]
+        c.row_factory = None
+    for r in rows:
+        r["practice"] = bool(r["practice"])
+    return rows
+
+
+def verify_audit() -> dict:
+    """Walk the whole log and re-check every seal. `broken_at` is the first row that does not match."""
+    with _lock:
+        c = conn()
+        c.row_factory = sqlite3.Row
+        rows = [dict(r) for r in c.execute("SELECT * FROM audit ORDER BY seq")]
+        c.row_factory = None
+    prev = ""
+    for i, r in enumerate(rows, 1):
+        if r["seq"] != i or r["prev"] != prev or not hmac.compare_digest(r["hash"] or "", _seal(prev, r)):
+            return {"ok": False, "rows": len(rows), "broken_at": r["seq"]}
+        prev = r["hash"]
+    return {"ok": True, "rows": len(rows), "broken_at": None}
 
 
 def weekly_report(days: int = 7, include_practice: bool = False) -> dict:

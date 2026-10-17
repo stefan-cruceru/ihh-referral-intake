@@ -114,11 +114,12 @@ class Tracker:
         self._lock = threading.Lock()
 
     # ---- audit ---------------------------------------------------------------------------
-    def log(self, card_id: str | None, who: str, what: str, detail: str = ""):
-        """What came in, what Claude flagged, who decided and why. No patient text."""
+    def log(self, card_id: str | None, who: str, what: str, detail: str = "", role: str | None = None):
+        """What came in, what Claude flagged, who decided and why. No patient text. The board's copy is
+        cleared with the demo; the sealed copy in store.audit is kept for admins and never changes."""
         self.audit.append({"t": self.clock.now(), "card": card_id, "who": who, "what": what, "detail": detail})
         practice = bool(self.cards.get(card_id, {}).get("practice")) if card_id else False
-        store.log_event(card_id, who, what, detail, practice)
+        store.append_audit(card_id, who, role, what, detail, practice)
 
     def persist(self, cid: str):
         c = self.cards[cid]
@@ -168,7 +169,10 @@ class Tracker:
         c["danger_flags"] = (report.get("danger") or {}).get("flags") or []
         c["status"] = {"likely_no": "likely_no", "clinical_check": "clinical_check", "needs_info": "needs_info",
                        "security_hold": "clinical_check"}.get(code, "reviewing")
-        self.log(cid, "Claude", "flagged", f"route {code}; blockers {report['recommendation']['blockers']}")
+        cost = (report.get("cost") or {}).get("usd")
+        self.log(cid, "Claude", "flagged", f"route {code}; blockers {rec['blockers']}; odds {rec.get('odds')}; "
+                 f"pages for a person {c['illegible_pages'] or 'none'}; model {report.get('model') or 'sample'}"
+                 + (f"; cost ${cost}" if cost is not None else ""), role="ai")
         if report["recommendation"]["route_clinical"]:
             c["clinical_sent_at"] = self.clock.now()
             self.log(cid, "system", "sent to clinical line", "in parallel with the coordinator")
@@ -258,7 +262,7 @@ class Tracker:
             c["kipu_id"] = reason.strip() or None
         else:
             raise ValueError(f"unknown action {action}")
-        self.log(cid, who or c["owner"], action, reason)
+        self.log(cid, who or c["owner"], action, reason, role=role)
         self.persist(cid)
         return c
 

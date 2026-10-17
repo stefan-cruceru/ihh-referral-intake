@@ -488,7 +488,9 @@ A design checklist, not legal advice. IHH's counsel should review it.
   any change before transport."
 - **A written referral agreement with hospitals:** accurate form, changes reported, 30-day
   medication supply in hand (DOC-10), timely replies to follow-ups. For IHH's counsel to draft.
-- **Audit log:** what came in, what Claude flagged, who decided and why, with timestamps.
+- **Audit log:** what came in, what Claude flagged, who decided and why, with timestamps. Built: the
+  Audit log tab (admins only) also shows each AI step, sign-ins, role and settings changes. Lines can't
+  be changed or deleted, each is sealed to the one before, and a check turns red if the file was edited.
 - **Protect the coordinator too.** The role card says coordinators worry about being blamed for a
   machine's mistake. The log should show what the tool flagged, what the person saw and what they
   decided, so responsibility is clear and fair.
