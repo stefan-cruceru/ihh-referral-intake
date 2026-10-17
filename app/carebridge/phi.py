@@ -4,9 +4,12 @@ Typed text is checked before it can reach the Claude API. Clear identifiers (SSN
 full dates, record numbers, street addresses, "name:" fields) are blocked, not silently scrubbed:
 the person sees what was caught and rewrites it. This prototype is for de-identified and invented
 data only (docs/ground-rules.md); a pilot needs a BAA with every vendor that sees PHI.
+Text that tries to give the AI orders ("ignore your instructions") is blocked the same way (guard.py).
 """
 
 import re
+
+from . import guard
 
 PATTERNS = [
     ("ssn", re.compile(r"\b\d{3}-\d{2}-\d{4}\b")),
@@ -45,7 +48,8 @@ def check(text: str) -> dict:
         for i in range(h["start"], h["end"]):
             if masked[i] not in " \n":
                 masked[i] = "█"
-    return {"ok": not hits, "hits": [{"kind": h["kind"]} for h in hits], "masked": "".join(masked)}
+    kinds = [{"kind": h["kind"]} for h in hits] + guard.check_typed(text)["hits"]
+    return {"ok": not kinds, "hits": kinds, "masked": "".join(masked)}
 
 
 def in_danger(text: str) -> bool:

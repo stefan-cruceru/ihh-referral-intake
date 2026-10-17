@@ -21,7 +21,9 @@ puede cuidarse solo y si está tranquilo y seguro. Cada punto muestra la página
 exactas, y la app vuelve a revisar cada cita. Escribe borradores para el hospital, pero nunca envía
 nada. Nunca dice sí o no: una persona decide, y solo la línea clínica puede decir que no. También
 ayuda a buscar recursos para clientes y deja que el personal practique con ejemplos inventados.
-Todo está en inglés y en español, en palabras sencillas.
+Todo está en inglés y en español, en palabras sencillas. Si un paquete trae texto que intenta dar
+órdenes a la IA, o un archivo con partes ocultas, la app aparta esas páginas y retiene el referido
+para que una persona lo revise.
 
 **Cómo usarla.** Haga doble clic en `ihh-care-bridge.exe`. Se abre en el navegador. Haga clic en
 "Practique con referidos inventados" para practicar sin clave.
@@ -92,6 +94,11 @@ Plus:
   rules and verifies quotes, with structured JSON output. Claude also picks client resources and
   drafts practice notes. Claude never decides; a person reads the evidence and decides.
 - **What a person checks:** every flag links to its page. Every draft is a draft.
+- **When a packet attacks the AI:** a packet is untrusted. `app/carebridge/guard.py` checks the
+  file before it opens (real file type, size, PDF JavaScript and other active parts, hidden text),
+  has the page sorter flag text written to an AI, and re-checks everything Claude writes. Pages
+  that try to give orders are set aside and never read, and the referral goes on a security hold
+  for a person.
 
 ## Try it
 
@@ -168,6 +175,8 @@ first step never opens `eval/decisions.json`.
 - Handwriting the page reader can't read is skipped, not guessed. That can miss a fact.
 - The PHI guard catches patterns (dates, phone numbers, record numbers, addresses, "name:" fields).
   It does not catch a bare name typed on its own.
+- The security check catches common ways of giving an AI orders, not every possible wording. The
+  page sorter's own flag and the security hold are there for what the patterns miss.
 - We would not trust it to decide. It points; a person decides.
 
 ## Next steps
@@ -188,6 +197,8 @@ client information. It does not connect to any Illumination Health + Home system
 - The local log keeps case numbers, times, owners, routes, decisions and reasons. Never chart text.
 - Typed text is checked for identifiers before it can reach the model, and blocked if it has any.
 - The page sorter flags any identifier a redaction missed, and the app shows a STOP banner.
+- Packets that try to give the AI orders, or carry active PDF content, are caught, isolated and put
+  on a security hold. Executables and fake files are blocked and never opened.
 - The model endpoint is the only outside call. It is one setting, so IHH can use an endpoint
   covered by its BAA.
 - API keys stay in Windows Credential Manager or environment variables, never in git. In Docker, a key added in Settings goes in a file only the app can read, inside its data volume.
