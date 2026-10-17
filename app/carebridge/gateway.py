@@ -173,11 +173,11 @@ W = {
                  "<b>Los roles vienen de Microsoft Entra.</b> TI asigna estos roles de la app a personas o grupos:"),
     "ms_norole": ("No role, no entry. Only the clinical role can deny a referral.",
                   "Sin rol, no hay entrada. Solo el rol clínico puede decir que no a un referido."),
-    "ms_it": ("<b>What IT does once:</b> register Lamplight in Microsoft Entra, add the four app roles, assign "
+    "ms_it": ("<b>What IT does once:</b> register Lamplight in Microsoft Entra, add the app roles, assign "
               "people or groups, then put the tenant ID and client ID in Settings (or <code>CAREBRIDGE_TEAMS_TENANT</code> "
               "and <code>CAREBRIDGE_TEAMS_CLIENT_ID</code>). From then on this button is the only way in, and practice "
               "sign-in turns off.",
-              "<b>Lo que TI hace una vez:</b> registra Lamplight en Microsoft Entra, agrega los cuatro roles de la app, "
+              "<b>Lo que TI hace una vez:</b> registra Lamplight en Microsoft Entra, agrega los roles de la app, "
               "los asigna a personas o grupos y pone los ID del inquilino y del cliente en Ajustes (o "
               "<code>CAREBRIDGE_TEAMS_TENANT</code> y <code>CAREBRIDGE_TEAMS_CLIENT_ID</code>). Desde entonces este "
               "botón es la única forma de entrar y el inicio de práctica se apaga."),
@@ -205,9 +205,12 @@ W = {
     "act_denied": ("Say no (clinical)", "Decir que no (clínico)"),
     "act_accepted": ("Say yes", "Decir que sí"),
     "act_clinical_pickup": ("I have it", "Yo lo tomo"),
-    "role_coordinator": ("coordinator", "coordinación"),
+    "role_coordinator": ("referral coordinator", "coordinación de referidos"),
     "role_lead": ("lead", "líder"),
-    "role_clinical": ("clinical", "clínico"),
+    "role_clinical": ("clinical line", "línea clínica"),
+    "role_nursing": ("LVN or medical assistant", "LVN o asistente médico"),
+    "role_casemanager": ("case manager", "administración de casos"),
+    "role_other": ("other", "otro"),
     "role_admin": ("admin (IT)", "admin (TI)"),
     # Errors the referral can send back when someone acts from a Teams link (codes from error()).
     "err_pick_name": ("Pick your name first.", "Primero escoja su nombre."),

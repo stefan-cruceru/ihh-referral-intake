@@ -945,8 +945,10 @@ const store = {
   get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
   set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
 };
-let OB = { step: 0, role: store.get("cb_role") || "coord" };
+let OB = { step: 0, role: store.get("cb_role") || "coord", who: "1" };
 const OB_ROLES = ["coord", "clinical", "lvn", "cm"];
+// The welcome starts on the job of whoever signed in. Lead, other and IT pick their own.
+const OB_JOB = { coordinator: "coord", clinical: "clinical", nursing: "lvn", casemanager: "cm" };
 
 // Lamplight's lamp, on a light tile so it shows on light and dark backgrounds.
 const LAMP_SVG = `<span class="ob-logo"><img src="/static/lamplight-logo.svg" width="30" height="30" alt=""></span>`;
@@ -998,7 +1000,7 @@ function renderOnboard() {
   $("#ob-display")?.addEventListener("click", (e) => { e.stopPropagation(); $(".disp-btn")?.click(); });
   // Practice: referral staff get the made-up referrals; the other jobs land where their practice lives.
   const finish = (practice) => {
-    store.set("cb_onboarded", "1");
+    store.set("cb_onboarded", OB.who);
     store.set("cb_role", OB.role);
     $("#onboard").classList.add("hidden");
     if (OB.role === "cm") goTab("resources");
@@ -1044,17 +1046,17 @@ async function printHandout(style = "color") {
   S = await (await fetch("/static/strings.json")).json();
   await loadState();
   // Signed in: "I am" starts as that person, so "My referrals" works without picking a name.
-  if (!ME) {
-    const me = await api("/api/me").catch(() => ({}));
-    if (me.name) { ME = me.name; pref.set("cb_me", ME); }
-  }
+  const me = await api("/api/me").catch(() => ({}));
+  if (!ME && me.name) { ME = me.name; pref.set("cb_me", ME); }
   LANG = window.cbLang?.get() || STATE.lang || "en";
   applyI18n();
   loadScenarios();
   renderRules();
   poll();
   loadReport();
-  if (!store.get("cb_onboarded")) startOnboard();
+  // The welcome opens once for each person who signs in (the demo site opens it on every visit).
+  OB.who = me.email || "1";
+  if (store.get("cb_onboarded") !== OB.who) { OB.role = OB_JOB[me.role] || OB.role; startOnboard(); }
 })();
 
 // ---------------------------------------------------------------- staff alerts (Outlook and Teams)
