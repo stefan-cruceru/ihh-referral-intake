@@ -117,7 +117,7 @@ python -m pytest tests            # 10 tests on the safety logic
 
 **Docker (one command):** `.\start.ps1` on Windows or `./start.sh` on Mac or Linux. It builds the
 container and opens http://localhost:8780 (this computer only). Add `ANTHROPIC_API_KEY` to `.env`
-to read packets; the demo works without it. Stop with `.\start.ps1 -Stop` or `./start.sh stop`.
+or in Settings to read packets; the demo works without it. Stop with `.\start.ps1 -Stop` or `./start.sh stop`.
 See [docs/run-with-docker.md](docs/run-with-docker.md).
 
 **Packets:** download R01 to R11 into `challenges/1-referral-intake/packets/` (gitignored). The
