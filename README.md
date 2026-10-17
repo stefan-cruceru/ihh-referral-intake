@@ -209,9 +209,12 @@ first step never opens `eval/decisions.json`.
   for the hospital, not answers.
 - Handwriting the page reader can't read is skipped, not guessed. That can miss a fact.
 - Each page gets a read score from 0 to 100. Under 80, or no score at all, sends the page to a person,
-  and a coordinator can't accept the referral until the clinical line has read it. The score is the AI's
-  own guess, so a page it reads wrong while feeling sure can still slip through. The quote check catches
-  that only for quotes a rule cites.
+  and a coordinator can't accept the referral until the clinical line has read it.
+- The score is the AI's own guess, so each page is also read a second time, on its own. If the two reads
+  don't have the same numbers, a person reads the page. Every quote with a number in it and every
+  critical-value line (EF, glucose, SpO2...) is checked against the page image too. This catches a
+  wrong number, not a wrong word: a misread drug name with the right dose can still get through. The
+  second read about doubles the cost of reading a packet.
 - The PHI guard catches patterns (dates, phone numbers, record numbers, addresses, "name:" fields).
   It does not catch a bare name typed on its own.
 - The security check catches common ways of giving an AI orders, not every possible wording. The

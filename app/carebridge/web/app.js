@@ -455,7 +455,12 @@ function renderDetail() {
     }
     const illegible = rep.flags.illegible_pages || [];
     if (illegible.length) {
-      h += `<div class="phi">${esc(t("illegible_panel"))} ${illegible.map((p) => `<button class="btn sm ghost pg" data-page="${p}">${esc(t("page"))} ${p}</button>`).join("")}</div>`;
+      // Each page says why: the handwriting, the score, the two reads, or a number not on the page.
+      const byPage = Object.fromEntries((rep.pages || []).map((p) => [p.page, p]));
+      const why = (pg) => (pg?.needs_reader || []).map((code) => t("why_" + code, {
+        a: (pg.read_diff?.first || []).join(", ") || "-", b: (pg.read_diff?.second || []).join(", ") || "-",
+        q: (pg.unconfirmed || [])[0] || "" })).join(" · ");
+      h += `<div class="phi">${esc(t("illegible_panel"))}${illegible.map((p) => `<div><button class="btn sm ghost pg" data-page="${p}">${esc(t("page"))} ${p}</button> <span class="small">${esc(why(byPage[p]))}</span></div>`).join("")}</div>`;
     }
     // Critical values are never silent: found (page and words), on a page nobody checked yet, or not found.
     const crit = rep.critical || [];

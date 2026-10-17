@@ -1312,8 +1312,28 @@
   "es": "Una persona debe leer: página {p}"
  },
  "illegible_panel": {
-  "en": "The AI is not sure it read these pages right. It could not read some handwriting, or it was less than 80% sure. A person must read these pages before any yes:",
-  "es": "La IA no está segura de haber leído bien estas páginas. No pudo leer parte de la letra a mano, o estaba menos de 80% segura. Una persona debe leer estas páginas antes de decir que sí:"
+  "en": "The AI is not sure it read these pages right. A person must read these pages before any yes:",
+  "es": "La IA no está segura de haber leído bien estas páginas. Una persona debe leer estas páginas antes de decir que sí:"
+ },
+ "why_handwriting": {
+  "en": "Some handwriting can't be read.",
+  "es": "Parte de la letra a mano no se lee."
+ },
+ "why_low_confidence": {
+  "en": "The AI was less than 80% sure.",
+  "es": "La IA estaba menos de 80% segura."
+ },
+ "why_reads_disagree": {
+  "en": "The AI read the page two times and got different numbers: {a} or {b}.",
+  "es": "La IA leyó la página dos veces y sacó números distintos: {a} o {b}."
+ },
+ "why_no_second_read": {
+  "en": "The second read did not come back.",
+  "es": "La segunda lectura no llegó."
+ },
+ "why_critical_unconfirmed": {
+  "en": "A number was not found on the page when checked: \"{q}\"",
+  "es": "Al revisar, un número no estaba en la página: \"{q}\""
  },
  "illegible_mark": {
   "en": "[can't read]",

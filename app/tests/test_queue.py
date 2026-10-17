@@ -22,7 +22,8 @@ PAGES = {1: {"page": 1, "page_type": "ihh_referral_form", "rotation": 0, "mostly
              "language": "en", "possible_unredacted_identifier": False, "duplicate_of": None, "blank": False}}
 
 
-def _qc(statuses, handwriting="none", confidence=95, transcript="Pt ambulates [illegible] ft", pages=None):
+def _qc(statuses, handwriting="none", confidence=95, transcript="Pt ambulates [illegible] ft", pages=None, second=None,
+        unconfirmed=()):
     facts = [{"id": "F1", "page": 1, "topic": "adl", "statement": "s", "statement_es": "s", "quote": "q", "verify": "found"}]
     assessment = {
         "reason_for_referral": "x", "reason_for_referral_es": "x", "wheelchair_dependent": "no", "preferred_language": "",
@@ -31,7 +32,10 @@ def _qc(statuses, handwriting="none", confidence=95, transcript="Pt ambulates [i
         "diagnoses": [], "checklist": [{"doc_id": d, "status": "present", "pages": [1]} for d in rules.checklist_ids()],
         "conflicts": [], "questions": [], "summary": "", "summary_es": "",
     }
-    text = {1: {"transcript": transcript, "handwriting": handwriting, "ocr_confidence": confidence}}
+    text = {1: {"transcript": transcript, "handwriting": handwriting, "ocr_confidence": confidence,
+                "second_transcript": transcript if second is None else second}}
+    if unconfirmed:
+        text[1]["unconfirmed"] = list(unconfirmed)
     return intake.quality_control(assessment, facts, PAGES if pages is None else pages, {}, text)
 
 
@@ -66,7 +70,7 @@ def test_a_page_omitted_from_the_read_requires_clinical_review_before_acceptance
     pages = {**PAGES, 2: {**PAGES[1], "page": 2, "page_type": "progress_note"}}
     rep = _qc(all_met(), transcript="Pt ambulates 150 ft", pages=pages)
     assert rep["pages"][1]["ocr_confidence"] == 0
-    assert rep["pages"][1]["needs_reader"] == ["low_confidence"]
+    assert rep["pages"][1]["needs_reader"] == ["low_confidence", "no_second_read"]
     assert rep["recommendation"]["code"] == "clinical_check"
     assert rep["flags"]["low_confidence_pages"] == [2] == rep["recommendation"]["illegible_pages"]
     t = tracker.Tracker()
@@ -104,6 +108,8 @@ def test_full_review_carries_the_ocr_score_to_the_route(monkeypatch):
                                "ocr_confidence": score[n], "facts": [{"topic": "adl", "statement": "s",
                                                                       "statement_es": "s", "quote": f"walks {n}"}]}
                               for n in nums]}
+        if system == intake.SECOND_READ_PROMPT:
+            return {"pages": [{"page": n, "transcript": "Pt walks 150 ft"} for n in nums]}
         if system == intake.RULES_PROMPT:
             return {"reason_for_referral": "x", "reason_for_referral_es": "x", "wheelchair_dependent": "no",
                     "preferred_language": "", "diagnoses": [], "conflicts": [], "questions": [], "summary": "",
@@ -121,6 +127,90 @@ def test_full_review_carries_the_ocr_score_to_the_route(monkeypatch):
     assert rep["recommendation"]["code"] == "clinical_check"
     assert [p["ocr_confidence"] for p in rep["pages"]] == [95, 55]
     assert any("under 80% sure on page(s) [2]" in m for m in review.progress)
+
+
+def test_numbers_are_compared_the_same_way_in_both_reads():
+    assert intake.numbers("BP 128/76, HR 082, glucose 1,200, dose 2.50 mg, 5.0 L") == \
+        intake.numbers("BP 128 / 76 HR 82 glucose 1200 dose 2.5 mg 5 L")
+    assert intake.numbers("insulin 10 units") != intake.numbers("insulin 100 units")
+    assert intake.numbers("EF 0.35") != intake.numbers("EF 35")
+
+
+def test_two_reads_that_disagree_on_a_number_go_to_a_person():
+    """The AI was 99% sure, but a second, separate read typed a different dose: a person reads the page."""
+    rep = _qc(all_met(), confidence=99, transcript="Lantus 10 units at bedtime, BP 128/76",
+              second="Lantus 100 units at bedtime, BP 128/76")
+    assert rep["recommendation"]["code"] == "clinical_check"
+    assert rep["pages"][0]["needs_reader"] == ["reads_disagree"]
+    assert rep["pages"][0]["read_diff"] == {"first": ["10"], "second": ["100"]}
+    assert rep["flags"]["reads_disagree_pages"] == [1] == rep["flags"]["illegible_pages"]
+    assert "second_transcript" not in rep["pages"][0]
+    # Same numbers, different spacing and commas: no false alarm.
+    same = _qc(all_met(), confidence=99, transcript="Lantus 10 units, BP 128/76", second="Lantus 10 units BP 128 / 76")
+    assert same["recommendation"]["code"] != "clinical_check" and same["pages"][0]["needs_reader"] == []
+
+
+def test_a_missing_second_read_fails_closed():
+    rep = _qc(all_met(), transcript="Pt ambulates 150 ft")
+    rep_text = {1: {"transcript": "Pt ambulates 150 ft", "handwriting": "none", "ocr_confidence": 99}}
+    assert intake.needs_reader(rep_text[1]) == ["no_second_read"]
+    assert intake.needs_reader({**rep_text[1], "second_transcript": None}) == ["no_second_read"]
+    assert rep["pages"][0]["needs_reader"] == []
+
+
+def test_second_reader_cant_read_it_either():
+    rep = _qc(all_met(), confidence=99, transcript="Pt walks ft", second="Pt walks [illegible] ft")
+    assert rep["pages"][0]["needs_reader"] == ["handwriting"]
+
+
+def test_a_number_the_image_check_could_not_find_goes_to_a_person():
+    rep = _qc(all_met(), confidence=99, transcript="EF 35%", unconfirmed=["EF 35%"])
+    assert rep["recommendation"]["code"] == "clinical_check"
+    assert rep["pages"][0]["needs_reader"] == ["critical_unconfirmed"]
+    assert rep["pages"][0]["unconfirmed"] == ["EF 35%"] and rep["flags"]["unconfirmed_pages"] == [1]
+
+
+def test_full_review_reads_twice_and_checks_every_number(monkeypatch):
+    """A fake Claude: the reads disagree on page 1's dose, and page 2's EF line is not on the image."""
+    from carebridge import llm
+    from carebridge.pages import Page
+    first = {1: "Lantus 10 units at bedtime", 2: "Echo: EF 35% with mild MR"}
+    second = {1: "Lantus 100 units at bedtime", 2: "Echo: EF 35% with mild MR"}
+    asked = []
+
+    def fake(system, content, schema, **kw):
+        nums = [int(x["text"].split()[1].rstrip(":")) for x in content if x["type"] == "text" and x["text"].startswith("Page ")]
+        if system == intake.SORT_PROMPT:
+            return {"pages": [{**PAGES[1], "page": n, "instructions_to_ai": False} for n in nums]}
+        if system == intake.READ_PROMPT:
+            return {"pages": [{"page": n, "summary": "s", "transcript": first[n], "handwriting": "none", "ocr_confidence": 97,
+                               "facts": [{"topic": "adl", "statement": "s", "statement_es": "s", "quote": "walks with a walker"}]}
+                              for n in nums]}
+        if system == intake.SECOND_READ_PROMPT:
+            return {"pages": [{"page": n, "transcript": second[n]} for n in nums]}
+        if system == intake.RULES_PROMPT:
+            return {"reason_for_referral": "x", "reason_for_referral_es": "x", "wheelchair_dependent": "no",
+                    "preferred_language": "", "diagnoses": [], "conflicts": [], "questions": [], "summary": "",
+                    "summary_es": "", "checklist": [{"doc_id": d, "status": "present", "pages": [1]} for d in rules.checklist_ids()],
+                    "rules": [{"rule_id": r, "status": st, "fact_ids": ["F1"] if st in ("met", "not_met") else [],
+                               "explanation": "", "explanation_es": ""} for r, st in all_met().items()]}
+        text = " ".join(x["text"] for x in content if x["type"] == "text")
+        asked.append(text)
+        # The EF line is "not on the page"; nothing else comes back, so any other line fails closed too.
+        return {"checks": [{"fact_id": "F1", "verdict": "found"}]
+                + [{"fact_id": i, "verdict": "not_found"} for i in ("L1",) if "L1:" in text]}
+
+    monkeypatch.setattr(llm, "call_json", fake)
+    pages = [Page(n, Image.new("L", (200, 260), 255)) for n in (1, 2)]
+    pages[1].image.paste(0, (0, 0, 120, 120))
+    review = intake.Review(pages, "twice.pdf")
+    rep = intake.run(review, workers=1)
+    by = {p["page"]: p for p in rep["pages"]}
+    assert by[1]["needs_reader"] == ["reads_disagree"] and by[1]["read_diff"] == {"first": ["10"], "second": ["100"]}
+    assert by[2]["needs_reader"] == ["critical_unconfirmed"] and by[2]["unconfirmed"] == ["Echo: EF 35% with mild MR"]
+    assert any("L1: \"Echo: EF 35% with mild MR\"" in a for a in asked), "the EF line was never sent to the image check"
+    assert rep["recommendation"]["code"] == "clinical_check" and rep["flags"]["illegible_pages"] == [1, 2]
+    assert any("don't agree on the numbers on page(s) [1]" in m for m in review.progress)
 
 
 def test_illegible_mark_beats_a_readable_label():
