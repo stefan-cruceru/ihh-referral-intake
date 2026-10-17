@@ -26,7 +26,7 @@ font:17px/1.6 "Public Sans",system-ui,sans-serif;text-align:center;padding:16px}
 .d{width:40px;height:40px;margin:0 auto 16px;border:4px solid #fbe3cc;border-top-color:#e39235;border-radius:50%;animation:s 1s linear infinite}
 @keyframes s{to{transform:rotate(1turn)}}@media (prefers-reduced-motion:reduce){.d{animation:none}}</style></head>
 <body><div><div class="d"></div><b>Getting Lamplight ready…</b><p>This takes about 20 seconds.</p><p>Preparando Lamplight…</p></div>
-<script>setInterval(async () => { try { if ((await fetch("${APP}__ready")).ok) location.reload(); } catch (e) {} }, 2000);</script>
+<script>setInterval(async () => { try { if ((await fetch("${APP}__ready")).ok) location.replace(location.href); } catch (e) {} }, 2000);</script>
 </body></html>`;
 
 function boot() {
@@ -102,7 +102,8 @@ self.addEventListener("fetch", (e) => {
     ready = ready || boot();
     return e.respondWith(new Response(null, { status: started ? 204 : 503 }));
   }
-  if (!started && e.request.mode === "navigate") {
+  // GET only: a form sent while Python loads just waits for it, since reloading would send the form again.
+  if (!started && e.request.mode === "navigate" && e.request.method === "GET") {
     ready = ready || boot();
     return e.respondWith(new Response(WAIT, { headers: { "Content-Type": "text/html; charset=utf-8" } }));
   }
