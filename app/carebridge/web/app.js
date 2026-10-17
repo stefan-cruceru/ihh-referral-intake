@@ -177,6 +177,55 @@ function renderStages(cards) {
   $$("#stages button").forEach((b) => b.addEventListener("click", () => { STAGE = b.dataset.stage; pref.set("cb_stage", STAGE); renderQueue(LAST_Q); }));
 }
 
+// Search and the "Show" filter. Both run on this screen only, on what the queue already sent.
+let FIND = "";
+let FILTER = pref.get("cb_filter") || "all";
+const isOpen = (c) => stageOf(c) !== "closed";
+const FILTERS = {
+  all: () => true,
+  open: isOpen,
+  late: (c) => isOpen(c) && c.color !== "done" && c.left_min >= 0 && c.left_min <= 30,
+  over: (c) => isOpen(c) && c.color !== "done" && c.left_min < 0,
+  safety: (c) => c.danger === "red" || c.danger === "amber" || c.suggested_route === "security_hold" || ["hold", "block"].includes(c.security),
+  person: (c) => (c.illegible_pages || []).length > 0,
+  alerts: (c) => (c.alerts || []).length > 0,
+  overnight: (c) => !!c.overnight,
+  no_kipu: (c) => stageOf(c) === "arrived" && !c.kipu_id,
+};
+// Everything a coordinator might type: case number, hospital, owner, Kipu number, who sent it, and the
+// words for its status and step, in both languages so either one finds it.
+function findText(c) {
+  const words = (k) => [S[k]?.en, S[k]?.es];
+  return [c.case_no, c.hospital, c.owner, c.kipu_id, c.case_manager, c.cm_phone, c.cm_email, c.channel, c.source,
+    ...words("st_" + c.status), ...words("stage_" + stageOf(c))].filter(Boolean).join(" ").toLowerCase();
+}
+function matches(c) {
+  if (!(FILTERS[FILTER] || FILTERS.all)(c)) return false;
+  const terms = FIND.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (!terms.length) return true;
+  const hay = findText(c);
+  return terms.every((w) => hay.includes(w));
+}
+$("#find-filter").value = FILTERS[FILTER] ? FILTER : "all";
+$("#find-q").addEventListener("input", (e) => { FIND = e.target.value; renderQueue(LAST_Q); });
+$("#find-filter").addEventListener("change", (e) => { FILTER = e.target.value; pref.set("cb_filter", FILTER); renderQueue(LAST_Q); });
+$("#find-clear").addEventListener("click", () => {
+  FIND = ""; FILTER = "all"; $("#find-q").value = ""; $("#find-filter").value = "all"; pref.set("cb_filter", FILTER);
+  renderQueue(LAST_Q); $("#find-q").focus();
+});
+
+// Where the patient is, on the card itself: the step out of the seven, a dot per step, and what comes next.
+function whereLine(c) {
+  const st = stageOf(c);
+  if (st === "closed") return `<div class="where closed"><b>${esc(t("stage_closed"))}</b> <span class="muted small">${esc(t("next_closed"))}</span></div>`;
+  const steps = STAGES.filter((s) => s !== "closed");
+  const i = steps.indexOf(st);
+  const dots = steps.map((s, j) => `<span class="dot${j < i ? " past" : j === i ? " now" : ""}" title="${esc(t("stage_" + s))}"></span>`).join("");
+  return `<div class="where"><span class="steps" aria-hidden="true">${dots}</span>
+    <b>${esc(t("where_step", { n: i + 1, total: steps.length }))}: ${esc(t("stage_" + st))}</b>
+    <span class="muted small">${esc(t("next_" + st))}</span></div>`;
+}
+
 // A link to the client's Kipu record, only once IHH has given the link format (Settings).
 // Kipu readiness, checked in the background (kipu_check.py). Checking only: nothing is written.
 function kipuCheckChip(c) {
@@ -240,11 +289,16 @@ function renderQueue(q) {
   $("#peak").classList.toggle("hidden", !peak.at_risk.length);
   $("#peak").innerHTML = `${esc(t("peak_warn"))} <b>${peak.at_risk.map(esc).join(", ")}</b>`;
   renderWhoami(q);
-  const cards = SCOPE === "mine" && ME ? q.cards.filter((c) => c.owner === ME) : q.cards;
-  renderUrgent(cards);
+  const mine = SCOPE === "mine" && ME ? q.cards.filter((c) => c.owner === ME) : q.cards;
+  renderUrgent(mine);
+  const cards = mine.filter(matches);
+  const narrowed = FIND.trim() || FILTER !== "all";
+  $("#find-clear").classList.toggle("hidden", !narrowed);
+  $("#find-count").textContent = narrowed ? t("find_count", { n: cards.length, total: mine.length }) : "";
   renderStages(cards);
   if (!cards.length) {
-    $("#queue").innerHTML = `<div class="empty">${esc(t(q.cards.length ? "queue_empty_mine" : "queue_empty"))}</div>`;
+    const key = narrowed && mine.length ? "find_none" : q.cards.length ? "queue_empty_mine" : "queue_empty";
+    $("#queue").innerHTML = `<div class="empty">${esc(t(key))}</div>`;
     return;
   }
   const cardHtml = (c) => {
@@ -265,6 +319,7 @@ function renderQueue(q) {
           <div class="title">${esc(c.case_no)} · ${esc(c.hospital || t("unknown"))}</div>
           <div class="meta">${sourceText(c)} · ${esc(t("owner"))}: <b>${esc(c.owner)}</b>${c.owner === ME ? ` (${esc(t("you"))})` : ""}</div>
           ${contactLine(c)}
+          ${whereLine(c)}
           <div class="chips">${dangerChip(c)}${statusChip(c.status)}${overnightChip(c)}${kipuChip(c)}${kipuCheckChip(c)}${viewersChip(c)}${handwritingChip(c)}${review}${alerts}${silent}${c.sample ? `<span class="chip">${esc(t("sample_badge"))}</span>` : ""}</div>
           ${oddsLine(c)}
         </div>

@@ -462,3 +462,14 @@ main:focus { outline: none; }
 /* Client help: room between the made-up clients, the text box and the buttons */
 #tab-resources #scenarios { gap: .55rem; margin: .55rem 0 1.25rem; }
 #tab-resources #situation { display: block; margin-bottom: 1rem; }
+
+/* ---- the patient dashboard: search, the Show filter, and where each patient is ---- */
+.finder { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin: .2rem 0 .8rem; }
+.finder input[type="search"] { flex: 1 1 260px; min-width: 0; }
+.finder-show { display: flex; align-items: center; gap: .4rem; font-weight: 600; }
+.finder-show select { width: auto; }
+.where { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin: .35rem 0 .1rem; }
+.where .steps { display: inline-flex; gap: 3px; }
+.where .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray-soft); border: 1.5px solid var(--line); }
+.where .dot.past { background: var(--green); border-color: var(--green); }
+.where .dot.now { background: var(--lamp); border-color: var(--brand); transform: scale(1.25); }
