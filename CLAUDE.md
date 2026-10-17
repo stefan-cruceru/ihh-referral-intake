@@ -24,6 +24,8 @@ designers, and healthcare and nonprofit people. Some have never used a terminal.
 
 ## Where things are
 
+- `docs/intake-context.md`: our team's Challenge 1 working brief. Read it first in any new session.
+
 - `docs/ground-rules.md`: the event rules in full.
 - `docs/background.md`, `docs/glossary.md`: what recuperative care is and what the terms mean.
 - `challenges/1-referral-intake/`: admission criteria as markdown and JSON with rule IDs,
