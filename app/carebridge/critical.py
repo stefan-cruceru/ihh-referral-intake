@@ -68,6 +68,11 @@ def _lines(text: str) -> list[str]:
     return [ln.strip() for ln in (text or "").splitlines() if ln.strip()]
 
 
+def value_lines(text: str | None) -> list[str]:
+    """Lines of a typed page that carry a critical value, so the image check can confirm each one."""
+    return [ln[:200] for ln in _lines(text) if any(_has_value(cid, ln) for cid, *_ in CHECKS)]
+
+
 def check(report: dict) -> list[dict]:
     """One row per critical item the packet's conditions call for. Never silent: every row says
     found, on_page or not_found, with the page and the words."""

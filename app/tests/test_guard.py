@@ -153,7 +153,7 @@ def test_mcp_will_not_open_non_packet_files(tmp_path):
 
 # ---- the review pipeline ---------------------------------------------------------------------
 
-def _fake_claude(sent: list):
+def _fake_claude(sent: list, second_attack: bool = False):
     """Stands in for the API. Page 2 is flagged by the sort model; page 3's text came back with orders in it."""
     def call(*, system, content, schema, usage=None, **kw):
         sent.append((system, content))
@@ -169,6 +169,10 @@ def _fake_claude(sent: list):
                 out.append({"page": n, "summary": "Nursing note.", "facts": [
                     {"topic": "mobility", "statement": "Walks with a walker.", "statement_es": "Camina con andador.", "quote": quote}]})
             return {"pages": out}
+        if system == intake.SECOND_READ_PROMPT:
+            # Page 1's second read carries orders even though its first read was clean.
+            return {"pages": [{"page": n, "transcript": ATTACK if n == 1 and second_attack else "ambulates 150 ft"}
+                              for n in pages]}
         if system == intake.RULES_PROMPT:
             return {"reason_for_referral": "x", "reason_for_referral_es": "x", "wheelchair_dependent": "no",
                     "preferred_language": "en",
@@ -192,9 +196,9 @@ def test_review_isolates_instruction_pages_and_holds(monkeypatch):
     review = intake.Review(pages, "attack.pdf")
     rep = intake.run(review, workers=1)
 
-    read_calls = [c for s, c in sent if s == intake.READ_PROMPT]
+    read_calls = [c for s, c in sent if s in (intake.READ_PROMPT, intake.SECOND_READ_PROMPT)]
     read_pages = {int(x["text"].split()[1].rstrip(":")) for c in read_calls for x in c if x["type"] == "text"}
-    assert 2 not in read_pages, "a flagged page must never be read"
+    assert 2 not in read_pages, "a flagged page must never be read, by either reader"
 
     rules_text = next(c for s, c in sent if s == intake.RULES_PROMPT)[0]["text"]
     assert "ignore all previous instructions" not in rules_text.lower(), "injected text must not reach the rules step"
@@ -207,6 +211,18 @@ def test_review_isolates_instruction_pages_and_holds(monkeypatch):
     assert "previous instructions" not in rep["summary"].lower()
     assert "security" in "".join(review.progress).lower()
     assert "SECURITY HOLD" in mcp.report_markdown(rep)
+
+
+def test_orders_in_the_second_read_set_the_page_aside(monkeypatch):
+    """The second transcript is new text from the model, so it gets the same scan as the first."""
+    monkeypatch.setattr(llm, "call_json", _fake_claude([], second_attack=True))
+    pages = [Page(n, Image.new("L", (200, 260), 255)) for n in (1, 2, 3)]
+    for i, p in enumerate(pages):
+        p.image.putpixel((i * 50, i * 50), 0)
+        p.image.paste(0, (0, 0, 40 * (i + 1), 40 * (i + 1)))
+    rep = intake.run(intake.Review(pages, "attack2.pdf"), workers=1)
+    assert 1 in rep["security"]["isolated_pages"]
+    assert rep["recommendation"]["code"] == "security_hold"
 
 
 def test_clean_review_has_no_hold():

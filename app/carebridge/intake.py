@@ -19,6 +19,7 @@ import functools
 import re
 import time
 import uuid
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 
 from PIL import Image
@@ -58,14 +59,46 @@ def ocr_confidence(t: dict) -> int:
     return max(0, min(100, int(c)))
 
 
+_NUMBER = re.compile(r"\d+(?:\.\d+)?")
+
+
+def numbers(text: str | None) -> Counter:
+    """Every number in a typed page, so two reads can be compared. "1,200" is 1200, "05" is 5, "2.50" is 2.5."""
+    out = Counter()
+    for tok in _NUMBER.findall(re.sub(r"(?<=\d),(?=\d{3}\b)", "", text or "")):
+        whole, _, frac = tok.partition(".")
+        frac = frac.rstrip("0")
+        out[(whole.lstrip("0") or "0") + (f".{frac}" if frac else "")] += 1
+    return out
+
+
+def read_diff(t: dict) -> dict | None:
+    """The numbers only one of the two reads found. None when there was no second read."""
+    if t.get("second_transcript") is None:
+        return None
+    a, b = numbers(t.get("transcript")), numbers(t["second_transcript"])
+    return {"first": sorted((a - b).elements()), "second": sorted((b - a).elements())}
+
+
 def needs_reader(t: dict) -> list[str]:
     """Why a person must read this page, from plain code. Empty means the read can stand."""
     why = []
-    # An [illegible] in the typed page counts even if the label says "readable".
-    if t.get("handwriting") in ILLEGIBLE or "[illegible]" in (t.get("transcript") or ""):
+    # An [illegible] in either typed page counts even if the label says "readable".
+    if t.get("handwriting") in ILLEGIBLE or "[illegible]" in (t.get("transcript") or "") \
+            or "[illegible]" in (t.get("second_transcript") or ""):
         why.append("handwriting")
     if ocr_confidence(t) < OCR_GATE:
         why.append("low_confidence")
+    # The score is the AI grading itself. A second, separate read catches a misread it was sure of:
+    # if the two reads do not agree on every number, a person reads the page. No second read fails closed.
+    diff = read_diff(t)
+    if diff is None:
+        why.append("no_second_read")
+    elif diff["first"] or diff["second"]:
+        why.append("reads_disagree")
+    # A number or critical value the image check could not find on the page.
+    if t.get("unconfirmed"):
+        why.append("critical_unconfirmed")
     return why
 
 # Safety flags for the queue, from rule results that cite verified chart facts. Plain code, not a clinical
@@ -145,6 +178,11 @@ RULES_SCHEMA = S({"type": "object", "properties": {
     "summary": {"type": "string"},
     "summary_es": {"type": "string"},
 }})
+
+SECOND_READ_SCHEMA = S({"type": "object", "properties": {"pages": {"type": "array", "items": {"type": "object", "properties": {
+    "page": {"type": "integer"},
+    "transcript": {"type": "string"},
+}}}}})
 
 VERIFY_SCHEMA = S({"type": "object", "properties": {"checks": {"type": "array", "items": {"type": "object", "properties": {
     "fact_id": {"type": "string"},
@@ -229,6 +267,15 @@ pages are the page numbers where that document is. A redacted field is not a mis
 questions: what the coordinator should ask the hospital case manager, each tied to rule IDs.
 summary: 3 to 5 plain sentences for the coordinator. Every *_es field is the same text in Spanish.
 No medical advice. Do not recommend approve or deny; a person decides.""" + llm.PLAIN
+
+SECOND_READ_PROMPT = GROUND + """
+
+You are the second reader. Another reader has typed these pages already, and code will compare your typing with
+theirs number by number. A number that does not match sends the page to a person, so get every number right.
+For each page image (already turned upright), type out every word and number on it, printed and handwritten, in
+reading order, in the page's own language. Copy each number exactly as written: doses, vitals, lab values,
+measurements, scores, times. Write [redacted] for a black box. Write [illegible] for any word or number you cannot
+read for sure. Never guess, never fix, never summarize, never skip a line."""
 
 VERIFY_PROMPT = """You are the quality-control step. For each numbered quote, look at the page image it claims to
 come from and decide:
@@ -355,16 +402,24 @@ def run(review: Review, workers: int = 6) -> dict:
         results = pool.map(lambda b: call(system=_system(READ_PROMPT), content=_page_content(b, True),
                                                    schema=READ_SCHEMA, effort="medium", max_tokens=32000),
                            _batches(to_read, 4))
+        # The second read runs at the same time, on its own call, so it can't copy the first.
+        second = pool.map(lambda b: call(system=_system(SECOND_READ_PROMPT), content=_page_content(b, True),
+                                                  schema=SECOND_READ_SCHEMA, effort="medium", max_tokens=32000),
+                          _batches(to_read, 4))
         for res in results:
             for pg in res["pages"]:
                 if pg["page"] not in by_num:
                     continue
                 page_summaries[pg["page"]] = pg["summary"]
                 page_text[pg["page"]] = {"transcript": pg.get("transcript", ""), "handwriting": pg.get("handwriting", "none"),
-                                         "ocr_confidence": pg.get("ocr_confidence")}
+                                         "ocr_confidence": pg.get("ocr_confidence"), "second_transcript": None}
                 for f in pg["facts"]:
                     if f["quote"].strip():
                         facts.append({"page": pg["page"], **f})
+        for res in second:
+            for pg in res["pages"]:
+                if pg["page"] in page_text:
+                    page_text[pg["page"]]["second_transcript"] = pg.get("transcript", "")
         # Scan what Claude read back. One hit means the whole page is suspect.
         output_hits = []
         for f in facts:
@@ -377,9 +432,10 @@ def run(review: Review, workers: int = 6) -> dict:
                 output_hits.append({"page": n, "kinds": guard.scan_text(text)})
                 isolated.add(n)
         for n, t in page_text.items():
-            if guard.scan_text(t["transcript"]):
-                output_hits.append({"page": n, "kinds": guard.scan_text(t["transcript"])})
-                isolated.add(n)
+            for typed in (t["transcript"], t["second_transcript"] or ""):
+                if guard.scan_text(typed):
+                    output_hits.append({"page": n, "kinds": guard.scan_text(typed)})
+                    isolated.add(n)
         if output_hits:
             review.log(f"Security: instructions found in what was read from page(s) {sorted({h['page'] for h in output_hits})}. Set aside")
         facts = [f for f in facts if f["page"] not in isolated]
@@ -391,6 +447,9 @@ def run(review: Review, workers: int = 6) -> dict:
         unsure = sorted(n for n, t in page_text.items() if "low_confidence" in needs_reader(t))
         if unsure:
             review.log(f"Read under {OCR_GATE}% sure on page(s) {unsure}: a person must read them")
+        disagree = sorted(n for n, t in page_text.items() if {"reads_disagree", "no_second_read"} & set(needs_reader(t)))
+        if disagree:
+            review.log(f"The two reads don't agree on the numbers on page(s) {disagree}: a person must read them")
         facts.sort(key=lambda f: f["page"])
         for i, f in enumerate(facts, 1):
             f["id"] = f"F{i}"
@@ -416,16 +475,23 @@ def run(review: Review, workers: int = 6) -> dict:
         for hit in _scrub_assessment(assessment):
             output_hits.append(hit)
 
-        # 4. verify every quote that is cited anywhere
+        # 4. verify every quote that is cited anywhere, every quote with a number in it, and every
+        # critical-value line on a typed page (EF, glucose, SpO2...), cited or not
         review.stage = "verify"
         fact_by_id = {f["id"]: f for f in facts}
         cited = set()
         for r in assessment["rules"] + assessment["diagnoses"] + assessment["conflicts"]:
             cited.update(i for i in r["fact_ids"] if i in fact_by_id)
-        review.log(f"Double-checking {len(cited)} cited quotes against the page images")
+        numbered = {f["id"] for f in facts if numbers(f["quote"])}
+        found_lines = [(n, ln) for n, t in sorted(page_text.items()) for ln in critical.value_lines(t["transcript"])]
+        lines = [{"id": f"L{i}", "page": n, "quote": ln} for i, (n, ln) in enumerate(found_lines, 1)]
+        line_by_id = {ln["id"]: ln for ln in lines}
+        review.log(f"Double-checking {len(cited | numbered)} quotes and {len(lines)} critical-value lines against the page images")
         by_page: dict[int, list] = {}
-        for fid in sorted(cited, key=lambda x: int(x[1:])):
+        for fid in sorted(cited | numbered, key=lambda x: int(x[1:])):
             by_page.setdefault(fact_by_id[fid]["page"], []).append(fact_by_id[fid])
+        for ln in lines:
+            by_page.setdefault(ln["page"], []).append(ln)
 
         def verify(group):
             content = []
@@ -441,6 +507,13 @@ def run(review: Review, workers: int = 6) -> dict:
             for c in res["checks"]:
                 if c["fact_id"] in fact_by_id:
                     fact_by_id[c["fact_id"]]["verify"] = c["verdict"]
+                elif c["fact_id"] in line_by_id:
+                    line_by_id[c["fact_id"]]["verify"] = c["verdict"]
+        # Anything with a number we asked about and did not get back as on the page: a person looks.
+        # An unanswered check fails closed, the same as "not found".
+        for item in [*(fact_by_id[i] for i in numbered), *lines]:
+            if item.get("verify") not in ("found", "paraphrase") and item["page"] in page_text:
+                page_text[item["page"]].setdefault("unconfirmed", []).append(item["quote"])
     finally:
         pool.shutdown(wait=False, cancel_futures=True)
 
@@ -577,6 +650,8 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
     reader = {n: needs_reader(page_text.get(n, {})) for n in expected}
     illegible = sorted(n for n, why in reader.items() if why)
     low_confidence = sorted(n for n, why in reader.items() if "low_confidence" in why)
+    disagree = sorted(n for n, why in reader.items() if {"reads_disagree", "no_second_read"} & set(why))
+    unconfirmed = sorted(n for n, why in reader.items() if "critical_unconfirmed" in why)
     recommendation = route(out_rules, diagnoses, checklist, gates, illegible)
     recommendation["low_confidence_pages"] = low_confidence
     report = {
@@ -584,7 +659,11 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
                    "transcript": page_text.get(n, {}).get("transcript", ""),
                    "handwriting": page_text.get(n, {}).get("handwriting", "none"),
                    "ocr_confidence": ocr_confidence(page_text.get(n, {})) if n in expected else None,
-                   "needs_reader": reader.get(n, [])} for n in sorted(sorted_pages)],
+                   "needs_reader": reader.get(n, []),
+                   # Only the numbers the reads disagree on and the lines the image check missed reach the
+                   # report; the second transcript itself stays out of it.
+                   "read_diff": read_diff(page_text.get(n, {})) if n in expected else None,
+                   "unconfirmed": page_text.get(n, {}).get("unconfirmed", [])} for n in sorted(sorted_pages)],
         "facts": facts,
         "reason_for_referral": assessment["reason_for_referral"],
         "reason_for_referral_es": assessment["reason_for_referral_es"],
@@ -602,7 +681,8 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
         "recommendation": recommendation,
         "danger": danger(out_rules, diagnoses, fact_by_id),
         "flags": {"no_referral_form": checklist[0]["status"] == "missing", "illegible_pages": illegible,
-                  "low_confidence_pages": low_confidence, "ocr_gate": OCR_GATE},
+                  "low_confidence_pages": low_confidence, "ocr_gate": OCR_GATE,
+                  "reads_disagree_pages": disagree, "unconfirmed_pages": unconfirmed},
         "qc": {"facts": len(facts),
                "verified": sum(1 for f in facts if f["verify"] == "found"),
                "paraphrase": sum(1 for f in facts if f["verify"] == "paraphrase"),

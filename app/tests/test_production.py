@@ -43,7 +43,7 @@ def test_prompts_drop_the_blacked_out_wording_only_in_production(monkeypatch):
     monkeypatch.setenv("CAREBRIDGE_PRODUCTION", "0")
     assert intake._system(intake.READ_PROMPT) == intake.READ_PROMPT
     monkeypatch.setenv("CAREBRIDGE_PRODUCTION", "1")
-    for p in (intake.SORT_PROMPT, intake.READ_PROMPT, intake.RULES_PROMPT):
+    for p in (intake.SORT_PROMPT, intake.READ_PROMPT, intake.SECOND_READ_PROMPT, intake.RULES_PROMPT):
         live = intake._system(p)
         assert "de-identified" not in live and "Dates are blacked out" not in live
         assert "may show the patient's name" in live
@@ -55,6 +55,8 @@ def test_a_visible_name_is_not_a_stop_in_production(monkeypatch):
         if "label it" in system:
             return {"pages": [{**PAGES[1], "page": n, "possible_unredacted_identifier": True,
                                "instructions_to_ai": False} for n in nums]}
+        if "You are the second reader" in system:
+            return {"pages": [{"page": n, "transcript": "Pt walks 150 ft"} for n in nums]}
         if "Read each page image" in system:
             return {"pages": [{"page": n, "summary": "s", "transcript": "Pt walks 150 ft", "handwriting": "none",
                                "ocr_confidence": 95, "facts": [{"topic": "adl", "statement": "s", "statement_es": "s",
