@@ -275,6 +275,8 @@ class Tracker:
         elif action == "kipu_id":
             # The client's record number in Kipu, typed by staff after they create it there.
             c["kipu_id"] = reason.strip() or None
+            # The log keeps that the number was set, not the number (it points to one person's record).
+            reason = ""
         else:
             raise ValueError(f"unknown action {action}")
         self.log(cid, who or c["owner"], action, reason, role=role)
