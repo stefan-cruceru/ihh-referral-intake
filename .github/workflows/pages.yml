@@ -1,4 +1,4 @@
-# Publishes the public demo (app/pages/) to GitHub Pages on every push to main.
+# Publishes the public demo (demo/pages/) to GitHub Pages on every push to main.
 name: pages
 
 on:
@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install markdown
-      - run: python app/pages/build.py _site
+      - run: python demo/pages/build.py _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
