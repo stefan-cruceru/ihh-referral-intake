@@ -16,8 +16,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import __version__, config, guard, handout, intake, resources, rules, staff
-from .pages import load_packet
+from . import __version__, config, guard, handout, intake, mail, resources, rules, staff
 from .paths import BUNDLE, FROZEN, packets_dir
 
 PROTOCOL = "2025-06-18"
@@ -40,13 +39,14 @@ def _synthetic():
 
 TOOLS = [
     {"name": "review_referral_packet",
-     "description": "Review a de-identified hospital referral packet (PDF or TIFF on this computer) against IHH's "
+     "description": "Review a de-identified hospital referral packet (PDF or TIFF on this computer, or a referral "
+                    "email saved as .eml: its text and attachments become one packet) against IHH's "
                     "recuperative care admission criteria. Returns the two gates (self-care, behavioral stability), "
                     "a suggested route (never a decision), each flag with page number and verified quote, missing "
                     "documents, form-vs-chart conflicts, questions for the hospital and the cost. A live review takes "
                     "1 to 4 minutes. Give practice_patient (S01 to S10) instead of path for an invented practice "
                     "patient: that answer is instant and needs no API key.",
-     "inputSchema": _schema({"path": {"type": "string", "description": "Full path to the packet file."},
+     "inputSchema": _schema({"path": {"type": "string", "description": "Full path to the packet file or the saved .eml email."},
                              "practice_patient": {"type": "string", "description": "S01 to S10, an invented practice patient."},
                              "language": LANG}, [])},
     {"name": "list_practice_patients",
@@ -166,19 +166,26 @@ def _review(args: dict, lang: str) -> str:
     p = Path(path)
     # An MCP client is driven by a model; only packet-shaped files are opened, so it can't be talked into
     # reading keys, mail or other files on this computer.
-    if p.suffix.lower() not in PACKET_TYPES:
-        return "Blocked: only PDF, TIFF, PNG or JPEG referral packets can be reviewed."
+    if p.suffix.lower() not in PACKET_TYPES + (".eml",):
+        return "Blocked: only PDF, TIFF, PNG or JPEG referral packets, or a saved .eml email, can be reviewed."
     if not p.is_file():
         return f"File not found: {p}"
-    data = p.read_bytes()
-    threat = guard.scan_file(data, p.name)
-    if threat["verdict"] == guard.BLOCK:
-        return "Blocked by the security check (" + ", ".join(f["code"] for f in threat["findings"]) + "). The file was not opened."
+    data, name, head = p.read_bytes(), p.name, []
+    if p.suffix.lower() == ".eml":
+        # An email becomes one packet like a fax: its text as page 1, then each attachment.
+        got = mail.packet_from_eml(data)
+        head = mail.summary_lines(got) + [""]
+        if not got["pdf"]:
+            return "\n".join(head + ["Nothing in this email can be reviewed: no usable text or attachment."])
+        data, name = got["pdf"], p.stem + ".pdf"
+    try:
+        review = intake.review_file(data, name)
+    except guard.Blocked as e:
+        return f"Blocked by the security check ({e}). The file was not opened."
     if not config.get_api_key():
-        return ("No Claude API key on this computer yet, so a live review can't run. Run "
-                "`ihh-care-bridge.exe set-key` once, or try a practice patient (S01 to S10).")
-    review = intake.Review(load_packet(data, p.name), p.name, threat=threat)
-    return report_markdown(intake.run(review), lang)
+        return "\n".join(head + ["No Claude API key on this computer yet, so a live review can't run. Run "
+                                 "`ihh-care-bridge.exe set-key` once, or try a practice patient (S01 to S10)."])
+    return "\n".join(head) + report_markdown(intake.run(review), lang)
 
 
 def call_tool(name: str, args: dict) -> str:
@@ -240,7 +247,7 @@ def call_tool(name: str, args: dict) -> str:
 SHOW = ("Show the tool's answer in full, in the same order, with every page number and quote. Do not shorten it, "
         "do not add advice, and do not decide for staff. If something is unknown, say \"unknown\".")
 PATIENT = {"name": "patient", "required": True,
-           "description": "A practice patient (S01 to S10) or the full path to a packet file"}
+           "description": "A practice patient (S01 to S10), or the full path to a packet file or a saved .eml email"}
 LANG_ARG = {"name": "language", "required": False, "description": "en or es (default en)"}
 PROMPTS = [
     {"name": "check_referral", "title": "Check a referral",
@@ -311,7 +318,7 @@ def complete(arg: str, value: str) -> list[str]:
         inbox = config.inbox_dir()
         for d in filter(None, [packets_dir(), Path(inbox) if inbox else None]):
             if d.is_dir():
-                opts += [str(f) for f in sorted(d.iterdir()) if f.suffix.lower() in PACKET_TYPES]
+                opts += [str(f) for f in sorted(d.iterdir()) if f.suffix.lower() in PACKET_TYPES + (".eml",)]
         return [o for o in opts if v in o.lower()][:100]
     if arg == "rule_id":
         return [r for r in rules.all_rules() if r.lower().startswith(v)][:100]

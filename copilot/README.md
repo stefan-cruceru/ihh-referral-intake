@@ -37,6 +37,10 @@ Both come from [`vscode/`](vscode/). Restart VS Code after you install.
 
 Or just type in plain words, for example "check S06" or "what does MOB-4 say?".
 
+A referral that came by email works too: save it as `.eml` (in Outlook, drag it to a folder) and
+give Copilot the path. The email text becomes page 1 and each attachment follows, the same as in
+the app.
+
 The practice patients (S01 to S10) answer at once and need no API key. A real packet file needs a
 Claude API key: run `ihh-care-bridge.exe set-key` once.
 

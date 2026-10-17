@@ -136,3 +136,18 @@ def packet_from_eml(raw: bytes) -> dict:
         dest.close()
     return {"pdf": pdf, "subject": subject, "sender": sender, "sent_at": sent_at,
             "attachments": [a[0] for a in attachments], "skipped": skipped, "body_set_aside": body_set_aside}
+
+
+REASON = {"not_a_fax_file": "not a PDF or image", "security_block": "blocked by the security check",
+          "unreadable": "could not be read"}
+
+
+def summary_lines(got: dict) -> list[str]:
+    """What staff should know about the email itself, shown above the review (Copilot and the command line)."""
+    out = [f"**Email:** {got['subject'] or '(no subject)'}, from {got['sender'] or 'unknown'}. "
+           f"Attachments used: {', '.join(got['attachments']) or 'none'}."]
+    if got["body_set_aside"]:
+        out.append("> **SECURITY HOLD:** the email text gives orders to the AI. It was not used. A person reads the "
+                   "email in the mail program.")
+    out += [f"- Not used: {s['name']} ({REASON.get(s['reason'], s['reason'])})" for s in got["skipped"]]
+    return out

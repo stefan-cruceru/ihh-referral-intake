@@ -4,7 +4,7 @@
   mcp              run as an MCP server on stdin/stdout (for Copilot / Claude Desktop)
   install          copy the exe to your user folder, add a Start menu shortcut, register with Copilot
   uninstall        undo install
-  review FILE      review one packet and print the result (needs an API key)
+  review FILE      review one packet (PDF/TIFF, or a saved .eml email) and print the result (needs an API key)
   set-key          save a Claude API key in Windows Credential Manager
 """
 
@@ -40,18 +40,26 @@ def main(argv=None):
     if cmd == "review" and len(argv) > 1:
         from pathlib import Path
 
-        from . import guard, intake
+        from . import guard, intake, mail
         from .mcp import report_markdown
 
         p = Path(argv[1])
+        data, name = p.read_bytes(), p.name
+        sys.stdout.reconfigure(encoding="utf-8")
+        if p.suffix.lower() == ".eml":
+            got = mail.packet_from_eml(data)
+            print("\n".join(mail.summary_lines(got)) + "\n")
+            if not got["pdf"]:
+                print("Nothing in this email can be reviewed: no usable text or attachment.")
+                return 1
+            data, name = got["pdf"], p.stem + ".pdf"
         try:
-            review = intake.review_file(p.read_bytes(), p.name)
+            review = intake.review_file(data, name)
         except guard.Blocked as e:
             print(f"Blocked by the security check ({e}). The file was not opened.")
             return 1
         lang = argv[2] if len(argv) > 2 else "en"
         rep = intake.run(review)
-        sys.stdout.reconfigure(encoding="utf-8")
         print(report_markdown(rep, lang))
         return 0
     from .webapp import serve
