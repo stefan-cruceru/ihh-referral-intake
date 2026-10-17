@@ -42,6 +42,47 @@ Write in {lang}, so the client can follow it.
 No medical, legal or immigration advice: point to staff. If immigration status comes up, do not ask about it.""" + llm.PLAIN
 
 
+# Facts the client acts on (phone, place, hours) come from the seed fields only. Anything like them in
+# the model's own words is taken out before it is shown or printed.
+_PHONE = re.compile(r"(?<!\d)(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}(?!\d)")
+_ADDRESS = re.compile(r"\b\d{1,6}\s+(?:[NSEW]\.?\s+)?(?:[A-Za-z0-9]+\.?\s+){0,3}?(?:st|street|ave|avenue|blvd|boulevard|"
+                      r"rd|road|dr|drive|ln|lane|way|ct|court|pl|place|calle|avenida)\b\.?(?:\s*(?:#|suite|ste\.?|apt\.?)\s*\w+)?",
+                      re.I)
+_HOURS = [
+    re.compile(r"\b\d{1,2}(?::\d{2})?\s*(?:a\.?\s?m\.?|p\.?\s?m\.?)(?![a-z])(?:\s*(?:-|to|a|hasta)\s*\d{1,2}(?::\d{2})?\s*"
+               r"(?:(?:a\.?\s?m\.?|p\.?\s?m\.?)(?![a-z]))?)?", re.I),
+    re.compile(r"\b\d{1,2}:\d{2}(?:\s*(?:-|to|a|hasta)\s*\d{1,2}:\d{2})?\b"),
+    re.compile(r"\b24\s*/\s*7\b|\b24 hours\b|\b24 horas\b", re.I),
+    re.compile(r"\b(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)(?:day)?s?\s*(?:-|to|through|thru)\s*"
+               r"(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)(?:day)?s?\b", re.I),
+    re.compile(r"\b(?:lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)s?\s*(?:-|a|hasta)\s*"
+               r"(?:lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)s?\b", re.I),
+]
+# Medical, legal or immigration advice is for staff, never the client's page: a field with any of
+# these words is left empty. English and Spanish.
+ADVICE = re.compile(
+    r"\b(?:dose|doses|dosage|dosis|medications?|medicines?|medicamentos?|medicinas?|prescriptions?|"
+    r"stop taking|dejar de tomar|lawyers?|attorneys?|legal advice|consejo legal|asesor[ií]a legal|abogad[oa]s?|"
+    r"immigration|inmigraci[oó]n|immigrant|inmigrante|visas?|green card|tarjeta verde|asylum|asilo|"
+    r"deport\w*|citizenship|ciudadan[ií]a|undocumented|indocumentad[oa]s?)\b", re.I)
+
+
+def client_text(text: str | None) -> str:
+    """Model-written words for the client (why, first step, watch out, plan for today), made safe to show:
+    phone numbers, street addresses and hours are taken out, and a field that gives medical, legal or
+    immigration advice comes back empty. The one place this is done, for the screen and the PDF."""
+    text = text or ""
+    if ADVICE.search(text):
+        return ""
+    for pat in (_PHONE, _ADDRESS, *_HOURS):
+        text = pat.sub("", text)
+    text = re.sub(r"\(\s*\)", "", text)
+    text = re.sub(r"\s+([,.;:])", r"\1", text)
+    text = re.sub(r"([,;:])(?:\s*[,;:])+", r"\1", text)
+    text = re.sub(r"[,;:]+(?=\.)", "", text)
+    return " ".join(text.split()).strip(" ,;:")
+
+
 def catalog() -> list[dict]:
     return load_json(RESOURCES)["resources"]
 
@@ -58,7 +99,8 @@ def _card(r: dict, why: str = "", first_step: str = "", watch_out: str = "") -> 
     keep = ["id", "name", "organization", "category", "description", "services", "eligibility", "how_to_access",
             "referral_required", "phone", "address", "city", "hours", "languages", "cost", "website",
             "source_url", "verified_date", "confidence", "notes"]
-    card = {**{k: r.get(k) for k in keep}, "why": why, "first_step": first_step, "watch_out": watch_out}
+    card = {**{k: r.get(k) for k in keep}, "why": client_text(why), "first_step": client_text(first_step),
+            "watch_out": client_text(watch_out)}
     if {"survivors", "domestic-violence", "confidential-location"} & set(r.get("tags", [])):
         card["address"] = None  # never show where a survivor-serving program is
     return card
@@ -138,6 +180,8 @@ def find(situation: str, lang: str = "en", needs_hint: list[str] | None = None, 
     guard = phi.check(situation)
     if not guard["ok"]:
         return {"blocked": True, "phi": guard}
+    # Only known need codes go to the model next to the situation, never free text from the request.
+    needs_hint = [n for n in (needs_hint or []) if n in NEEDS] or None
     danger = phi.in_danger(situation)
     result = {"blocked": False, "danger": danger, "safety": safety_cards() if danger else [],
               "disclaimer": disclaimer(), "ai": False}
@@ -164,6 +208,6 @@ def find(situation: str, lang: str = "en", needs_hint: list[str] | None = None, 
             dropped.append(p["resource_id"])  # not in the sourced list: never shown
             continue
         cards.append(_card(r, p["why"], p["first_step"], p["watch_out"]))
-    result.update(ai=True, needs=res["needs"], cards=cards, plan_today=res["plan_today"],
+    result.update(ai=True, needs=res["needs"], cards=cards, plan_today=client_text(res["plan_today"]),
                   ask_staff=res["ask_staff"], dropped=dropped, cost=usage.as_dict())
     return result

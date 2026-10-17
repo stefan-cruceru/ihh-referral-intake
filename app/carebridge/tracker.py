@@ -10,7 +10,7 @@ import threading
 import time
 from datetime import datetime, timedelta
 
-from . import store
+from . import phi, store
 
 CLOCK_MIN = 120
 STAGE_BUDGET = {"review": 5, "coordinator": 60, "hospital": 90, "decision": 105}  # minutes after arrival
@@ -54,6 +54,18 @@ STATUSES = ["received", "reviewing", "needs_info", "clinical_check", "likely_no"
             "accepted", "denied", "withdrawn"]
 CLOSED = {"accepted", "denied", "withdrawn"}
 VIEWING_SEC = 30  # someone counts as "has it open" for this long after their screen last checked in (real seconds)
+REASON_MAX = 300  # a decision, withdrawal or override reason is a line, not a note
+
+
+def _reason(text: str) -> str:
+    """A reason staff typed for a decision. It is saved and logged, so it may not carry a name, date,
+    phone or record number (phi.py), in practice or production alike. Refused, not scrubbed: the person
+    sees why and rewrites it, as everywhere else typed text is checked."""
+    text = " ".join((text or "").split())[:REASON_MAX]
+    if not phi.check(text)["ok"]:
+        raise ValueError("The reason looks like it has a name, date, phone or record number. "
+                         "Cite rule IDs and page numbers instead.")
+    return text
 
 
 def queue_key(v: dict) -> tuple:
@@ -227,8 +239,8 @@ class Tracker:
                 c["clinical_done_at"] = now
                 if reason.strip():
                     c["clinical_notes"].append({"t": now, "who": who, "text": reason.strip()[:1000]})
-            # The log keeps that a note was added, not the note itself (it may hold chart details).
-            reason = "" if action != "clinical_ask" else reason.strip()[:200]
+            # The log keeps that a note or ask was added, not its text (it may hold chart details).
+            reason = ""
         elif action == "staff_check":
             # reason is "<check>:<result>", e.g. "background:clear". Nothing else is kept.
             check, _, result = reason.partition(":")
@@ -239,8 +251,11 @@ class Tracker:
             c["status"] = "intake_cleared"
         elif action in ("accepted", "denied", "withdrawn"):
             clinical = role == "clinical" if role is not None else who.lower().startswith("clinic")
-            if action == "denied" and not clinical:
-                raise ValueError("Only the clinical line can deny a referral.")
+            # A deny needs the clinical role from sign-in (practice or Teams). A typed name is not a role,
+            # so with sign-in off nobody can deny here.
+            if action == "denied" and role != "clinical":
+                raise ValueError("Only the clinical line can deny a referral. Sign in as the clinical reviewer.")
+            reason = _reason(reason)
             # Hard gate: pages the AI could not read for sure need the clinical line before any yes.
             if action == "accepted" and c.get("illegible_pages") and not clinical and not c.get("clinical_done_at"):
                 pages = ", ".join(str(p) for p in c["illegible_pages"])

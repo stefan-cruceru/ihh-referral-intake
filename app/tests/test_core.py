@@ -85,7 +85,7 @@ def test_only_clinical_line_can_deny():
         raise AssertionError("coordinator was allowed to deny")
     except ValueError:
         pass
-    assert t.act(c["id"], "denied", "Clinical line", "ADL-2 p.6")["status"] == "denied"
+    assert t.act(c["id"], "denied", "Clinical line", "ADL-2 p.6", role="clinical")["status"] == "denied"
 
 
 def test_simulation_shows_late_referrals():

@@ -152,8 +152,10 @@ def client_situation(pid: str) -> tuple[str, list[str]]:
     PHI guard lets it through. Returns (situation text, needs for the offline match)."""
     p = next(x for x in profiles() if x["id"] == pid)
     story = re.sub(r"\b\d{1,2}/\d{1,2}(/\d{2,4})?\b", "soon", p["story"])
+    # The diagnosis can carry a surgery date too ("fixation 08/18/2026"), which the guard rightly blocks.
+    diagnosis = re.sub(r"\s*\b\d{1,2}/\d{1,2}(/\d{2,4})?\b", "", p["diagnosis"])
     text = (f"{p['patient']['age']} years old. Speaks {p['patient']['language']}. {p['patient']['insurance']}. "
-            f"In the hospital for: {p['diagnosis']}. {story}")
+            f"In the hospital for: {diagnosis}. {story}")
     from carebridge import resources
 
     return text, resources.needs_from_text(text) or ["shelter", "benefits"]

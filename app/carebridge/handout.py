@@ -6,7 +6,8 @@ for, an appointment time, a bus line). Two looks: `color` and `bw` (black and wh
 printer or copier).
 
 Every phone number, address and hour comes from the sourced resource list, looked up by ID here;
-only the "why" and "first step" wording comes from the review.
+only the "why", "first step", "good to know" and "today" wording comes from the review, and it goes
+through resources.client_text first (no phones, places, hours or advice in the model's words).
 
 The handout is for the client, so it can carry their name. The name is printed only: the caller
 passes it straight in for this one PDF, and nothing here saves it, logs it or sends it anywhere.
@@ -106,7 +107,10 @@ def build(items: list[dict], plan_today: str = "", lang: str = "en", danger: boo
     look = LOOKS.get(style, LOOKS["color"])
     bw = style == "bw"
     by_id = {r["id"]: r for r in resources.catalog()}
-    steps = [(it, by_id[it["resource_id"]]) for it in items if it.get("resource_id") in by_id][:MAX_STEPS]
+    # Items come back from the browser, so the model's words are cleaned again here, not trusted.
+    steps = [({**it, **{k: resources.client_text(it.get(k)) for k in ("why", "first_step", "watch_out")}},
+              by_id[it["resource_id"]]) for it in items if it.get("resource_id") in by_id][:MAX_STEPS]
+    plan_today = resources.client_text(plan_today)
 
     pdf = _PDF(lang, look)
     pdf.alias_nb_pages()
