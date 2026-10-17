@@ -647,3 +647,130 @@ async function printHandout() {
   loadReport();
   if (!store.get("cb_onboarded")) startOnboard();
 })();
+
+// ---------------------------------------------------------------- staff alerts (Outlook and Teams)
+// Drafts only: the server never sends. A person opens one in Outlook or Teams, presses send, and
+// marks it sent here. Subjects and bodies come from the server already in each person's language.
+let PEOPLE = [];
+let OUTBOX = [];
+const whoAmI = () => (typeof ME !== "undefined" && ME) || "";
+
+async function loadPeople() {
+  PEOPLE = (await api("/api/notify/people")).people;
+  const sel = $("#outbox-person");
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">${esc(t("outbox_all"))}</option>` +
+    PEOPLE.map((p) => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("");
+  sel.value = PEOPLE.some((p) => p.name === cur) ? cur : "";
+  renderPeople();
+}
+
+async function loadOutbox() {
+  const person = $("#outbox-person").value;
+  const done = $("#outbox-done").checked ? "1" : "0";
+  try {
+    OUTBOX = (await api(`/api/notify/outbox?person=${encodeURIComponent(person)}&done=${done}`)).outbox;
+  } catch (e) {
+    return;
+  }
+  const waiting = OUTBOX.filter((r) => r.status === "draft").length;
+  $("#outbox-count").textContent = waiting;
+  $("#outbox-count").classList.toggle("hidden", !waiting);
+  renderOutbox();
+}
+
+function urgencyChip(u) {
+  const cls = u === "urgent" ? "chip alert" : u === "soon" ? "chip st-needs_info" : "chip";
+  return `<span class="${cls}">${esc(t("notify_" + u))}</span>`;
+}
+
+function outboxItem(r) {
+  const isEmail = r.channel === "email";
+  const href = isEmail ? `/api/notify/${r.id}.eml` : r.teams_link;
+  const label = t(isEmail ? "outbox_open_email" : "outbox_open_teams");
+  const open = r.ready && href
+    ? `<a class="btn primary" data-open="${r.id}" href="${esc(href)}" ${isEmail ? "download" : 'target="_blank" rel="noopener"'}>${esc(label)}</a>`
+    : `<button class="btn primary" disabled>${esc(label)}</button>`;
+  const actions = r.status === "draft"
+    ? `${open}<button class="btn" data-mark="sent_by_person" data-id="${r.id}">${esc(t("outbox_mark_sent"))}</button>
+       <button class="btn ghost" data-mark="dismissed" data-id="${r.id}">${esc(t("outbox_not_needed"))}</button>`
+    : `<span class="muted small">${esc(r.status === "dismissed" ? t("outbox_was_dismissed") : t("outbox_was_sent", { who: r.done_by || "?" }))}</span>
+       <button class="btn ghost" data-mark="draft" data-id="${r.id}">${esc(t("outbox_reopen"))}</button>`;
+  return `<div class="panel alert-item${r.status === "draft" ? "" : " done"}">
+    <div class="chips">${urgencyChip(r.urgency)}<span class="chip">${esc(t("notify_" + r.channel))}</span><span class="chip">${esc(r.person)}</span></div>
+    <div class="alert-subject">${esc(r.subject)}</div>
+    <div class="small">${esc(t("notify_to"))}: <span class="${r.ready ? "" : "muted"}">${esc(r.to)}</span></div>
+    <div class="row">${actions}<button class="btn ghost" data-card="${esc(r.card_id)}">${esc(t("outbox_open_ref"))}</button></div>
+    ${r.ready ? "" : `<p class="muted small">${esc(t("outbox_no_address"))}</p>`}
+    ${!isEmail && r.card ? `<details class="admin"><summary>${esc(t("for_admins"))}</summary><p><a href="/api/notify/${r.id}/card.json" download>${esc(t("outbox_card_file"))}</a></p></details>` : ""}
+  </div>`;
+}
+
+function renderOutbox() {
+  const out = $("#outbox-out");
+  if (!OUTBOX.length) {
+    out.innerHTML = `<div class="empty">${esc(t("outbox_empty"))}</div>`;
+    return;
+  }
+  out.innerHTML = OUTBOX.map(outboxItem).join("");
+  $$("[data-mark]", out).forEach((b) =>
+    b.addEventListener("click", async () => {
+      await post(`/api/notify/${b.dataset.id}/mark`, { status: b.dataset.mark, who: whoAmI() }).catch(() => toast(t("error")));
+      loadOutbox();
+    })
+  );
+  $$("[data-open]", out).forEach((a) => a.addEventListener("click", () => toast(t("outbox_after_open"))));
+  $$("[data-card]", out).forEach((b) => b.addEventListener("click", () => { goTab("referrals"); openCard(b.dataset.card); }));
+}
+
+function personForm(p, isNew) {
+  const opt = (vals, cur, prefix) => vals.map((v) => `<option value="${v}"${v === cur ? " selected" : ""}>${esc(t(prefix + v))}</option>`).join("");
+  return `<div class="person-grid">
+    <label><span class="lbl">${esc(t("people_name"))}</span><input name="name" value="${esc(p.name)}"${isNew ? "" : " readonly"}></label>
+    <label><span class="lbl">${esc(t("people_role"))}</span><select name="role">${opt(["coordinator", "lead", "clinical"], p.role, "people_role_")}</select></label>
+    <label><span class="lbl">${esc(t("people_channel"))}</span><select name="channel">${opt(["both", "email", "teams", "none"], p.channel, "people_ch_")}</select></label>
+    <label><span class="lbl">${esc(t("people_lang"))}</span><select name="lang"><option value="en"${p.lang === "es" ? "" : " selected"}>English</option><option value="es"${p.lang === "es" ? " selected" : ""}>Español</option></select></label>
+    <label><span class="lbl">${esc(t("people_email"))}</span><input name="email" type="email" value="${esc(p.email)}" placeholder="${esc(t("people_unknown"))}" autocomplete="off"></label>
+    <label><span class="lbl">${esc(t("people_teams"))}</span><input name="teams" value="${esc(p.teams)}" placeholder="${esc(t("people_unknown"))}" autocomplete="off"></label>
+  </div>
+  <div class="row end"><button class="btn primary" data-save>${esc(t("people_save"))}</button></div>`;
+}
+
+function renderPeople() {
+  $("#people-out").innerHTML = PEOPLE.map((p) => `<div class="panel person">${personForm(p, false)}</div>`).join("");
+  $("#people-new").innerHTML = personForm({ name: "", role: "coordinator", channel: "both", lang: LANG, email: "", teams: "" }, true);
+  $$(".person").forEach((box) =>
+    $("[data-save]", box).addEventListener("click", async () => {
+      const body = Object.fromEntries($$("input, select", box).map((el) => [el.name, el.value]));
+      try {
+        await post("/api/notify/people", body);
+        toast(t("people_saved"));
+        await loadPeople();
+        loadOutbox();
+      } catch (e) {
+        toast(e.message);
+      }
+    })
+  );
+}
+
+// The alert's "Open referral" link is /#card=<id>.
+function openFromHash() {
+  const m = location.hash.match(/^#card=(.+)$/);
+  if (!m) return;
+  goTab("referrals");
+  openCard(decodeURIComponent(m[1]));
+}
+
+(function bootAlerts() {
+  $("#outbox-person").addEventListener("change", loadOutbox);
+  $("#outbox-done").addEventListener("change", loadOutbox);
+  $('.tabs button[data-tab="people"]').addEventListener("click", loadPeople);
+  $('.tabs button[data-tab="outbox"]').addEventListener("click", loadOutbox);
+  $$(".lang button").forEach((b) => b.addEventListener("click", () => { loadPeople().catch(() => {}); renderOutbox(); }));
+  window.addEventListener("hashchange", openFromHash);
+  const tick = () => { loadOutbox(); setTimeout(tick, 5000); };
+  // strings.json loads in boot(); wait for it before the first render.
+  const start = () => (Object.keys(S).length ? (loadPeople().catch(() => {}), tick(), openFromHash()) : setTimeout(start, 200));
+  start();
+})();
