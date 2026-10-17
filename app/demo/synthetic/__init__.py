@@ -132,19 +132,6 @@ def _report(pid: str) -> dict:
     return rep
 
 
-# Words in a patient's story -> needs in the resource list (used when there is no API key).
-NEED_WORDS = {
-    "shelter": ["unhoused", "homeless", "sleeps outdoors", "shelter", "car", "street"],
-    "housing-navigation": ["unhoused", "homeless", "housing"],
-    "id-documents": [" id ", "identification", "lost his id", "lost her id", "no id"],
-    "benefits": ["medi-cal", "calfresh", "benefits", "income", "general relief"],
-    "food": ["food", "meals", "hungry", "diabetes", "glucose"],
-    "transportation": ["bus", "ride", "transport", "appointment", "follow-up", "follow up", "clinic"],
-    "behavioral-health": ["depress", "anxiety", "psychiatr", "suicid", "alcohol", "substance", "detox"],
-    "phone-internet": ["no phone", "phone"],
-}
-
-
 def client_situation(pid: str) -> tuple[str, list[str]]:
     """What the client needs after discharge, from the profile, with dates and names left out so the
     PHI guard lets it through. Returns (situation text, needs for the offline match)."""
@@ -152,9 +139,9 @@ def client_situation(pid: str) -> tuple[str, list[str]]:
     story = re.sub(r"\b\d{1,2}/\d{1,2}(/\d{2,4})?\b", "soon", p["story"])
     text = (f"{p['patient']['age']} years old. Speaks {p['patient']['language']}. {p['patient']['insurance']}. "
             f"In the hospital for: {p['diagnosis']}. {story}")
-    low = f" {text.lower()} "
-    needs = [n for n, words in NEED_WORDS.items() if any(w in low for w in words)]
-    return text, needs or ["shelter", "benefits"]
+    from carebridge import resources
+
+    return text, resources.needs_from_text(text) or ["shelter", "benefits"]
 
 
 @lru_cache(maxsize=1)
