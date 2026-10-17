@@ -24,7 +24,9 @@ PAGES = {1: {"page": 1, "page_type": "ihh_referral_form", "rotation": 0, "mostly
 
 def _qc(statuses, handwriting="none", confidence=95, transcript="Pt ambulates [illegible] ft", pages=None, second=None,
         unconfirmed=()):
-    facts = [{"id": "F1", "page": 1, "topic": "adl", "statement": "s", "statement_es": "s", "quote": "q", "verify": "found"}]
+    # The quote must be on the typed page, or the code check drops it (intake.check_quotes).
+    quote = (transcript.split() or ["q"])[0]
+    facts = [{"id": "F1", "page": 1, "topic": "adl", "statement": "s", "statement_es": "s", "quote": quote, "verify": "found"}]
     assessment = {
         "reason_for_referral": "x", "reason_for_referral_es": "x", "wheelchair_dependent": "no", "preferred_language": "",
         "rules": [{"rule_id": rid, "status": st, "fact_ids": ["F1"] if st in ("met", "not_met") else [],
@@ -106,7 +108,7 @@ def test_full_review_carries_the_ocr_score_to_the_route(monkeypatch):
         if system == intake.READ_PROMPT:
             return {"pages": [{"page": n, "summary": "s", "transcript": "Pt walks 150 ft", "handwriting": "none",
                                "ocr_confidence": score[n], "facts": [{"topic": "adl", "statement": "s",
-                                                                      "statement_es": "s", "quote": f"walks {n}"}]}
+                                                                      "statement_es": "s", "quote": "walks 150 ft"}]}
                               for n in nums]}
         if system == intake.SECOND_READ_PROMPT:
             return {"pages": [{"page": n, "transcript": "Pt walks 150 ft"} for n in nums]}

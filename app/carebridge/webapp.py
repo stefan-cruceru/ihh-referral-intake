@@ -174,7 +174,8 @@ def start_review(cid: str) -> None:
             review.error = str(e)
             review.stage = "error"
             TRACK.cards[cid]["review_state"] = "error"
-            TRACK.log(cid, "system", "review failed", str(e))
+            # The kind of error only: its message can carry text from the packet or the model.
+            TRACK.log(cid, "system", "review failed", type(e).__name__)
             if not isinstance(e, llm.LLMError):
                 traceback.print_exc()
 

@@ -6,7 +6,8 @@ Stages:
   2. read    main model on upright, non-blank pages: facts with page number and verbatim quote.
   3. rules   main model, text only: a status per rule ID citing fact IDs, checklist, conflicts.
   4. verify  main model looks at each cited page again and checks every quote is really there.
-  5. qc      plain code: drop unverified evidence, force date rules to "can't tell", never auto-deny
+  5. qc      plain code: check each cited quote is in the page's typed text, drop unverified evidence,
+             force date rules to "can't tell", never auto-deny
              on HUMAN_ONLY rules, compute the two gates and the suggested route.
 
 Security (guard.py): pages whose text gives orders to an AI are isolated before reading, every
@@ -15,6 +16,7 @@ model output is scanned again, and any finding puts the referral on a security h
 Claude never decides. The output is a review a coordinator reads, with a suggested route.
 """
 
+import difflib
 import functools
 import re
 import time
@@ -555,10 +557,56 @@ def _scrub_assessment(assessment: dict) -> list[dict]:
     return hits
 
 
+# A quote counts as on the page when its words appear in the page's typed text, or a run of the text
+# matches it this closely (difflib ratio, 0-1). Leaves room for OCR noise, not for a reworded quote.
+QUOTE_MATCH = 0.85
+
+
+def _words(s: str) -> list[str]:
+    return re.sub(r"[\W_]+", " ", (s or "").lower()).split()
+
+
+def quote_in_text(quote: str, transcript: str) -> bool:
+    """Plain code: is this quote really in the page's transcript? Exact words first, then a fuzzy match
+    against every run of the transcript about as long as the quote. A fuzzy match must still carry every
+    number in the quote: "BP 84/50" is not "BP 184/50"."""
+    q, t = _words(quote), _words(transcript)
+    if not q or not t:
+        return False
+    qs, ts = " ".join(q), f" {' '.join(t)} "
+    if f" {qs} " in ts:
+        return True
+    want = numbers(qs)
+    sm = difflib.SequenceMatcher(autojunk=False)
+    sm.set_seq2(qs)
+    for n in {max(1, len(q) - 1), len(q), len(q) + 1}:
+        for i in range(max(1, len(t) - n + 1)):
+            window = " ".join(t[i:i + n])
+            sm.set_seq1(window)
+            if sm.real_quick_ratio() >= QUOTE_MATCH and sm.quick_ratio() >= QUOTE_MATCH and sm.ratio() >= QUOTE_MATCH                     and not want - numbers(window):
+                return True
+    return False
+
+
+def check_quotes(facts: list[dict], page_text: dict) -> None:
+    """The verify model's "found" or "paraphrase" stands only if the quote is also in the page's typed
+    text. A quote that is not becomes not_found, so the evidence is dropped like any unverified quote,
+    and one with a number in it sends the page to a person (critical_unconfirmed), like the image check.
+    Pages without typed text (practice data built without it) keep the model's verdict."""
+    for f in facts:
+        if f.get("verify") in ("found", "paraphrase") and f["page"] in page_text:
+            t = page_text[f["page"]]
+            if not quote_in_text(f["quote"], t.get("transcript", "")):
+                f["model_verify"], f["verify"] = f["verify"], "not_found"
+                if numbers(f["quote"]):
+                    t.setdefault("unconfirmed", []).append(f["quote"])
+
+
 def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, page_summaries: dict,
                     page_text: dict | None = None) -> dict:
     """Plain-code checks on Claude's assessment. Every downgrade is recorded so people can see it."""
     page_text = page_text or {}
+    check_quotes(facts, page_text)
     all_r = rules.all_rules()
     fact_by_id = {f["id"]: f for f in facts}
     good = {fid for fid, f in fact_by_id.items() if f.get("verify") in ("found", "paraphrase")}
@@ -586,9 +634,12 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
             notes.append("evidence_unverified" if cited else "no_evidence")
             downgrades.append({"rule_id": rid, "from": status, "to": "cant_tell", "reason": notes[-1]})
             status = "cant_tell"
-        if rid in rules.DATE_RULES and status == "met":
+        # Dates are blacked out, so a rule that turns on a date or a count of hours can't be settled either
+        # way. A missing document (absent_doc) still stands: that is about the page, not the date.
+        model_status = status
+        if rid in rules.DATE_RULES and status in ("met", "not_met") and not absent_doc:
             notes.append("date_redacted")
-            downgrades.append({"rule_id": rid, "from": "met", "to": "cant_tell", "reason": "date_redacted"})
+            downgrades.append({"rule_id": rid, "from": status, "to": "cant_tell", "reason": "date_redacted"})
             status = "cant_tell"
         if rid in rules.HUMAN_ONLY and status == "not_met":
             notes.append("human_decision")
@@ -596,7 +647,7 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
             "rule_id": rid, "kind": meta["kind"], "section": meta["section"], "text": meta["text"],
             "superseded_by": meta.get("superseded_by"), "gate": rules.gate_of(rid), "status": status,
             "fact_ids": kept, "explanation": r["explanation"], "explanation_es": r["explanation_es"],
-            "notes": notes,
+            "notes": notes, "model_status": model_status,
         })
 
     diagnoses = []
@@ -734,7 +785,9 @@ def danger(out_rules, diagnoses, fact_by_id: dict) -> dict:
     flags = vital_flags(list(fact_by_id.values()))
     for r in out_rules:
         level = DANGER_RULES.get(r["rule_id"])
-        if level and r["status"] == "not_met" and r["fact_ids"] and not r["superseded_by"]:
+        # A date rule forced to "can't tell" still shows what the verified quotes say, as a flag only.
+        shown = r["status"] == "not_met" or ("date_redacted" in r["notes"] and r.get("model_status") == "not_met")
+        if level and shown and r["fact_ids"] and not r["superseded_by"]:
             flags.append({"rule_id": r["rule_id"], "level": level, "fact_ids": r["fact_ids"]})
     for d in diagnoses:
         level = DANGER_DIAGNOSES.get(d["rule_id"])
