@@ -116,8 +116,8 @@
   "es": "Si escribe uno por error, la app se detiene y le avisa."
  },
  "ob_safe_3": {
-  "en": "This tool helps you. It does not replace you.",
-  "es": "Esta herramienta le ayuda. No le reemplaza."
+  "en": "Care Bridge helps you. It does not replace you.",
+  "es": "Care Bridge le ayuda. No le reemplaza."
  },
  "ob_next": {
   "en": "Next",
@@ -148,8 +148,8 @@
   "es": "Si respondemos tarde, el paciente puede irse a otro lugar. Este tablero pone un reloj cuando llega un referido. Le da un responsable. Lee las páginas. Le ayuda a dar seguimiento al hospital."
  },
  "start_demo": {
-  "en": "Try a busy Monday (practice)",
-  "es": "Pruebe un lunes ocupado (práctica)"
+  "en": "Practice with made-up referrals",
+  "es": "Practique con referidos inventados"
  },
  "add_packet": {
   "en": "Add a referral",
@@ -172,24 +172,24 @@
   "es": "Rápido (1 segundo = 1 minuto)"
  },
  "queue_empty": {
-  "en": "No referrals yet. Click \"Try a busy Monday\" to practice, or add a referral.",
-  "es": "Todavía no hay referidos. Haga clic en \"Pruebe un lunes ocupado\" para practicar, o agregue un referido."
+  "en": "No referrals yet. Add a referral PDF above. To look around first, click \"Practice with made-up referrals\".",
+  "es": "Todavía no hay referidos. Agregue el PDF de un referido arriba. Para conocer la app primero, haga clic en \"Practique con referidos inventados\"."
  },
  "arriving": {
   "en": "still coming in",
   "es": "por llegar"
  },
  "sim_title": {
-  "en": "The same 5 referrals, two ways. (Sample times: 40 minutes each by hand, 10 with this tool, 1 person.)",
-  "es": "Los mismos 5 referidos, de dos formas. (Tiempos de ejemplo: 40 minutos cada uno a mano, 10 con esta herramienta, 1 persona.)"
+  "en": "The same 5 referrals, two ways. (Sample times: 40 minutes each by hand, 10 with Care Bridge, 1 person.)",
+  "es": "Los mismos 5 referidos, de dos formas. (Tiempos de ejemplo: 40 minutos cada uno a mano, 10 con Care Bridge, 1 persona.)"
  },
  "sim_manual": {
   "en": "By hand",
   "es": "A mano"
  },
  "sim_tool": {
-  "en": "With this tool",
-  "es": "Con esta herramienta"
+  "en": "With Care Bridge",
+  "es": "Con Care Bridge"
  },
  "sim_missed": {
   "en": "late",
@@ -632,8 +632,8 @@
   "es": "Buscar ayuda"
  },
  "res_no_ai": {
-  "en": "Quick list (no AI)",
-  "es": "Lista rápida (sin IA)"
+  "en": "Quick list",
+  "es": "Lista rápida"
  },
  "res_plan": {
   "en": "Plan for today",
@@ -894,6 +894,10 @@
  "provider_help": {
   "en": "This is the only thing that leaves this computer. Use one that IHH has a BAA for.",
   "es": "Esto es lo único que sale de esta computadora. Use uno con el que IHH tenga un BAA."
+ },
+ "for_admins": {
+  "en": "For admins",
+  "es": "Para administradores"
  },
  "route_security_hold": {
   "en": "Security hold. A person must look before this moves.",

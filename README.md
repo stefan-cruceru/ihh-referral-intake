@@ -26,7 +26,7 @@ Todo está en inglés y en español, en palabras sencillas. Si un paquete trae t
 para que una persona lo revise.
 
 **Cómo usarla.** Haga doble clic en `ihh-care-bridge.exe`. Se abre en el navegador. Haga clic en
-"Pruebe un lunes ocupado" para practicar sin clave.
+"Practique con referidos inventados" para practicar sin clave.
 
 ## The problem
 
@@ -106,7 +106,7 @@ cd app
 .\dist\ihh-care-bridge.exe install   # optional: Start menu + Copilot / Claude Desktop
 ```
 
-Click **Try a busy Monday** to run the 4 PM demo with invented patients. No key needed.
+Click **Practice with made-up referrals** to run the 4 PM demo with invented patients. No key needed.
 To read real (de-identified) packets, an admin adds a Claude API key in Settings (saved in Windows
 Credential Manager) or sets `ANTHROPIC_API_KEY`. For Claude in IHH's Azure, pick Foundry in
 Settings, or set `CAREBRIDGE_PROVIDER=foundry`, `ANTHROPIC_FOUNDRY_RESOURCE` and
@@ -122,11 +122,10 @@ python -m carebridge mcp          # MCP server on stdio
 python -m pytest tests            # 10 tests on the safety logic
 ```
 
-**Docker:** copy `.env.example` to `.env` and add the key (or skip it for the demo), then
-`docker compose up --build -d` and open http://localhost:8780. The port is published on
-127.0.0.1 only. Settings and the outcome log live in the `carebridge-data` volume, packets are
-mounted read-only from `challenges/1-referral-intake/packets/`, and a PDF dropped into `inbox/`
-becomes a card. In Docker the key comes from `.env`, not Settings (no Credential Manager there).
+**Docker (one command):** `.\start.ps1` on Windows or `./start.sh` on Mac or Linux. It builds the
+container and opens http://localhost:8780 (this computer only). Add `ANTHROPIC_API_KEY` to `.env`
+or in Settings to read packets; the demo works without it. Stop with `.\start.ps1 -Stop` or `./start.sh stop`.
+See [docs/run-with-docker.md](docs/run-with-docker.md).
 
 **Packets:** download R01 to R11 into `challenges/1-referral-intake/packets/` (gitignored). The
 demo uses R02 and R07 when they are there, and invented packets when they are not.
@@ -189,7 +188,7 @@ client information. It does not connect to any Illumination Health + Home system
   on a security hold. Executables and fake files are blocked and never opened.
 - The model endpoint is the only outside call. It is one setting, so IHH can use an endpoint
   covered by its BAA.
-- API keys stay in Windows Credential Manager or environment variables, never in git.
+- API keys stay in Windows Credential Manager or environment variables, never in git. In Docker, a key added in Settings goes in a file only the app can read, inside its data volume.
 
 ## License
 
