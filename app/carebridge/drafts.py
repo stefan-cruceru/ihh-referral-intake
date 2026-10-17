@@ -37,9 +37,9 @@ def _doc(did, lang):
 
 
 def _cell(v) -> str:
-    """A census cell pasted into Excel: one starting with = + - @ (or a tab or CR) would run as a formula."""
+    """A cell exported for Excel: = + - @ or a leading tab, CR or LF must stay text."""
     v = "" if v is None else str(v)
-    return "'" + v if v[:1] in ("=", "+", "-", "@", chr(9), chr(13)) else v
+    return "'" + v if v[:1] in ("=", "+", "-", "@", chr(9), chr(13), chr(10)) else v
 
 
 def _hhmm(ts):
