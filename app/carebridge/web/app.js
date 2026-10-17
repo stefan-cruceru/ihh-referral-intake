@@ -819,6 +819,11 @@ async function printHandout(style = "color") {
 (async function boot() {
   S = await (await fetch("/static/strings.json")).json();
   await loadState();
+  // Signed in: "I am" starts as that person, so "My referrals" works without picking a name.
+  if (!ME) {
+    const me = await api("/api/me").catch(() => ({}));
+    if (me.name) { ME = me.name; pref.set("cb_me", ME); }
+  }
   LANG = STATE.lang || "en";
   applyI18n();
   loadScenarios();
