@@ -1,44 +1,96 @@
 # Intake workflow and the 2-hour clock
 
-What IHH staff told our team on October 17, and what it means for the Challenge 1 build. Read
+What IHH told our team on October 17, and what it means for the Challenge 1 build. Read
 `docs/intake-context.md` first. This file adds to it and does not replace it.
 
 How to read the labels:
 
-- **(staff)**: an IHH staff member told us in the room. Not in the written documents.
+- **(lead)**: from our recorded Q&A with IHH's referral lead, who also runs hospital outreach and
+  oversees the referral team.
+- **(staff)**: from an earlier, shorter conversation with IHH staff in the room.
 - **unconfirmed**: we think so, but nobody at IHH has confirmed it yet.
-- **placeholder**: a made-up number for illustration. Replace it with IHH's real number (section 9).
+- **placeholder**: a made-up number for illustration. Replace it with IHH's real number (section 12).
+
+Business figures shared in the Q&A (rates, margins, budget) are kept out of this public repo on
+purpose.
 
 ---
 
-## 1. What IHH staff told us
+## 1. What IHH told us
 
-- An LVN sends the referral form. **(staff)** Unconfirmed: whether the LVN works at the hospital or
-  at IHH.
-- IHH receives referrals **mainly by email**. **(staff)** The packets in this repo are faxed scans.
-  How fax and email fit together is unconfirmed.
-- The process is connected to **CIQ**. **(staff)** What CIQ is, and whether it can export or take
-  in data, is unknown.
-- **Two approvals, one after the other.** The first person (intake) approves, then the clinical
-  team has to approve. **(staff)**
-- **The overturn problem.** When intake approves and clinical does not, it causes a lot of issues.
-  **(staff)**
-- **2-hour turnaround.** **(staff)**, and the challenge page.
-- **There are not enough people to reliably make 2 hours. Time is the main issue.** **(staff)**
+### The number that matters
+
+- **About half of all referrals end up withdrawn.** About half of those, so roughly **a quarter of
+  all referrals**, are lost because the patient went to another placement or left the hospital
+  against medical advice (AMA). IHH reads that as being too slow for the hospital. **(lead)**
+- Winning that quarter back would fix their bed problem. Beds are below IHH's utilization target,
+  partly because health plans now shorten stays. **(lead)**
+- Withdrawals mostly stall in **"communication black holes"**: hospital case managers stop
+  answering follow-ups. Today IHH handles this with regular check-ins, escalating to supervisors,
+  and more training for case managers. **(lead)**
+
+### How intake works today
+
+- **Team:** a lead plus 3 coordinators, 4 people on staggered shifts. Referrals come in 24/7. After
+  hours, the director, the lead and salaried staff cover. **(lead)**
+- **Who takes a referral:** first come, first served. Whoever is at the fax picks it up and usually
+  keeps it. **They want a clearer way to assign referrals.** **(lead)**
+- **How referrals arrive:** PDFs, by **fax and by email**. Fax goes through a third-party e-fax
+  service, and IHH is reviewing options for it. One main phone line plus individual extensions;
+  hospital callbacks rotate through the main line. **(lead)**
+- **The packet:** IHH's intake form, **filled out by the hospital case manager**, plus a checklist
+  of supporting documents (nursing notes, PT/OT notes and so on). **(lead)**
+- **The 2-hour clock starts when the packet arrives**, not when someone opens it. **(lead)**
+- **Busiest times:** the start of the work week and around 4 PM. Weekends are quiet. **(lead)**
+
+### Decision rules
+
+- The full criteria are the ones in this repo. The two big ones: **(lead)**
+  1. **Daily living (ADLs):** the patient must be independent: eat, use the toilet, move
+     themselves, get out of bed. IHH isn't a licensed medical facility, so staff can't give
+     hands-on care.
+  2. **Psychiatric stability:** no active suicidal thoughts and no active psychosis.
+  - Also excluded: certain medications and medical equipment IHH can't handle.
+- **Nobody is denied without a clinical second check.** Every possible "no" goes to the clinical
+  line, staffed 24/7. Unconfirmed: whether an LVN staffs it. **(lead)**
+- The criteria are reviewed yearly and rarely change. Updates come from IHH's own quality reviews
+  or from DHCS. **(lead)**
+
+### After a "yes": three manual steps
+
+1. Create the client in **Kipu**, their electronic medical record, with the face sheet and referral
+   information.
+2. Add a row to the **Excel census**, which has one tab per facility.
+3. Email the site's **operations distribution list**. **(lead)**
+
+### Tools
+
+- IHH runs on Microsoft. Every employee has **Copilot under a BAA**, so it is cleared for patient
+  health information. **(lead)**
+- Hospital contacts live mostly in Excel, not in a CRM. **(lead)**
+
+### From the earlier conversation
+
+- The clinical team approves after intake, and an intake yes that clinical then rejects causes
+  real problems. **(staff)** See "Where sources disagree".
+- There aren't enough people to reliably make 2 hours. Time is the main issue. **(staff)** The Q&A
+  backs this up: 4 people, 24/7, with peaks.
+- The process is "connected to CIQ". **(staff)** CIQ did not come up in the Q&A. Unknown what it
+  is.
 
 ### What the written documents add
 
-- **The 2-hour promise is printed on the form.** Form RC0725 says a referral can come in online,
-  by email or by fax, and that the decision goes back "within two hours of receiving the referral".
-  So the clock starts at receipt. (`challenges/1-referral-intake/criteria/referral-form-and-checklist.md`)
-- **The coordinator's day** (role card). Referrals arrive by fax and email all day. Missing items
-  mean phone calls to hospital case managers. The reply is one of three: yes, no with a brief
-  reason, or a list of what to send. Their worry is being blamed for a machine's mistake.
-  (`challenges/3-staff-ai-confidence/roles.md`)
-- **The form has nowhere to record a second approval.** Its staff-only box has one "reviewed by"
-  line, one "approved" line, and a date received with no time. The box is blank in all 11 packets,
-  so decisions and reasons are recorded somewhere else. (`challenges/1-referral-intake/packets/README.md`)
-- **Some cases already go to clinical by rule.** Patients straight out of neurosurgery are escalated
+- **The 2-hour promise is printed on the form.** Form RC0725 says the decision goes back "within two
+  hours of receiving the referral". The form also lists "online" as a way to send.
+  (`challenges/1-referral-intake/criteria/referral-form-and-checklist.md`)
+- **The coordinator's day** (role card). Missing items mean phone calls to hospital case managers.
+  The reply is one of three: yes, no with a brief reason, or a list of what to send. Their worry is
+  being blamed for a machine's mistake. (`challenges/3-staff-ai-confidence/roles.md`)
+- **The form has nowhere to record a second check.** Its staff-only box has one "reviewed by" line,
+  one "approved" line, and a date received with no time. The box is blank in all 11 packets, so
+  decisions and reasons are recorded somewhere else, likely Kipu (unconfirmed).
+  (`challenges/1-referral-intake/packets/README.md`)
+- **Some cases go to clinical review by rule.** Patients straight out of neurosurgery are escalated
   to further clinical review. For children, a nurse visits the hospital to pre-screen.
   (`criteria/admission-criteria.md`, `criteria/childrens-admission-criteria.md`)
 - **Six rules are a "yes, if".** OTH-3, EOL-1, DM-4, ID-3, RESP-3 and INT-E2 each need an
@@ -50,38 +102,44 @@ How to read the labels:
 
 ### Where sources disagree
 
+- **Does clinical check the yeses too?** The earlier conversation said clinical approves after
+  intake, and that overturned yeses cause problems. The Q&A said every possible *no* goes to the
+  clinical line, and said nothing about yeses. Unknown: do approvals also get a clinical check?
+  This decides whether the "do not discharge yet" status in section 5 is needed.
 - **30 minutes or 2 hours.** IHH's older page ([ifhomeless.org/recup](https://www.ifhomeless.org/recup))
-  says referrals are confirmed within 30 minutes. The current form (July 2025, revised October 2025)
-  says 2 hours for the decision. We use 2 hours.
-- **Who decides.** The glossary says the referral coordinator reads the packet and decides. The
-  criteria send only some cases to clinical review. Staff told us intake approves, then clinical.
-  Unknown: does every referral go to clinical, or only some?
+  says referrals are confirmed within 30 minutes. The current form and the lead say 2 hours. We use
+  2 hours.
 - **What the answer can be.** The written process has only approve or deny, with no "not yet"
   (criteria gaps table). The role card adds a third reply: a list of what to send.
-  `intake-context.md` section 6 proposes "needs info". The two-step flow staff described adds one
-  more state in practice: intake approved, clinical pending.
+  `intake-context.md` section 6 proposes "needs info".
+- **Channels.** The form lists online, email and fax. The lead named fax and email. Whether
+  "online" is still used is unknown.
 
 ---
 
 ## 2. What it changes about the build
 
-**Headline: same team, every referral decided within 2 hours.**
+**Pitch: "A quarter of referrals walk because we're too slow. Win them back and the beds fill."**
 
-The packet review pipeline in `intake-context.md` section 6 stays the core. Staff input adds three
-things around it:
+The biggest gain is **closing the follow-up gap with hospitals**, not only reading faster. The
+packet review pipeline in `intake-context.md` section 6 stays the core. Around it:
 
-1. **A 2-hour clock and queue**, because time is the main issue (section 3).
-2. **Intake and clinical reviewing in parallel**, so a first yes can't be overturned later
-   (section 4).
-3. **An email front door**, mocked, because that is how referrals arrive (section 5).
+1. **One front door** for fax and email, with the clock starting on arrival (section 6, mocked).
+2. **Clear assignment**, instead of whoever is at the fax (section 3).
+3. **Missing items caught on arrival**, and the follow-up to the case manager drafted right away,
+   with a chase ladder when they go quiet (section 4).
+4. **Likely "no" goes straight to the clinical line**, in parallel with the coordinator. Only a
+   clinician can deny (section 5).
+5. **One click after a "yes"** drafts all three handoffs: Kipu fields, census row, ops email
+   (section 7).
 
 **Judging constraint:** features that need IHH's live systems to mean anything do not place
 (`docs/judging.md`). Everything here has to run on its own, with a mock inbox and packets read by
-path.
+path. Section 8 covers how it could plug into IHH's Microsoft setup later.
 
-### Why minutes per referral is the lever (placeholder numbers)
+### Why minutes per referral matter (placeholder numbers)
 
-Three referrals arrive at once and one person reviews them:
+Monday around 4 PM, three referrals arrive at once and one coordinator is on:
 
 | Human time per referral | 1st done | 2nd done | 3rd done | 4th done |
 |---|---|---|---|---|
@@ -89,124 +147,183 @@ Three referrals arrive at once and one person reviews them:
 | 10 min | 0:10 | 0:20 | 0:30 | 0:40 |
 
 Most of the 2 hours goes to referrals waiting in line for a free person, not to the review itself.
-Cut the minutes each referral takes and the line shrinks.
+Cut the minutes each referral takes and the line shrinks. Then the chase ladder keeps the hospital
+from going quiet while IHH waits.
 
 ### Where the minutes go, and what the tool does about each
 
 | Time sink | What the tool does | In the prototype |
 |---|---|---|
+| Deciding who takes it | Assigns each referral to an on-shift coordinator; after hours, to the on-call list | UI |
 | Reading 14 to 34 pages | Page pass and rule pass, then one screen: key facts and flags, each with page and quote | Core build |
-| Waiting on missing documents, and phone calls to chase them | Checklist pass (DOC-1 to DOC-10) in the first minutes, then a draft "Received. Please also send: ..." listing everything at once, so it takes one call, not several | Draft only. Never sent |
-| Typing into CIQ | A structured record ready to copy | JSON or CSV export. No CIQ connection |
-| Two reviews in a row | Intake and clinical see the same summary at the same time | UI |
-| "Any update?" calls from hospitals | A status a hospital could check: received, needs info, under clinical review, accepted, denied | Mock page |
-| Starting from zero | A heads-up lane: the hospital flags a likely discharge a day or two ahead | Idea. Ask staff |
-| Queue order | Sort by time left. Clean referrals go to a fast lane; likely denials go straight to clinical | UI |
-| Nights and thin shifts | One shared queue across sites; a summary readable on a phone | Idea |
+| Missing documents | Checklist pass (DOC-1 to DOC-10) on arrival, then a draft to the case manager listing everything missing at once | Draft only. Never sent |
+| Case managers who go quiet | A chase ladder: timed nudges, then a draft to the case manager's supervisor | Drafts and timers. Never sent |
+| Waiting for a clinical check on a likely "no" | Flags the likely no with rule IDs and evidence, and routes it to the clinical line at once | UI |
+| Three handoffs after a "yes" | Drafts the Kipu fields, the census row and the ops email in one click | Export and drafts. No Kipu or Excel connection |
+| "Any update?" calls | A status a hospital could check: received, needs info, clinical check, accepted, denied | Mock page |
 
 ---
 
 ## 3. The 2-hour tracker
 
-- **The clock starts at the email's received time**, not when someone opens it.
+- **The clock starts on arrival**, from the fax or email timestamp, not when someone opens it.
+  Confirmed by the lead.
+- **Assignment.** Each referral gets an owner the moment it arrives: round-robin across on-shift
+  coordinators, or the on-call list after hours. Everyone can see who owns what. A referral can be
+  handed off with a click.
 - **Each stage gets a time budget** (placeholder; tune with IHH's numbers):
 
   | Stage | Done by |
   |---|---|
-  | Claude reads, flags and checks documents | 0:05 |
-  | Intake and clinical review, in parallel | 1:15 |
+  | Claude reads, flags and checks documents; missing-items draft ready | 0:05 |
+  | Coordinator review; a likely "no" is already with the clinical line | 1:00 |
   | Hospital answers open questions | 1:30 |
   | Decision sent | 1:45, leaving a 15-minute buffer |
 
 - **The queue is sorted by time left**, not by arrival. Green: over 60 minutes left. Yellow: 30 to
   60. Red: under 30.
 - **Escalation ladder:**
-  - 60 minutes left and clinical hasn't opened it: alert the on-call clinician.
-  - 30 minutes left: alert the clinical lead.
+  - 60 minutes left and nobody has opened it: alert the lead.
+  - A likely "no" the clinical line hasn't picked up in 30 minutes: alert the clinical line again,
+    then the lead.
   - 15 minutes left: a person tells the hospital it needs more time, and why.
-- **It never auto-approves to beat the clock.** A late, correct answer beats an on-time wrong one.
-- **Early warning.** With N referrals waiting and M reviewers on shift, flag which ones will miss
-  before they miss.
-- **Report.** Share decided within 2 hours, which stage eats the time, and the overturn count.
+- **It never auto-approves or auto-denies to beat the clock.** A late, correct answer beats an
+  on-time wrong one.
+- **Peak warning.** Busiest at the start of the week and around 4 PM. With N referrals waiting and M
+  people on shift, flag which ones will miss before they miss.
+- **Report.** Share decided within 2 hours, which stage eats the time, withdrawals and their
+  reasons.
 - Open question: does the clock pause while IHH waits on the hospital?
 
 ---
 
-## 4. One yes: stop the overturn
+## 4. Closing the follow-up gap
 
-- Intake and clinical review the same summary in parallel. **Only one "Accepted" goes to the
-  hospital, after both have signed.**
-- Two different status messages:
+This is where the lost quarter goes.
+
+- **On arrival:** the checklist pass lists every missing item. Claude drafts one message to the case
+  manager with everything at once.
+- **Chase ladder** (placeholder timings; IHH already escalates to supervisors by hand):
+  - No reply in 30 minutes: draft a nudge.
+  - No reply in 60 minutes: draft a message to the case manager's supervisor, from IHH's contact
+    list.
+  - Each step is a draft a person sends. Nothing is sent automatically.
+- **Withdrawal risk.** Each card shows how long the hospital has been silent. Long silence near a
+  peak marks the referral most likely to walk.
+- **Contacts.** Hospital contacts live in Excel today. The prototype reads an invented contact
+  sheet. A pilot would read IHH's.
+- **Learn why they walk.** When a referral is withdrawn, record the reason (another placement, AMA,
+  no reply) so the report shows where the quarter goes.
+
+---
+
+## 5. The clinical check
+
+- **IHH's rule: nobody is denied without a clinician.** The tool can flag a likely "no", but only
+  the clinical line can deny.
+- A likely "no" goes to the clinical line **at the same time** the coordinator sees it, with the
+  rule IDs (`rules` and `by_system` in `admission-criteria.json`), the evidence and the quotes. No
+  waiting for one review to finish before the next starts.
+- The form vs. chart check (`intake-context.md` section 6, step 5) catches cases where the form
+  looks fine and the chart doesn't. Example: the form says "independent", the PT note says "needs
+  assist". That matters most for the two big rules: ADLs and psychiatric stability.
+- **If yeses also get a clinical check** (unknown, see section 1), use two status messages so a
+  hospital never discharges on a half-approval:
   - "Intake cleared. Do not discharge yet."
   - "Accepted. OK to discharge."
   Only clinical can send the second.
-- Claude checks the clinical rules (`rules` and `by_system` in `admission-criteria.json`) before
-  intake decides, so intake sees the likely clinical problems first.
-- The form vs. chart check (`intake-context.md` section 6, step 5) is the main overturn catcher.
-  Example: the form says "independent", the PT note says "needs assist".
-- Every overturn reason gets logged so the checks improve. In the prototype this is a field on the
-  decision.
+- Every clinical override gets a logged reason, so the checks improve. In the prototype this is a
+  field on the decision.
 
 ---
 
-## 5. The email front door (mocked)
+## 6. The front door (mocked)
 
-- **Demo:** a fake inbox with invented referral emails. No real inbox. Nothing is sent.
-- Each email opens a card, with the clock started from its received time. Each mock email points at
-  a packet by path; packets never go in the repo.
+- **Demo:** a fake inbox with invented referral emails and e-fax PDFs. No real inbox, no real fax.
+  Nothing is sent.
+- Each arrival opens a card, with the clock started from its timestamp and an owner assigned. Each
+  mock arrival points at a packet by path; packets never go in the repo.
 - Follow-up emails attach to the right card. In a real pilot that needs two identifiers (name and
   date of birth), and a person confirms when the match is uncertain. In our demo the identifiers are
   blacked out, so cards match on an invented case number in the subject line.
-- A reviewer claims a card, so everyone sees who owns it.
-- The original email stays untouched as the record.
+- The original email or fax stays untouched as the record.
 
 **Demo script:**
 
-1. A burst of 5 referrals arrives at 2:00 PM. Run it twice on a fast-forward clock
-   (1 second = 1 minute).
-   - **Manual:** one reviewer, 40 minutes each (placeholder). Cards turn yellow, then red. Two miss.
-   - **With the tool:** same reviewer. All five are decided in time.
-2. Run one **unseen** packet live through the pipeline. Judges may hand us one.
+1. **Monday, 4:00 PM, the busiest hour.** A burst of 5 referrals arrives. Run it twice on a
+   fast-forward clock (1 second = 1 minute).
+   - **Manual:** first come, first served, 40 minutes each (placeholder). Cards turn yellow, then
+     red. Two miss, and one hospital goes quiet and withdraws.
+   - **With the tool:** auto-assigned, missing-items drafts ready on arrival, the likely "no" already
+     with the clinical line, the chase ladder nudging the quiet hospital. All five are decided in
+     time.
+2. Click "Accept" on one and show the three handoff drafts: Kipu fields, census row, ops email.
+3. Run one **unseen** packet live through the pipeline. Judges may hand us one.
 
 ---
 
-## 6. Gaps we may be missing
+## 7. After a "yes": three handoffs in one click
 
+| Handoff today | What the tool drafts | In the prototype |
+|---|---|---|
+| Create the client in Kipu from the face sheet and referral info | The Kipu fields, filled from the packet, with page references | A field list on screen. Redacted fields show "removed for privacy" |
+| Add a row to the Excel census, one tab per facility | The census row for the right facility tab | A CSV row |
+| Email the site's operations list | The ops email | A draft. Never sent |
+
+A coordinator checks each draft before anything is entered or sent.
+
+---
+
+## 8. A pilot path inside IHH's Microsoft setup (after the event)
+
+The team proposed this in the Q&A. It is not part of today's build, which must run on its own.
+
+- IHH already runs Microsoft 365, with Copilot under a BAA for every employee.
+- Power Automate could watch the referral inbox and start the review chain when a packet lands.
+- The review could run on Claude models selected inside Microsoft's Copilot tools. Confirm what
+  IHH's setup allows.
+- The same flows could prepare the Kipu, census and ops-email drafts for a coordinator to approve.
+- The e-fax service is being reviewed. A replacement that delivers faxes as PDFs to the same inbox
+  would give one front door.
+
+---
+
+## 9. Gaps we may be missing
+
+- **A yes is often a "yes, if".** The six conditional rules (OTH-3, EOL-1, DM-4, ID-3, RESP-3,
+  INT-E2) need home health, hospice, an O2 tank or wound care confirmed before admission. Show each
+  condition as an open item on the card with its own deadline. RESP-3's O2 tank, for example, has
+  to be ready the day before arrival.
 - **The first yes works like a discharge order.** California law (HSC 1262.5, from SB 1152) makes
   hospitals identify a post-discharge destination for each homeless patient (`docs/background.md`)
-  and keep a log of it (AFS Law summary, in Sources). If the hospital acts on intake's yes and clinical then says no, the
+  and keep a log of it (AFS Law summary, in Sources). If anything about a yes changes later, the
   patient can be left with nowhere to go.
-- **A yes is often a "yes, if".** The six conditional rules (OTH-3, EOL-1, DM-4, ID-3, RESP-3,
-  INT-E2) need home health, hospice, an O2 tank or wound care confirmed before admission. A yes
-  given before those are confirmed is a likely source of overturns. Show each condition as an open
-  item on the card with its own deadline. RESP-3's O2 tank, for example, has to be ready the day
-  before arrival.
 - **The form goes stale.** It is filled out hours before transport. A new fever, a fall or IV
   medications can change the answer. The criteria flag one case already: a COVID swab that was
   negative at referral can be more than 24 hours old on arrival (INF-2). Consider a short reconfirm
   before transport.
-- **Nights and weekends.** If clinical isn't available, intake may approve alone to make the clock.
-  That may be where overturns cluster. Unconfirmed.
-- **The clock rewards saying yes**, if intake is measured on speed alone.
+- **After hours.** The director, the lead and salaried staff cover nights. How fast the clinical
+  line answers at 2 AM is unknown.
+- **The clock rewards saying yes**, if coordinators are measured on speed alone.
 - **A denial needs a next step.** The hospital still has to discharge the patient somewhere.
   Challenge 2 (finding the right resource) is the natural hand-off.
 - **Payment.** In Orange County, CalOptima auto-authorizes 30 days (`intake-context.md` section 3).
   How it works for LA and Riverside referrals is unknown.
-- **Hospitals send the same referral to several providers**, so a slow answer can lose the patient
-  to another provider or to the street.
 
 ---
 
-## 7. Liability guardrails for a pilot
+## 10. Liability guardrails for a pilot
 
 A design checklist, not legal advice. IHH's counsel should review it.
 
-- **Claude never approves or denies.** It flags. A named, licensed person decides.
-- **Two status messages** (section 4). Only clinical can send "Accepted".
+- **Claude never approves or denies.** It flags. A named person decides, and **only a clinician can
+  deny** (IHH's own rule).
+- **Nothing is sent automatically.** Every message to a hospital, supervisor or site team is a draft
+  a person sends.
 - **Conditional acceptance wording:** "Accepted based on information received at [time]. Report
   any change before transport."
 - **A written referral agreement with hospitals:** accurate form, changes reported, 30-day
-  medication supply in hand (DOC-10), no discharge before "Accepted". For IHH's counsel to draft.
+  medication supply in hand (DOC-10), timely replies to follow-ups. For IHH's counsel to draft.
 - **Audit log:** what came in, what Claude flagged, who decided and why, with timestamps.
 - **Protect the coordinator too.** The role card says coordinators worry about being blamed for a
   machine's mistake. The log should show what the tool flagged, what the person saw and what they
@@ -216,97 +333,73 @@ A design checklist, not legal advice. IHH's counsel should review it.
   support software outside medical device rules.
 - **Denials cite a rule ID and evidence, never a category label** such as disability, psychiatric
   history or substance use. Track denials by category to catch bias.
-- **Privacy.** A real deployment needs a HIPAA-compliant setup with a business associate agreement
-  (BAA) from every vendor that touches patient information, including the email system and the AI
-  provider. The prototype uses only the de-identified packets and invented emails.
+- **Privacy.** IHH's Copilot is under a BAA. Any other vendor that touches patient information,
+  including a new e-fax service, needs its own. The prototype uses only the de-identified packets
+  and invented data.
 - **Nothing Claude writes goes to a patient without review.** California's AB 3030 adds disclaimer
   rules for AI-generated patient messages about clinical information.
 
 ---
 
-## 8. Questions for IHH staff
+## 11. Questions
 
-Each question says why we ask, so whoever is talking to staff can push for a real answer.
+### Answered in the Q&A
 
-**Ask these first. The answers change the design.**
+| Question | Answer |
+|---|---|
+| When does the 2-hour clock start? | On arrival, not when opened |
+| Who fills out the form? | The hospital case manager |
+| How do referrals arrive? | PDFs by fax (third-party e-fax) and email |
+| Who reviews, and when? | A lead plus 3 coordinators, staggered, 24/7; director, lead and salaried staff after hours |
+| Who takes each referral? | First come, first served. They want clearer assignment |
+| When is it busiest? | Start of the week and around 4 PM. Weekends are quiet |
+| What happens when IHH is slow? | About half of referrals are withdrawn; about a quarter of all go elsewhere or leave AMA |
+| Do denials get a clinical check? | Yes. Every possible "no" goes to the 24/7 clinical line |
+| What happens after a yes? | Kipu record, Excel census row, ops email, all by hand |
+| What tools do they use? | Microsoft 365, Copilot under a BAA, Kipu, Excel |
 
-1. **Does every referral go to clinical, or only some?** The glossary says the coordinator
-   decides, the criteria send only some cases to clinical review, and staff told us intake then
-   clinical. If only some go, the tool's job is to pick which.
-2. **When intake approves, what exactly does the hospital hear?** Do they start the discharge on
-   it? This is what turns an overturn into a patient with nowhere to go.
-3. **When clinical overturns a yes, what happens to the patient, and what are the top 3 to 5
-   reasons?** Those reasons become the checks the tool runs before intake says yes.
-4. **Where is the time a referral arrived recorded?** The form promises a decision within 2 hours
-   of receipt, but its staff-only box has a date and no time. Does the clock pause while you wait
-   on the hospital?
+### Still open, most important first
+
+1. **Do approvals also get a clinical check, or only possible denials?** The earlier conversation
+   and the Q&A disagree. This decides the status messages in section 5.
+2. **How many minutes does one referral take, and which step is longest?** It replaces every
+   placeholder in the capacity math.
+3. **When a case manager goes quiet, how long do you wait before following up, and who do you
+   escalate to?** This sets the chase ladder in section 4.
+4. **When a hospital withdraws, do you hear why?** Is it tracked anywhere?
 5. **If you could have one thing on Monday, what would it be?** Judges weight IHH's day-one view
    most.
 
-**Time and staffing**
+**Also open**
 
-- How many minutes does one referral take a person, start to finish? Which step is the longest:
-  reading, phone calls, or waiting?
-- How many referrals come in on a busy day, and when do they cluster (time of day, day of week)?
-- How many people review on each shift, intake and clinical, including nights and weekends?
-- How often is the answer "send us X" rather than yes or no?
-- How many "any update?" calls do you get a day?
-- When you miss 2 hours, does the hospital send the patient somewhere else?
-
-**How referrals arrive and where decisions live**
-
-- The form says referrals come online, by email or by fax. Is "online" CIQ? Roughly what share
-  comes each way?
-- Do faxes land in the email inbox, or on a fax machine?
-- One shared inbox, or one per site or county? Outlook or Gmail? Who watches it overnight?
-- The staff-only box was blank in all 11 packets. Where do decisions and denial reasons get
-  recorded? Where does clinical's approval get recorded?
-- What is CIQ? Can it export, send alerts or take data in (API, CSV, email)? Does someone retype
-  each referral into it?
-- When a packet arrives without the IHH form (like R03 and R10), do you still review it, or send it
-  back?
-
-**Clinical checks**
-
-- Who counts as clinical (RN, NP, MD)?
-- Is the LVN who sends the form at the hospital or at IHH? For children, a nurse pre-screens at the
-  hospital. Does anything like that happen for adults?
-- For the "yes, if" rules (home health, hospice, O2 tank, wound care), who confirms the arrangement,
-  and is the yes given before or after it is confirmed?
-- A COVID swab negative at referral can be over 24 hours old on arrival. What happens then?
-- What happens when a patient arrives in different shape than the form described?
-- Do hospitals ever give a heads-up a day or two before a referral?
-
-**Payment and risk**
-
-- Who gets the health plan authorization (DOC-3), the hospital or IHH? Does a missing one hold up
-  the yes?
+- "About 150" came up without a unit. Monthly referrals, beds, or something else?
+- What is CIQ? It did not come up in the Q&A.
+- Who staffs the clinical line (an LVN?), and how fast does it answer, day and night?
+- Does the e-fax service deliver into the same inbox as email, or into a portal?
+- Is the arrival time recorded anywhere a tool could read (e-fax or email timestamp)?
+- Does the clock pause while IHH waits on the hospital?
+- How often is the reply "send us X" rather than yes or no?
+- For the "yes, if" rules, who confirms the arrangement, and is the yes given before or after?
+- When a packet arrives without the IHH form (like R03 and R10), do you review it or send it back?
+- What fields does the hospital contact sheet have: case manager, supervisor, phone, email?
 - For LA and Riverside referrals, which plan pays, and does it auto-authorize like CalOptima?
-- Is there a written agreement with referring hospitals today?
-- What would make a coordinator trust the tool's flags, and not feel blamed when it is wrong?
-- What would your compliance team need before AI touches referrals?
-
-**Success**
-
 - In three months, what number would tell you this worked?
-- What do hospitals complain about most?
 
 ---
 
-## 9. Numbers we still need
-
-Fill these in as staff answer. They replace every placeholder above.
+## 12. Numbers
 
 | Number | Answer |
 |---|---|
-| Minutes one referral takes a person, start to finish, and the longest step | |
-| Referrals on a busy day, and when they cluster | |
-| Reviewers per shift: intake and clinical, day and night | |
-| Time spent waiting on hospitals for missing documents | |
-| How often clinical overturns intake | |
-| Share of referrals that go to clinical review (all, or only some) | |
-| How often the reply is "send us X" instead of yes or no | |
-| What happens when 2 hours is missed | |
+| Referral team | Lead plus 3 coordinators, staggered shifts, 24/7 **(lead)** |
+| Busiest times | Start of the week, around 4 PM; weekends quiet **(lead)** |
+| Withdrawn referrals | About half **(lead, estimate)** |
+| Lost to another placement or AMA | About a quarter of all referrals **(lead, estimate)** |
+| Minutes per referral, start to finish, and the longest step | Unknown |
+| Referrals per day or month | Unknown ("about 150" was said without a unit) |
+| Time spent waiting on hospitals for missing documents | Unknown |
+| How often the clinical line overrides the coordinator | Unknown |
+| How often the reply is "send us X" | Unknown |
 
 ---
 
