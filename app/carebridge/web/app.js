@@ -78,6 +78,7 @@ function renderQueue(q) {
   if (!q) return;
   $("#clock-time").textContent = fmtClock(q.now);
   $("#speed").value = q.speed >= 30 ? "60" : "1";
+  $("#speed").classList.toggle("hidden", !(q.speed >= 30 || q.cards.some((c) => c.sample)));
   const rep = q.report;
   const wd = Object.values(q.withdraw_reasons || {}).reduce((a, b) => a + b, 0);
   $("#stats").innerHTML = rep.total
@@ -101,9 +102,10 @@ function renderQueue(q) {
           : "";
       const alerts = (c.alerts || []).map((a) => `<span class="chip alert">${esc(t("al_" + a.code))}</span>`).join("");
       const silent = c.hospital_silent_min ? `<span class="chip">${esc(t("silent_for"))}: ${c.hospital_silent_min} ${t("min")}</span>` : "";
+      const pct = c.color === "done" || left < 0 ? 1 : Math.max(0, Math.min(1, left / 120)); // late: a full red ring
       return `<div class="card c-${c.color}" data-id="${esc(c.id)}" tabindex="0">
         <div class="bar"></div>
-        <div class="timer">${timer}</div>
+        <div class="timer" style="--pct:${pct}">${timer}</div>
         <div>
           <div class="title">${esc(c.case_no)} · ${esc(c.hospital || t("unknown"))}</div>
           <div class="meta">${esc(t("channel_" + (c.channel || "upload")))} · ${esc(t("owner"))}: <b>${esc(c.owner)}</b></div>
@@ -162,6 +164,9 @@ async function upload(file) {
   openCard(j.card.id);
 }
 $("#file-input").addEventListener("change", (e) => upload(e.target.files[0]));
+$('label[for="file-input"]').addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#file-input").click(); }
+});
 const drop = $("#drop");
 drop.addEventListener("click", () => $("#file-input").click());
 ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
@@ -296,7 +301,7 @@ function renderDetail() {
     const qc = rep.qc;
     h += `<div class="panel"><h3>${esc(t("h_qc"))}</h3><p>${esc(t("qc_line", { v: qc.verified, n: qc.facts, p: qc.paraphrase, x: qc.not_found, d: qc.downgrades.length }))}</p>
       ${qc.downgrades.length ? `<div class="chips">${qc.downgrades.map((d) => `<span class="chip">${esc(d.rule_id)}: ${esc(t("s_" + d.from))} → ${esc(t("s_" + d.to))} (${esc(t(d.reason))})</span>`).join("")}</div>` : ""}
-      ${rep.cost ? `<p class="muted small">${esc(t("cost"))}: $${Number(rep.cost.usd).toFixed(2)} · ${rep.cost.calls} calls · ${rep.cost.input_tokens.toLocaleString()} in / ${rep.cost.output_tokens.toLocaleString()} out · ${esc(rep.model || "")}</p>` : ""}
+      ${rep.cost ? `<details class="admin"><summary>${esc(t("for_admins"))}</summary><p>${esc(t("cost"))}: $${Number(rep.cost.usd).toFixed(2)} · ${rep.cost.calls} calls · ${rep.cost.input_tokens.toLocaleString()} in / ${rep.cost.output_tokens.toLocaleString()} out · ${esc(rep.model || "")}</p></details>` : ""}
       <h3>${esc(t("h_pages"))}</h3><div class="thumbs">${rep.pages
         .map((p) => `<button data-page="${p.page}" class="${p.duplicate_of ? "dup" : ""} ${p.blank ? "blank" : ""}" title="${esc(p.summary || "")}">${p.page}: ${esc(p.page_type.replaceAll("_", " "))}${p.rotation ? ` ↻${p.rotation}°` : ""}${p.duplicate_of ? ` = ${p.duplicate_of}` : ""}</button>`)
         .join("")}</div></div>`;
@@ -443,7 +448,7 @@ async function findResources(useAi) {
     if (r.plan_today) h += `<div class="panel"><h3>${esc(t("res_plan"))}</h3><p>${esc(r.plan_today)}</p></div>`;
     h += r.cards.map(resCard).join("");
     if (r.ask_staff?.length) h += `<div class="panel"><h3>${esc(t("res_ask_staff"))}</h3><ul>${r.ask_staff.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
-    if (r.cost) h += `<p class="muted small">${esc(t("cost"))}: $${r.cost.usd.toFixed(3)}</p>`;
+    if (r.cost) h += `<details class="admin"><summary>${esc(t("for_admins"))}</summary><p>${esc(t("cost"))}: $${r.cost.usd.toFixed(3)}</p></details>`;
     h += `<p class="muted small">${esc(r.disclaimer)}</p>`;
     out.innerHTML = h;
     $("#print-handout")?.addEventListener("click", printHandout);

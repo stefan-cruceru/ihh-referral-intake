@@ -24,7 +24,7 @@ ayuda a buscar recursos para clientes y deja que el personal practique con ejemp
 Todo está en inglés y en español, en palabras sencillas.
 
 **Cómo usarla.** Haga doble clic en `ihh-care-bridge.exe`. Se abre en el navegador. Haga clic en
-"Pruebe un lunes ocupado" para practicar sin clave.
+"Practique con referidos inventados" para practicar sin clave.
 
 ## The problem
 
@@ -99,7 +99,7 @@ cd app
 .\dist\ihh-care-bridge.exe install   # optional: Start menu + Copilot / Claude Desktop
 ```
 
-Click **Try a busy Monday** to run the 4 PM demo with invented patients. No key needed.
+Click **Practice with made-up referrals** to run the 4 PM demo with invented patients. No key needed.
 To read real (de-identified) packets, an admin adds a Claude API key in Settings (saved in Windows
 Credential Manager) or sets `ANTHROPIC_API_KEY`. For Claude in IHH's Azure, pick Foundry in
 Settings, or set `CAREBRIDGE_PROVIDER=foundry`, `ANTHROPIC_FOUNDRY_RESOURCE` and
@@ -178,7 +178,7 @@ client information. It does not connect to any Illumination Health + Home system
 - The page sorter flags any identifier a redaction missed, and the app shows a STOP banner.
 - The model endpoint is the only outside call. It is one setting, so IHH can use an endpoint
   covered by its BAA.
-- API keys stay in Windows Credential Manager or environment variables, never in git.
+- API keys stay in Windows Credential Manager or environment variables, never in git. In Docker, a key added in Settings goes in a file only the app can read, inside its data volume.
 
 ## License
 
