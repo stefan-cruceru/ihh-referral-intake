@@ -491,7 +491,7 @@ class Handler(BaseHTTPRequestHandler):
             if p == "/api/key":
                 key = self._jbody().get("key", "").strip()
                 if not key.startswith("sk-ant-"):
-                    return self._json(gateway.error("That doesn't look like a Claude API key (it starts with sk-ant-).", "bad_key"), 400)
+                    return self._json(gateway.error("That key doesn't look right. Copy it again from IT, all of it.", "bad_key"), 400)
                 config.set_api_key(key)
                 gateway.audit(self, "Claude API key set")
                 return self._json({"ok": True})

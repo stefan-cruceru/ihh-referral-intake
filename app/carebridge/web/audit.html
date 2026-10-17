@@ -60,20 +60,31 @@
 // Read-only through the app. Seals verify present entries, not a trusted count of all past entries.
 const T = {
   back: ["← Back to the patients", "← Volver a los pacientes"], title: ["Audit log", "Registro de auditoría"],
-  h_check: ["Do the stored entries match?", "¿Coinciden las entradas guardadas?"],
-  ok: ["{n} stored entries checked: seals match", "{n} entradas guardadas revisadas: los sellos coinciden"],
-  bad: ["Seal check failed at line {at}. Ask IT to review the file.", "El sello no coincide en la línea {at}. Pida a TI que revise el archivo."],
-  why: ["The app has no action to edit or delete log entries. This check verifies the seals of entries still present. It cannot detect removal of the newest entries or the whole log. IT must protect and back up the files. Packet text and clinical notes are not kept here.",
-        "La app no permite editar ni borrar entradas del registro. Esta revisión comprueba los sellos de las entradas que siguen guardadas. No detecta si se borraron las entradas más recientes o todo el registro. TI debe proteger los archivos y guardar copias. Aquí no se guarda el texto del paquete ni las notas clínicas."],
+  h_check: ["Has anyone changed the log?", "¿Alguien cambió el registro?"],
+  ok: ["Checked {n} lines. None of them were changed.", "Se revisaron {n} líneas. Ninguna se cambió."],
+  bad: ["Line {at} was changed. Ask IT to look at the log file.", "La línea {at} se cambió. Pida a TI que revise el archivo del registro."],
+  why: ["Nobody can change or delete a line from inside the app. This check makes sure the lines still here were not changed. It can't tell if the newest lines or the whole log were deleted, so IT keeps a backup copy. Packet text and clinical notes are never kept here.",
+        "Nadie puede cambiar ni borrar una línea desde la app. Esta revisión confirma que las líneas que siguen aquí no se cambiaron. No puede saber si se borraron las líneas más nuevas o todo el registro, por eso TI guarda una copia. Aquí nunca se guarda el texto del paquete ni las notas clínicas."],
   case_ph: ["Case number", "Número de caso"], kind: ["What to show", "Qué mostrar"], l_practice: ["Show practice", "Mostrar práctica"],
-  go: ["Show", "Mostrar"], csv: ["Download (CSV)", "Descargar (CSV)"],
+  go: ["Show", "Mostrar"], csv: ["Download for Excel", "Descargar para Excel"],
   k_all: ["Everything", "Todo"], k_decision: ["Decisions only", "Solo decisiones"], k_ai: ["AI steps only", "Solo pasos de la IA"], k_people: ["Sign-in, roles, settings", "Entradas, roles, ajustes"],
   th_n: ["#", "#"], th_t: ["When", "Cuándo"], th_case: ["Case", "Caso"], th_who: ["Who", "Quién"], th_role: ["Role", "Rol"],
-  th_what: ["What", "Qué"], th_detail: ["Details", "Detalles"], th_seal: ["Seal", "Sello"],
+  th_what: ["What", "Qué"], th_detail: ["Details", "Detalles"],
   empty: ["Nothing yet.", "Nada todavía."], practice: ["practice", "práctica"],
   r_ai: ["AI", "IA"], r_coordinator: ["Coordinator", "Coordinador(a)"], r_lead: ["Lead", "Líder"], r_clinical: ["Clinical", "Clínico"], r_admin: ["Admin (IT)", "Admin (TI)"],
   not_allowed: ["Only an admin can see the audit log.", "Solo un admin puede ver el registro."],
 };
+// Tracker actions are stored as short codes; show them as words. Anything else is already words.
+const ACTS = {
+  claim: ["Took it", "Lo tomó"], open: ["Opened it", "Lo abrió"], handoff: ["Handed it off", "Lo pasó a otra persona"],
+  info_sent: ["Asked the hospital for more", "Pidió más al hospital"], hospital_replied: ["Hospital answered", "El hospital contestó"],
+  chase_sent: ["Followed up with the hospital", "Le dio seguimiento al hospital"], clinical_pickup: ["Clinical line took it", "La línea clínica lo tomó"],
+  clinical_note: ["Clinical note", "Nota clínica"], clinical_ask: ["Clinical line asked for something", "La línea clínica pidió algo"],
+  clinical_done: ["Clinical check done", "Revisión clínica terminada"], staff_check: ["Staff check", "Revisión del personal"],
+  intake_cleared: ["Intake OK", "Admisión OK"], accepted: ["Said yes", "Dijo que sí"], denied: ["Said no", "Dijo que no"],
+  withdrawn: ["Marked lost", "Marcado como perdido"], patient_arrived: ["Patient arrived", "Llegó el paciente"], kipu_id: ["Added the Kipu number", "Agregó el número de Kipu"],
+};
+const act = (w) => (ACTS[w] ? ACTS[w][LANG === "es" ? 1 : 0] : w);
 const DECISIONS = new Set(["accepted", "denied", "withdrawn", "intake_cleared", "staff_check", "clinical_done", "handoff"]);
 let LANG = window.cbLang?.get() || "en";
 let D = null;
@@ -108,11 +119,10 @@ function render() {
   c.textContent = D.check.ok ? t("ok", { n: D.check.rows }) : t("bad", { at: D.check.broken_at });
   c.className = "a-pill " + (D.check.ok ? "ok" : "bad");
   const rows = D.rows.filter((r) => k === "all" || kindOf(r) === k);
-  $("#rows").innerHTML = `<tr>${["th_n", "th_t", "th_case", "th_who", "th_role", "th_what", "th_detail", "th_seal"].map((h) => `<th>${esc(t(h))}</th>`).join("")}</tr>` +
-    rows.map((r) => `<tr class="${kindOf(r)}"><td class="n">${r.seq}</td><td class="n">${esc(when(r.t))}</td>
+  $("#rows").innerHTML = `<tr>${["th_n", "th_t", "th_case", "th_who", "th_role", "th_what", "th_detail"].map((h) => `<th>${esc(t(h))}</th>`).join("")}</tr>` +
+    rows.map((r) => `<tr class="${kindOf(r)}" title="${esc(r.hash)}"><td class="n">${r.seq}</td><td class="n">${esc(when(r.t))}</td>
       <td>${esc(r.case_no || "")}${r.practice ? ` <span class="a-m">(${esc(t("practice"))})</span>` : ""}</td>
-      <td>${esc(r.who)}</td><td>${esc(r.role ? t("r_" + r.role) : "")}</td><td>${esc(r.what)}</td><td>${esc(r.detail)}</td>
-      <td><code class="h" title="${esc(r.hash)}">${esc((r.hash || "").slice(0, 8))}</code></td></tr>`).join("");
+      <td>${esc(r.who)}</td><td>${esc(r.role ? t("r_" + r.role) : "")}</td><td>${esc(act(r.what))}</td><td>${esc(r.detail)}</td></tr>`).join("");
   $("#empty").textContent = rows.length ? "" : t("empty");
 }
 
