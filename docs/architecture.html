@@ -166,7 +166,7 @@ td code { color: var(--brand); }
           <tr><td>Outcome log and admin audit view</td><td><code>store.py</code> <code>gateway.py</code></td><td>Local SQLite; role-limited read view</td><td><span class="pill on">On</span></td></tr>
           <tr><td>Four-step welcome and display options</td><td><code>app.js</code> <code>display.js</code></td><td>Local browser; English or Spanish</td><td><span class="pill on">On</span></td></tr>
           <tr><td>Eval and weekly report</td><td><code>eval_packets.py</code></td><td>IHH's computer</td><td><span class="pill on">On</span></td></tr>
-          <tr><td>Resource finder and staff practice (Challenges 2 and 3)</td><td><code>resources.py</code> <code>staff.py</code></td><td>Same web app</td><td><span class="pill on">On</span></td></tr>
+          <tr><td>Resource finder and staff practice (Challenges 2 and 3)</td><td><code>resources.py</code> <code>staff.py</code></td><td>Same web app; sourced catalog facts and fixed client guidance</td><td><span class="pill on">On</span></td></tr>
         </tbody>
       </table></div>
     </section>
@@ -259,7 +259,7 @@ const steps = [
     b: "Before anything reads the file, plain code checks it: the real file type, size, active PDF parts, and text that tries to give an AI orders. Anything odd puts the referral on a security hold for a person.",
     f: ["guard.py", "pages.py"] },
   { t: "Read", nodes: ["guard","reader","claude"], paths: [["e_gr","e_rc","e_cr"]],
-    b: "Claude gets flattened page images. Haiku sorts pages; Opus reads them twice independently. Code compares the numbers. The rule pass cites facts, and an image pass checks cited evidence and critical-value lines. Missing reads, number disagreements or unconfirmed critical values go to a person. This catches number disagreements, not every wrong word.",
+    b: "Claude gets flattened page images. Haiku sorts pages; Opus reads them twice independently. Code compares the numbers and requires quotes to match the transcript without changing words, numbers or units. An image pass checks cited evidence and critical-value lines. Missing reads, disagreements or unconfirmed values go to a person. This does not guarantee that every reading error is caught.",
     f: ["intake.py", "llm.py", "rules.py", "critical.py"] },
   { t: "Route", nodes: ["reader","tracker"], paths: [["e_rt"]],
     b: "The referral becomes a card with an owner and a clock. A likely no goes to the clinical reviewer at the same time. The tracker never decides to beat the clock.",
