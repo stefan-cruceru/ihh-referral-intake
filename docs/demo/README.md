@@ -95,6 +95,13 @@ source page reveal, language switch, staff decision, caption timing and audio, t
 scratch artifacts and stop the practice app. Browser load times may change between machines, so
 the capture is reproducible as a workflow rather than guaranteed identical video bytes.
 
+Export the interactive architecture map as one offline file, including its canonical lamp and
+Public Sans license:
+
+```powershell
+python docs/demo/export_architecture.py --output "$demoScratch/Lamplight - Architecture.html"
+```
+
 ## Sources and credits
 
 | Asset | Source and local filename |
