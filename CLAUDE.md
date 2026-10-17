@@ -35,6 +35,8 @@ designers, and healthcare and nonprofit people. Some have never used a terminal.
   to build it, and the word list.
 - `docs/closed-loop.md`: the solution is one self-contained loop IHH runs in its own environment:
   the loop, what stays on IHH's systems, and the rules for the build.
+- `docs/notifications.md`: staff alerts by Outlook and Teams, per person. Staff only, drafts only,
+  no patient text.
 
 - `docs/ground-rules.md`: the event rules in full.
 - `docs/background.md`, `docs/glossary.md`: what recuperative care is and what the terms mean.
