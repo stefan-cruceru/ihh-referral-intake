@@ -962,5 +962,121 @@
  "sec_name_does_not_match_content": {
   "en": "The file name does not match what the file really is.",
   "es": "El nombre del archivo no coincide con lo que es."
+ },
+ "me_label": {
+  "en": "I am",
+  "es": "Yo soy"
+ },
+ "me_pick": {
+  "en": "Pick your name",
+  "es": "Elija su nombre"
+ },
+ "scope_all": {
+  "en": "All referrals",
+  "es": "Todos"
+ },
+ "scope_mine": {
+  "en": "My referrals",
+  "es": "Los míos"
+ },
+ "you": {
+  "en": "you",
+  "es": "usted"
+ },
+ "queue_empty_mine": {
+  "en": "Nothing is yours right now. Switch to All referrals to see the rest.",
+  "es": "Ahora no tiene ninguno. Cambie a Todos para ver los demás."
+ },
+ "urgent_title": {
+  "en": "Next to answer: time left on the 2-hour clock",
+  "es": "El siguiente: tiempo que queda de las 2 horas"
+ },
+ "urgent_flag": {
+  "en": "Look at this one first: the chart shows a safety flag",
+  "es": "Vea este primero: el expediente muestra una alerta de seguridad"
+ },
+ "urgent_soon": {
+  "en": "{n} of {total} open have 30 minutes or less",
+  "es": "{n} de {total} abiertos tienen 30 minutos o menos"
+ },
+ "danger_red": {
+  "en": "Safety flag",
+  "es": "Alerta de seguridad"
+ },
+ "danger_amber": {
+  "en": "Check safety",
+  "es": "Revisar seguridad"
+ },
+ "danger_why": {
+  "en": "From the chart, rule",
+  "es": "Del expediente, regla"
+ },
+ "h_danger": {
+  "en": "Safety flags from the chart",
+  "es": "Alertas de seguridad del expediente"
+ },
+ "danger_note": {
+  "en": "These come from what the chart says, with the page. They are not a medical judgment. A nurse or the clinical line decides what they mean.",
+  "es": "Salen de lo que dice el expediente, con la página. No son una opinión médica. Una enfermera o la línea clínica decide qué significan."
+ },
+ "viewing_now": {
+  "en": "{who} has it open",
+  "es": "{who} lo tiene abierto"
+ },
+ "claim": {
+  "en": "Take this one",
+  "es": "Tomar este"
+ },
+ "odds_label": {
+  "en": "Sort score",
+  "es": "Puntaje para ordenar"
+ },
+ "odds_tip": {
+  "en": "How close the packet is to a yes on paper. It only sets the order of the list. It is not a decision.",
+  "es": "Qué tan cerca está el paquete de un sí en papel. Solo ordena la lista. No es una decisión."
+ },
+ "odds_blocker": {
+  "en": "problem for admission",
+  "es": "problema para admitir"
+ },
+ "odds_gate_unclear": {
+  "en": "main check unclear",
+  "es": "revisión principal no clara"
+ },
+ "odds_human_review": {
+  "en": "needs a person",
+  "es": "necesita una persona"
+ },
+ "odds_illegible": {
+  "en": "handwriting to read",
+  "es": "letra a mano por leer"
+ },
+ "odds_missing_doc": {
+  "en": "missing paper",
+  "es": "falta un papel"
+ },
+ "odds_open_item": {
+  "en": "open item",
+  "es": "pendiente"
+ },
+ "odds_cant_tell": {
+  "en": "can't tell",
+  "es": "no se sabe"
+ },
+ "illegible_chip": {
+  "en": "Handwriting to read: page {p}",
+  "es": "Letra a mano por leer: página {p}"
+ },
+ "illegible_panel": {
+  "en": "The AI could not read some handwriting. A person must read these pages before any yes:",
+  "es": "La IA no pudo leer parte de la letra a mano. Una persona debe leer estas páginas antes de decir que sí:"
+ },
+ "illegible_mark": {
+  "en": "[can't read]",
+  "es": "[no se lee]"
+ },
+ "transcript": {
+  "en": "Typed by the AI. Check it against the page.",
+  "es": "Escrito por la IA. Compárelo con la página."
  }
 }

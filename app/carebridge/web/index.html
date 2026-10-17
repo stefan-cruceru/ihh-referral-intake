@@ -42,14 +42,23 @@
       <div class="hero-actions">
         <label class="btn primary big" for="file-input" tabindex="0"><span data-i18n="add_packet"></span></label>
         <button class="btn big ghost" id="start-demo" data-i18n="start_demo"></button>
-        <input type="file" id="file-input" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" hidden>
+        <input type="file" id="file-input" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg,.eml" hidden>
       </div>
     </div>
     <div id="drop" class="drop" data-i18n="drop_hint"></div>
     <div id="sim" class="sim hidden"></div>
+    <div id="urgent" class="urgent hidden" role="status" aria-live="polite"></div>
     <div class="board-head">
       <div class="clock"><span data-i18n="clock"></span> <b id="clock-time">–</b>
         <select id="speed"><option value="1" data-i18n="speed_real"></option><option value="60" data-i18n="speed_fast"></option></select>
+      </div>
+      <div class="whoami">
+        <label for="me" data-i18n="me_label"></label>
+        <select id="me"></select>
+        <div class="seg" role="group">
+          <button data-scope="all" class="on" data-i18n="scope_all"></button>
+          <button data-scope="mine" data-i18n="scope_mine"></button>
+        </div>
       </div>
       <div id="stats" class="stats"></div>
     </div>
@@ -124,7 +133,10 @@
 <!-- Page viewer -->
 <div id="viewer" class="viewer hidden" role="dialog" aria-modal="true">
   <div class="viewer-bar"><span id="viewer-title"></span><button class="btn ghost" id="viewer-close" data-i18n="close"></button></div>
-  <img id="viewer-img" alt="">
+  <div class="viewer-body">
+    <img id="viewer-img" alt="">
+    <div id="viewer-text" class="transcript hidden"><h3 data-i18n="transcript"></h3><div id="viewer-transcript"></div></div>
+  </div>
 </div>
 
 <!-- Settings -->

@@ -64,6 +64,79 @@ $$(".lang button").forEach((b) => b.addEventListener("click", () => setLang(b.da
 
 // ---------------------------------------------------------------- referrals board
 let LAST_Q = null;
+let Q_AT = Date.now(); // when LAST_Q arrived, so countdowns tick between polls
+const pref = {
+  get: (k) => { try { return localStorage.getItem(k) || ""; } catch { return ""; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+};
+let ME = pref.get("cb_me"); // who is using this screen: a staff name, kept on this computer only
+let SCOPE = pref.get("cb_scope") || "all";
+
+// Simulated "now" in seconds, between polls (the demo clock can run fast).
+const nowSim = () => (LAST_Q ? LAST_Q.now + ((Date.now() - Q_AT) / 1000) * (LAST_Q.speed || 1) : Date.now() / 1000);
+function mmss(sec) {
+  const s = Math.abs(Math.round(sec));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+  return (sec < 0 ? "+" : "") + (h ? `${h}:${String(m).padStart(2, "0")}` : m) + ":" + String(r).padStart(2, "0");
+}
+function tickCountdowns() {
+  const now = nowSim();
+  $$(".countdown[data-deadline]").forEach((el) => {
+    const left = Number(el.dataset.deadline) - now;
+    // The small ring shows whole minutes; the pinned strip shows minutes and seconds.
+    el.textContent = el.dataset.fmt === "min" ? (left < 0 ? "+" : "") + Math.floor(Math.abs(left) / 60) : mmss(left);
+  });
+}
+setInterval(tickCountdowns, 1000);
+
+function dangerChip(c) {
+  if (!c.danger || c.danger === "none") return "";
+  const rules = (c.danger_flags || []).filter((f) => f.level === c.danger).map((f) => f.rule_id).join(", ");
+  return `<span class="chip danger-${esc(c.danger)}" title="${esc(t("danger_why"))} ${esc(rules)}">${esc(t("danger_" + c.danger))}</span>`;
+}
+function viewersChip(c) {
+  const others = (c.viewers || []).filter((v) => v !== ME);
+  return others.length ? `<span class="chip viewing">${esc(t("viewing_now", { who: others.join(", ") }))}</span>` : "";
+}
+function handwritingChip(c) {
+  const p = c.illegible_pages || [];
+  return p.length ? `<span class="chip handwriting">${esc(t("illegible_chip", { p: p.join(", ") }))}</span>` : "";
+}
+function oddsLine(c) {
+  if (c.odds == null || c.status === "accepted" || c.status === "denied" || c.status === "withdrawn") return "";
+  const why = (c.odds_why || []).map((w) => `${t("odds_" + w.code)} ×${w.count} (${w.points})`).join(" · ");
+  return `<div class="odds" title="${esc(t("odds_tip"))}${why ? "\n" + esc(why) : ""}">${esc(t("odds_label"))} ${c.odds}/100</div>`;
+}
+
+function renderWhoami(q) {
+  const names = (q.staff || []).map((s) => s.name);
+  if (ME && !names.includes(ME)) names.push(ME);
+  const opts = `<option value="">${esc(t("me_pick"))}</option>` + names.map((n) => `<option ${n === ME ? "selected" : ""}>${esc(n)}</option>`).join("");
+  if ($("#me").dataset.opts !== opts) { $("#me").innerHTML = opts; $("#me").dataset.opts = opts; }
+  $$(".seg button").forEach((b) => b.classList.toggle("on", b.dataset.scope === SCOPE));
+}
+$("#me").addEventListener("change", (e) => { ME = e.target.value; pref.set("cb_me", ME); renderQueue(LAST_Q); });
+$$(".seg button").forEach((b) => b.addEventListener("click", () => { SCOPE = b.dataset.scope; pref.set("cb_scope", SCOPE); renderQueue(LAST_Q); }));
+
+// The one referral that needs eyes first: a red safety flag or a security hold, else the least time left.
+function renderUrgent(cards) {
+  const open = cards.filter((c) => c.color !== "done");
+  const el = $("#urgent");
+  if (!open.length) return el.classList.add("hidden");
+  const flagged = open.find((c) => c.danger === "red" || c.suggested_route === "security_hold");
+  const top = flagged || [...open].sort((a, b) => a.deadline - b.deadline)[0];
+  const soon = open.filter((c) => c.left_min <= 30).length;
+  const red = top.danger === "red" || top.left_min <= 30;
+  el.className = "urgent" + (red ? " red" : "");
+  el.dataset.id = top.id;
+  el.innerHTML = `<div><div class="small">${esc(t(flagged ? "urgent_flag" : "urgent_title"))}</div>
+      <div class="count countdown" data-deadline="${top.deadline}">${mmss(top.deadline - nowSim())}</div></div>
+    <div><b>${esc(top.case_no)} · ${esc(top.hospital || t("unknown"))}</b>
+      <div class="who">${esc(t("owner"))}: ${esc(top.owner)}${(top.viewers || []).length ? " · " + esc(t("viewing_now", { who: top.viewers.join(", ") })) : ""}</div>
+      <div class="chips">${dangerChip(top)}${handwritingChip(top)}</div></div>
+    <div class="small">${esc(t("urgent_soon", { n: soon, total: open.length }))}</div>`;
+}
+$("#urgent").addEventListener("click", (e) => e.currentTarget.dataset.id && openCard(e.currentTarget.dataset.id));
 
 function fmtClock(ts) {
   const d = new Date(ts * 1000);
@@ -88,14 +161,17 @@ function renderQueue(q) {
   const peak = q.peak;
   $("#peak").classList.toggle("hidden", !peak.at_risk.length);
   $("#peak").innerHTML = `${esc(t("peak_warn"))} <b>${peak.at_risk.map(esc).join(", ")}</b>`;
-  if (!q.cards.length) {
-    $("#queue").innerHTML = `<div class="empty">${esc(t("queue_empty"))}</div>`;
+  renderWhoami(q);
+  const cards = SCOPE === "mine" && ME ? q.cards.filter((c) => c.owner === ME) : q.cards;
+  renderUrgent(cards);
+  if (!cards.length) {
+    $("#queue").innerHTML = `<div class="empty">${esc(t(q.cards.length ? "queue_empty_mine" : "queue_empty"))}</div>`;
     return;
   }
-  $("#queue").innerHTML = q.cards
+  $("#queue").innerHTML = cards
     .map((c) => {
       const left = c.left_min;
-      const timer = c.color === "done" ? `<b>✓</b><span>${c.elapsed_min} ${t("min")}</span>` : left >= 0 ? `<b>${left}</b><span>${t("min")} ${t("left")}</span>` : `<b>+${-left}</b><span>${t("min")} ${t("over")}</span>`;
+      const timer = c.color === "done" ? `<b>✓</b><span>${c.elapsed_min} ${t("min")}</span>` : `<b class="countdown" data-fmt="min" data-deadline="${c.deadline}">${left >= 0 ? left : "+" + -left}</b><span>${t("min")} ${t(left >= 0 ? "left" : "over")}</span>`;
       const review =
         c.review_stage && c.review_stage !== "done" && c.review_stage !== "sample" && c.review_stage !== "error"
           ? `<span class="chip info"><span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:-2px"></span> ${esc(c.review_progress || t("reviewing"))}</span>`
@@ -108,8 +184,9 @@ function renderQueue(q) {
         <div class="timer" style="--pct:${pct}">${timer}</div>
         <div>
           <div class="title">${esc(c.case_no)} · ${esc(c.hospital || t("unknown"))}</div>
-          <div class="meta">${esc(t("channel_" + (c.channel || "upload")))} · ${esc(t("owner"))}: <b>${esc(c.owner)}</b></div>
-          <div class="chips">${statusChip(c.status)}${review}${alerts}${silent}${c.sample ? `<span class="chip">${esc(t("sample_badge"))}</span>` : ""}</div>
+          <div class="meta">${esc(t("channel_" + (c.channel || "upload")))} · ${esc(t("owner"))}: <b>${esc(c.owner)}</b>${c.owner === ME ? ` (${esc(t("you"))})` : ""}</div>
+          <div class="chips">${dangerChip(c)}${statusChip(c.status)}${viewersChip(c)}${handwritingChip(c)}${review}${alerts}${silent}${c.sample ? `<span class="chip">${esc(t("sample_badge"))}</span>` : ""}</div>
+          ${oddsLine(c)}
         </div>
         <div class="side">${fmtClock(c.arrived_at)}</div>
       </div>`;
@@ -121,11 +198,18 @@ function renderQueue(q) {
   });
 }
 
+let LAST_PING = 0;
 async function poll() {
   try {
     LAST_Q = await api("/api/queue");
+    Q_AT = Date.now();
     renderQueue(LAST_Q);
     if (OPEN) refreshOpen();
+    // Tell the others who has this referral open, so two people don't work the same one.
+    if (OPEN && ME && Date.now() - LAST_PING > 10000) {
+      LAST_PING = Date.now();
+      post(`/api/cards/${encodeURIComponent(OPEN)}/act`, { action: "viewing", who: ME }).catch(() => {});
+    }
   } catch (e) {}
   setTimeout(poll, 1500);
 }
@@ -178,7 +262,9 @@ let DETAIL = null;
 let DRAFTS = null;
 
 async function openCard(id, force) {
+  if (OPEN && OPEN !== id && ME) post(`/api/cards/${encodeURIComponent(OPEN)}/act`, { action: "leave", who: ME }).catch(() => {});
   OPEN = id;
+  LAST_PING = 0;
   $("#detail").classList.remove("hidden");
   DETAIL = await api(`/api/cards/${encodeURIComponent(id)}`);
   DRAFTS = await api(`/api/cards/${encodeURIComponent(id)}/drafts?lang=${LANG}`);
@@ -202,6 +288,7 @@ async function refreshOpen() {
 }
 
 function closeDetail() {
+  if (OPEN && ME) post(`/api/cards/${encodeURIComponent(OPEN)}/act`, { action: "leave", who: ME }).catch(() => {});
   OPEN = null;
   $("#detail").classList.add("hidden");
 }
@@ -216,6 +303,11 @@ document.addEventListener("keydown", (e) => {
 function showPage(n) {
   $("#viewer-title").textContent = `${t("page")} ${n}`;
   $("#viewer-img").src = `/api/cards/${encodeURIComponent(OPEN)}/pages/${n}.jpg`;
+  // The typed page sits next to the image so a person can check it. [illegible] stands out: read those yourself.
+  const pg = (DETAIL?.report?.pages || []).find((p) => String(p.page) === String(n));
+  const text = pg?.transcript || "";
+  $("#viewer-text").classList.toggle("hidden", !text);
+  $("#viewer-transcript").innerHTML = esc(text).replaceAll("[illegible]", `<mark>${esc(t("illegible_mark"))}</mark>`);
   $("#viewer").classList.remove("hidden");
 }
 $("#viewer-close").addEventListener("click", () => $("#viewer").classList.add("hidden"));
@@ -238,7 +330,8 @@ function renderDetail() {
   let h = `<div class="d-head"><div><h2>${esc(card.case_no)} · ${esc(card.hospital || t("unknown"))}</h2>
     <div class="muted">${esc(t("channel_" + (card.channel || "upload")))} · ${fmtClock(card.arrived_at)} · ${esc(t("owner"))}: <b>${esc(card.owner)}</b>
     · ${card.left_min >= 0 ? `${card.left_min} ${t("min")} ${t("left")}` : `+${-card.left_min} ${t("min")} ${t("over")}`}</div>
-    <div class="chips">${statusChip(card.status)}${(card.alerts || []).map((a) => `<span class="chip alert">${esc(t("al_" + a.code))}</span>`).join("")}</div></div>
+    <div class="chips">${dangerChip(card)}${statusChip(card.status)}${viewersChip(card)}${(card.alerts || []).map((a) => `<span class="chip alert">${esc(t("al_" + a.code))}</span>`).join("")}</div>
+    ${ME && card.owner !== ME && !["accepted", "denied", "withdrawn"].includes(card.status) ? `<button class="btn sm" data-act="claim">${esc(t("claim"))}</button>` : ""}</div>
     <button class="btn ghost" id="d-close">${esc(t("close"))}</button></div>`;
 
   if (rep?.flags?.phi_pages?.length) h += `<div class="stop">${esc(t("phi_stop"))} (${esc(t("page"))} ${rep.flags.phi_pages.join(", ")})</div>`;
@@ -261,6 +354,17 @@ function renderDetail() {
     h += `<div class="route ${rec.code}"><div><b>${esc(t("route_" + rec.code))}</b><div class="muted">${esc(t("route_note"))}</div></div>
       <span class="badge">${esc(rep.sample ? t("sample_badge") : t("live_badge"))}</span></div>`;
     if (rep.flags.no_referral_form) h += `<div class="phi">${esc(t("no_referral_form"))}</div>`;
+    const flags = rep.danger?.flags || [];
+    if (flags.length) {
+      h += `<div class="panel"><h3>${esc(t("h_danger"))}</h3><p class="muted small">${esc(t("danger_note"))}</p>${flags
+        .map((f) => `<div class="flag ${f.level === "red" ? "not_met" : "cant_tell"}"><span class="chip danger-${esc(f.level)}">${esc(t("danger_" + f.level))}</span> <span class="rid">${esc(f.rule_id)}</span>
+          ${f.pages.map((p) => `<button class="btn sm ghost pg" data-page="${p}">${esc(t("page"))} ${p}</button>`).join("")}</div>`)
+        .join("")}</div>`;
+    }
+    const illegible = rep.flags.illegible_pages || [];
+    if (illegible.length) {
+      h += `<div class="phi">${esc(t("illegible_panel"))} ${illegible.map((p) => `<button class="btn sm ghost pg" data-page="${p}">${esc(t("page"))} ${p}</button>`).join("")}</div>`;
+    }
     h += `<p class="muted">${esc(t("gates_why"))}</p><div class="gates">`;
     for (const g of ["self_care", "behavior"]) {
       const gs = rep.gates[g];
@@ -306,9 +410,11 @@ function renderDetail() {
     const qc = rep.qc;
     h += `<div class="panel"><h3>${esc(t("h_qc"))}</h3><p>${esc(t("qc_line", { v: qc.verified, n: qc.facts, p: qc.paraphrase, x: qc.not_found, d: qc.downgrades.length }))}</p>
       ${qc.downgrades.length ? `<div class="chips">${qc.downgrades.map((d) => `<span class="chip">${esc(d.rule_id)}: ${esc(t("s_" + d.from))} → ${esc(t("s_" + d.to))} (${esc(t(d.reason))})</span>`).join("")}</div>` : ""}
-      ${rep.cost ? `<details class="admin"><summary>${esc(t("for_admins"))}</summary><p>${esc(t("cost"))}: $${Number(rep.cost.usd).toFixed(2)} · ${rep.cost.calls} calls · ${rep.cost.input_tokens.toLocaleString()} in / ${rep.cost.output_tokens.toLocaleString()} out · ${esc(rep.model || "")}</p></details>` : ""}
+      ${rep.cost || rec.odds != null ? `<details class="admin"><summary>${esc(t("for_admins"))}</summary>
+        ${rec.odds != null ? `<p>${esc(t("odds_label"))} ${rec.odds}/100. ${esc(t("odds_tip"))}${(rec.odds_why || []).length ? ` ${rec.odds_why.map((w) => `${esc(t("odds_" + w.code))} ×${w.count} (${w.points})`).join(" · ")}` : ""}</p>` : ""}
+        ${rep.cost ? `<p>${esc(t("cost"))}: $${Number(rep.cost.usd).toFixed(2)} · ${rep.cost.calls} calls · ${rep.cost.input_tokens.toLocaleString()} in / ${rep.cost.output_tokens.toLocaleString()} out · ${esc(rep.model || "")}</p>` : ""}</details>` : ""}
       <h3>${esc(t("h_pages"))}</h3><div class="thumbs">${rep.pages
-        .map((p) => `<button data-page="${p.page}" class="${p.duplicate_of ? "dup" : ""} ${p.blank ? "blank" : ""}" title="${esc(p.summary || "")}">${p.page}: ${esc(p.page_type.replaceAll("_", " "))}${p.rotation ? ` ↻${p.rotation}°` : ""}${p.duplicate_of ? ` = ${p.duplicate_of}` : ""}</button>`)
+        .map((p) => `<button data-page="${p.page}" class="${p.duplicate_of ? "dup" : ""} ${p.blank ? "blank" : ""}" title="${esc(p.summary || "")}">${p.page}: ${esc(p.page_type.replaceAll("_", " "))}${p.rotation ? ` ↻${p.rotation}°` : ""}${p.duplicate_of ? ` = ${p.duplicate_of}` : ""}${["partly_illegible", "illegible"].includes(p.handwriting) ? " ✎?" : ""}</button>`)
         .join("")}</div></div>`;
 
     h += `<div class="panel"><h3>${esc(t("h_all_rules"))}</h3><details><summary class="muted">${rep.rules.length}</summary>${rep.rules
@@ -374,6 +480,7 @@ function renderDetail() {
     if (a === "denied") return act(a, "Clinical line", $("#deny-reason").value);
     if (a === "withdrawn") return act(a, "", $("#withdraw-reason").value);
     if (a === "handoff") return act(a, $("#handoff-to").value);
+    if (a === "claim") return act(a, ME);
     if (a === "patient_arrived") return act(a, "", b.dataset.why);
     if (a === "accepted" && $("#override-why")) {
       if (!$("#override-why").value.trim()) { $("#override-why").focus(); return toast(t("override_need")); }
@@ -386,7 +493,7 @@ function renderDetail() {
 
 async function act(action, who = "", reason = "") {
   try {
-    await post(`/api/cards/${encodeURIComponent(OPEN)}/act`, { action, who, reason });
+    await post(`/api/cards/${encodeURIComponent(OPEN)}/act`, { action, who: who || ME, reason });
     DETAIL = await api(`/api/cards/${encodeURIComponent(OPEN)}`);
     DRAFTS = await api(`/api/cards/${encodeURIComponent(OPEN)}/drafts?lang=${LANG}`);
     renderDetail();

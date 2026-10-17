@@ -17,7 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import APP_NAME, __version__, config, drafts, guard, handout, intake, llm, mcp, phi, resources, rules, staff, store, tracker
+from . import APP_NAME, __version__, config, drafts, guard, handout, intake, llm, mail, mcp, phi, resources, rules, staff, store, tracker
 from .pages import load_packet
 from .paths import BUNDLE, DEMO_DIR, FROZEN, load_json, packets_dir, user_dir
 
@@ -147,6 +147,25 @@ def start_review(cid: str) -> None:
     threading.Thread(target=work, daemon=True).start()
 
 
+def add_email(raw: bytes, name: str, arrived_at: float | None = None, case: str = "") -> dict:
+    """An .eml referral becomes a card like a fax: body pages first, then the attachments."""
+    got = mail.packet_from_eml(raw)
+    case = case or f"REF-{len(TRACK.cards) + 1:03d}"
+    card = TRACK.add({"id": case, "case_no": case, "channel": "email", "hospital": "unknown",
+                      "subject": got["subject"], "sender": got["sender"], "packet_used": name,
+                      "email_skipped": got["skipped"], "email_body_set_aside": got["body_set_aside"]},
+                     arrived_at=arrived_at or got["sent_at"])
+    for s in got["skipped"]:
+        TRACK.log(card["id"], "system", "email attachment not used", f"{s['name']}: {s['reason']}")
+    if got["body_set_aside"]:
+        TRACK.log(card["id"], "system", "security hold", "email text gives orders to the AI; not used")
+    if got["pdf"]:
+        PACKETS[card["id"]] = (got["pdf"], Path(name).stem + ".pdf")
+        if config.get_api_key():
+            start_review(card["id"])
+    return card
+
+
 def watch_inbox(interval: float = 5.0) -> None:
     """Step 1 of the closed loop: a referral saved into the inbox folder (fax PDF or email
     attachment) becomes a card. The clock starts from the file's arrival time, not when it is opened."""
@@ -157,13 +176,20 @@ def watch_inbox(interval: float = 5.0) -> None:
             folder = config.inbox_dir()
             if folder and Path(folder).is_dir():
                 for f in sorted(Path(folder).iterdir()):
-                    if f.suffix.lower() not in (".pdf", ".tif", ".tiff") or str(f) in seen:
+                    if f.suffix.lower() not in (".pdf", ".tif", ".tiff", ".eml") or str(f) in seen:
                         continue
                     seen.add(str(f))
                     try:
                         data = f.read_bytes()
                     except OSError:
                         seen.discard(str(f))  # still being written; try again next pass
+                        continue
+                    if f.suffix.lower() == ".eml":
+                        # The clock starts when the email was received in the folder, never later.
+                        try:
+                            add_email(data, f.name, arrived_at=f.stat().st_mtime)
+                        except Exception:
+                            traceback.print_exc()
                         continue
                     case = f"REF-{len(TRACK.cards) + 1:03d}"
                     card = TRACK.add({"id": case, "case_no": case, "channel": "fax" if "fax" in f.name.lower() else "email",
@@ -254,7 +280,7 @@ class Handler(BaseHTTPRequestHandler):
             if p == "/api/queue":
                 for c in TRACK.tick():
                     _on_land(c)
-                q_ = TRACK.queue()
+                q_ = TRACK.queue(owner=q.get("owner", [""])[0] or None)
                 for v in q_:
                     r = REVIEWS.get(v["id"])
                     v["review_stage"] = r.stage if r else ("sample" if v.get("sample") else None)
@@ -325,6 +351,11 @@ class Handler(BaseHTTPRequestHandler):
                 name = re.sub(r"[^\w .()-]", "_", Path(self.headers.get("X-Filename") or "packet.pdf").name)[:120]
                 if not data:
                     return self._json({"error": "empty file"}, 400)
+                if name.lower().endswith(".eml"):
+                    case = self.headers.get("X-Case") or ""
+                    if not re.fullmatch(r"[A-Za-z0-9-]{1,24}", case) or case in TRACK.cards:
+                        case = ""
+                    return self._json({"card": TRACK.view(add_email(data, name, time.time(), case)["id"])})
                 threat = guard.scan_file(data, name)
                 if threat["verdict"] == guard.BLOCK:
                     raise guard.Blocked(threat)

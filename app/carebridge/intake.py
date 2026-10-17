@@ -16,6 +16,7 @@ Claude never decides. The output is a review a coordinator reads, with a suggest
 """
 
 import functools
+import re
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
@@ -42,6 +43,23 @@ READ_ORDER = ["ihh_referral_form", "pt_ot", "nursing", "psychiatry", "history_ph
               "labs", "imaging", "ecg", "face_sheet", "authorization", "other", "fax_cover"]
 
 STATUSES = ["met", "not_met", "cant_tell", "not_applicable"]
+# none: no handwriting. partly_illegible / illegible: a person must read the page; Claude never guesses.
+HANDWRITING = ["none", "readable", "partly_illegible", "illegible"]
+ILLEGIBLE = {"partly_illegible", "illegible"}
+
+# Safety flags for the queue, from rule results that cite verified chart facts. Plain code, not a clinical
+# judgment: a flag says "the chart shows this, on these pages", and a person decides what it means.
+# Document rules (ID-1, RESP-2, CARD-1...) are left out on purpose: "not met" there usually means a page is
+# missing, not that the patient is unwell. Vital signs are read from the quotes instead (vital_flags).
+DANGER_RULES = {
+    "MH-2": "red", "MH-3": "red", "OTH-1": "red", "CARD-6": "red", "FORM-X7": "red",
+    "MH-4": "amber", "MH-1": "amber", "COG-2": "amber", "OTH-4": "amber", "FORM-X4": "amber",
+}
+DANGER_DIAGNOSES = {
+    "RSP-X1": "red", "RSP-X2": "red", "RSP-X4": "red", "CIR-X1": "red", "CIR-X2": "red", "END-X2": "red",
+    "END-X3": "red", "GI-X2": "red", "NEU-X2": "red",
+    "GI-X1": "amber", "GI-X3": "amber", "NEU-X1": "amber", "NEU-X3": "amber", "INT-X3": "amber",
+}
 
 S = llm.strict
 
@@ -59,6 +77,8 @@ SORT_SCHEMA = S({"type": "object", "properties": {"pages": {"type": "array", "it
 READ_SCHEMA = S({"type": "object", "properties": {"pages": {"type": "array", "items": {"type": "object", "properties": {
     "page": {"type": "integer"},
     "summary": {"type": "string"},
+    "transcript": {"type": "string"},
+    "handwriting": {"type": "string", "enum": HANDWRITING},
     "facts": {"type": "array", "items": {"type": "object", "properties": {
         "topic": {"type": "string", "enum": TOPICS},
         "statement": {"type": "string"},
@@ -137,6 +157,13 @@ assistance level, DME), cognition and orientation, mental health (suicidal ideat
 aggression, conservatorship), substance use and withdrawal (CIWA), medications and who administers them,
 insulin and glucose readings, infections, isolation, MRSA/COVID swabs, wounds and their location, IV lines,
 oxygen, vitals, troponin, EF, ECG, imaging, diagnoses, home health, hospice, follow-up plans, preferred language.
+
+For each page:
+- transcript: type out the words on the page, printed and handwritten, in reading order, in the page's own
+  language. Write [redacted] for a black box and [illegible] for any word or line of handwriting you cannot read
+  with confidence. Never guess a word, a number or a dose: [illegible] is always the right answer when unsure.
+- handwriting: none (no handwriting), readable (all of it read with confidence), partly_illegible (some
+  [illegible]), illegible (the handwriting cannot be read).
 
 For each fact:
 - quote: copy the words EXACTLY as written on the page, in the page's own language, 3 to 25 words. Never fix
@@ -272,6 +299,7 @@ def run(review: Review, workers: int = 6) -> dict:
         review.log(f"Reading {len(to_read)} pages (skipped {len(pages) - len(to_read)} blank or duplicate)")
         facts = []
         page_summaries = {}
+        page_text = {}
         results = pool.map(lambda b: call(system=READ_PROMPT, content=_page_content(b, True),
                                                    schema=READ_SCHEMA, effort="medium", max_tokens=32000),
                            _batches(to_read, 4))
@@ -280,6 +308,7 @@ def run(review: Review, workers: int = 6) -> dict:
                 if pg["page"] not in by_num:
                     continue
                 page_summaries[pg["page"]] = pg["summary"]
+                page_text[pg["page"]] = {"transcript": pg.get("transcript", ""), "handwriting": pg.get("handwriting", "none")}
                 for f in pg["facts"]:
                     if f["quote"].strip():
                         facts.append({"page": pg["page"], **f})
@@ -294,10 +323,18 @@ def run(review: Review, workers: int = 6) -> dict:
             if guard.scan_text(text):
                 output_hits.append({"page": n, "kinds": guard.scan_text(text)})
                 isolated.add(n)
+        for n, t in page_text.items():
+            if guard.scan_text(t["transcript"]):
+                output_hits.append({"page": n, "kinds": guard.scan_text(t["transcript"])})
+                isolated.add(n)
         if output_hits:
             review.log(f"Security: instructions found in what was read from page(s) {sorted({h['page'] for h in output_hits})}. Set aside")
         facts = [f for f in facts if f["page"] not in isolated]
         page_summaries = {n: t for n, t in page_summaries.items() if n not in isolated}
+        page_text = {n: t for n, t in page_text.items() if n not in isolated}
+        illegible = sorted(n for n, t in page_text.items() if t["handwriting"] in ILLEGIBLE)
+        if illegible:
+            review.log(f"Handwriting a person must read on page(s) {illegible}")
         facts.sort(key=lambda f: f["page"])
         for i, f in enumerate(facts, 1):
             f["id"] = f"F{i}"
@@ -353,7 +390,7 @@ def run(review: Review, workers: int = 6) -> dict:
 
     # 5. qc
     review.stage = "qc"
-    report = quality_control(assessment, facts, sorted_pages, page_summaries)
+    report = quality_control(assessment, facts, sorted_pages, page_summaries, page_text)
     report.update(id=review.id, packet=review.name, received_at=review.received_at, reviewed_at=time.time(),
                   model=config.model(), fast_model=config.fast_model(), cost=review.usage.as_dict())
     report["flags"]["phi_pages"] = phi_pages
@@ -361,6 +398,9 @@ def run(review: Review, workers: int = 6) -> dict:
         report["pages"][[p["page"] for p in report["pages"]].index(n)]["isolated"] = True
     report = guard.hold(report, review.threat, isolated, output_hits)
     if report["security"]["verdict"] != guard.OK:
+        # A held packet may have been steered, so its score means nothing.
+        report["recommendation"]["odds"] = None
+        report["recommendation"]["odds_why"] = []
         review.log("Security hold: a person must look before this moves")
     review.report = report
     review.stage = "done"
@@ -386,8 +426,10 @@ def _scrub_assessment(assessment: dict) -> list[dict]:
     return hits
 
 
-def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, page_summaries: dict) -> dict:
+def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, page_summaries: dict,
+                    page_text: dict | None = None) -> dict:
     """Plain-code checks on Claude's assessment. Every downgrade is recorded so people can see it."""
+    page_text = page_text or {}
     all_r = rules.all_rules()
     fact_by_id = {f["id"]: f for f in facts}
     good = {fid for fid, f in fact_by_id.items() if f.get("verify") in ("found", "paraphrase")}
@@ -473,9 +515,12 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
     conditions = [r for r in out_rules if r["rule_id"] in rules.CONDITIONAL and r["status"] != "not_applicable"]
     conditions += [d for d in diagnoses if d["rule_id"] in rules.CONDITIONAL]
 
-    recommendation = route(out_rules, diagnoses, checklist, gates)
+    illegible = sorted(n for n, t in page_text.items() if t.get("handwriting") in ILLEGIBLE)
+    recommendation = route(out_rules, diagnoses, checklist, gates, illegible)
     return {
-        "pages": [{**sorted_pages[n], "summary": page_summaries.get(n, "")} for n in sorted(sorted_pages)],
+        "pages": [{**sorted_pages[n], "summary": page_summaries.get(n, ""),
+                   "transcript": page_text.get(n, {}).get("transcript", ""),
+                   "handwriting": page_text.get(n, {}).get("handwriting", "none")} for n in sorted(sorted_pages)],
         "facts": facts,
         "reason_for_referral": assessment["reason_for_referral"],
         "reason_for_referral_es": assessment["reason_for_referral_es"],
@@ -491,7 +536,8 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
         "summary": assessment["summary"],
         "summary_es": assessment["summary_es"],
         "recommendation": recommendation,
-        "flags": {"no_referral_form": checklist[0]["status"] == "missing"},
+        "danger": danger(out_rules, diagnoses, fact_by_id),
+        "flags": {"no_referral_form": checklist[0]["status"] == "missing", "illegible_pages": illegible},
         "qc": {"facts": len(facts),
                "verified": sum(1 for f in facts if f["verify"] == "found"),
                "paraphrase": sum(1 for f in facts if f["verify"] == "paraphrase"),
@@ -500,7 +546,71 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
     }
 
 
-def route(out_rules, diagnoses, checklist, gates) -> dict:
+_TEMP = re.compile(r"\b(?:t|temp|temperature)\s*:?\s*(\d{2,3}(?:\.\d)?)", re.I)
+_HR = re.compile(r"\b(?:hr|pulse|heart rate|p)\s*:?\s*(\d{2,3})\b", re.I)
+_BP = re.compile(r"\b(?:bp|blood pressure)\s*:?\s*(\d{2,3})\s*/\s*(\d{2,3})", re.I)
+_SPO2 = re.compile(r"\b(?:spo2|o2 sat|sao2|sat|pulse ox)\s*:?\s*(\d{2,3})\s*%", re.I)
+
+
+def vital_flags(facts: list[dict]) -> list[dict]:
+    """Vital signs read from verified quotes, word for word. Red: low blood pressure, very low oxygen, or fever
+    with a fast heart rate in the same reading (what IHH's ID-1 calls signs of sepsis). Amber: one value out of range.
+    Thresholds are common screening cut-offs, not IHH policy; a nurse decides what a reading means."""
+    flags = []
+    for f in facts:
+        if f.get("verify") not in ("found", "paraphrase"):
+            continue
+        q = f["quote"]
+        temp = next((float(m) for m in _TEMP.findall(q)), None)
+        temp = (temp - 32) * 5 / 9 if temp and temp > 50 else temp  # Fahrenheit or Celsius
+        hr = next((int(m) for m in _HR.findall(q)), None)
+        bp = next(((int(a), int(b)) for a, b in _BP.findall(q)), None)
+        spo2 = next((int(m) for m in _SPO2.findall(q)), None)
+        fever, fast = temp is not None and temp >= 38.0, hr is not None and hr > 100
+        if (bp and bp[0] < 90) or (spo2 is not None and spo2 < 88) or (fever and fast):
+            level = "red"
+        elif fever or fast or (bp and bp[0] >= 180) or (spo2 is not None and spo2 < 92):
+            level = "amber"
+        else:
+            continue
+        flags.append({"rule_id": "VITALS", "level": level, "fact_ids": [f["id"]]})
+    return flags
+
+
+def danger(out_rules, diagnoses, fact_by_id: dict) -> dict:
+    """red / amber / none for the queue, with the rule and the pages behind every flag."""
+    flags = vital_flags(list(fact_by_id.values()))
+    for r in out_rules:
+        level = DANGER_RULES.get(r["rule_id"])
+        if level and r["status"] == "not_met" and r["fact_ids"] and not r["superseded_by"]:
+            flags.append({"rule_id": r["rule_id"], "level": level, "fact_ids": r["fact_ids"]})
+    for d in diagnoses:
+        level = DANGER_DIAGNOSES.get(d["rule_id"])
+        if level and d["verified"]:
+            flags.append({"rule_id": d["rule_id"], "level": level, "fact_ids": d["fact_ids"]})
+    for f in flags:
+        f["pages"] = sorted({fact_by_id[i]["page"] for i in f["fact_ids"] if i in fact_by_id})
+    levels = {f["level"] for f in flags}
+    return {"level": "red" if "red" in levels else "amber" if levels else "none", "flags": flags}
+
+
+# Points off a perfect 100. The weights are a sort order the team picked, not IHH policy: change them freely.
+ODDS_WEIGHTS = {"blocker": 35, "gate_unclear": 15, "human_review": 10, "illegible": 8, "missing_doc": 5,
+                "open_item": 4, "cant_tell": 2}
+
+
+def odds(blockers, gate_unclear, human, illegible, missing_docs, open_items, cant_tell) -> tuple[int, list]:
+    """How close the packet is to a yes on paper, 0-100. Used only to order the queue; a person decides."""
+    counts = {"blocker": len(blockers), "gate_unclear": len(gate_unclear), "human_review": len(human),
+              "illegible": len(illegible), "missing_doc": len(missing_docs), "open_item": len(open_items),
+              "cant_tell": len(cant_tell)}
+    # "Can't tell" is common (dates are blacked out), so it counts for at most 10 points in all.
+    why = [{"code": k, "count": n, "points": -min(n * ODDS_WEIGHTS[k], 10 if k == "cant_tell" else 100)}
+           for k, n in counts.items() if n]
+    return max(0, 100 + sum(w["points"] for w in why)), why
+
+
+def route(out_rules, diagnoses, checklist, gates, illegible=()) -> dict:
     """Suggested route. Only a clinician can deny; nothing here is a decision."""
     blockers = [r["rule_id"] for r in out_rules
                 if r["status"] == "not_met" and r["kind"] in ("must", "exclude")
@@ -512,15 +622,21 @@ def route(out_rules, diagnoses, checklist, gates) -> dict:
     open_items = [r["rule_id"] for r in out_rules
                   if r["status"] in ("not_met", "cant_tell") and r["kind"] in ("document", "conditional")]
     gate_unclear = [g for g, v in gates.items() if v["status"] == "cant_tell"]
+    illegible = list(illegible)
+    cant_tell = [r["rule_id"] for r in out_rules
+                 if r["status"] == "cant_tell" and r["kind"] in ("must", "exclude") and not r["superseded_by"]]
 
     if blockers:
         code = "likely_no"
-    elif gate_unclear or human:
+    elif gate_unclear or human or illegible:
+        # Handwriting nobody could read may hold the deciding fact, so a person reads it before any yes.
         code = "clinical_check"
     elif missing_docs or open_items:
         code = "needs_info"
     else:
         code = "likely_yes"
+    score, why = odds(blockers, gate_unclear, human, illegible, missing_docs, open_items, cant_tell)
     return {"code": code, "blockers": blockers, "human_review": human, "missing_docs": missing_docs,
-            "open_items": open_items, "gate_unclear": gate_unclear,
+            "open_items": open_items, "gate_unclear": gate_unclear, "illegible_pages": illegible,
+            "odds": score, "odds_why": why,
             "route_clinical": code in ("likely_no", "clinical_check")}
