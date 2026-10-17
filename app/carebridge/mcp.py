@@ -72,7 +72,8 @@ TOOLS = [
      "description": "Make a large-print PDF of next steps for an IHH client to take home: each step with phone, "
                     "address and hours from the sourced list, boxes to tick, a notes box under each step for staff "
                     "to write in, how to get there and what to bring. One or two pages, in color or black and white. "
-                    "Saves it to Documents\\IHH Care Bridge\\handouts and returns the path. No identifiers.",
+                    "Saves it to Documents\\IHH Care Bridge\\handouts and returns the path. No identifiers: "
+                    "the name line stays blank to write by hand (to print a name, use the Care Bridge app itself).",
      "inputSchema": _schema({"situation": {"type": "string"}, "language": LANG,
                              "style": {"type": "string", "enum": ["color", "bw"],
                                        "description": "color (default) or bw for black-and-white printers."}}, ["situation"])},

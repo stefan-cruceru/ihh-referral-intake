@@ -683,8 +683,11 @@ async function findResources(useAi) {
       return;
     }
     LAST_RES = r;
-    let h = r.cards.length ? `<div class="row end"><button class="btn" id="print-handout">${esc(t("res_print"))}</button>
-      <button class="btn ghost" id="print-handout-bw">${esc(t("res_print_bw"))}</button></div>` : "";
+    let h = r.cards.length ? `<div class="row end"><input id="handout-name" autocomplete="off" maxlength="60"
+        placeholder="${esc(t("res_client_name"))}" title="${esc(t("res_client_name_note"))}" style="max-width:260px">
+      <button class="btn" id="print-handout">${esc(t("res_print"))}</button>
+      <button class="btn ghost" id="print-handout-bw">${esc(t("res_print_bw"))}</button></div>
+      <p class="muted small" style="text-align:right">${esc(t("res_client_name_note"))}</p>` : "";
     if (r.danger) h += `<div class="safety"><b>${esc(t("res_safety"))}</b>${r.safety.map(resCard).join("")}</div>`;
     if (r.plan_today) h += `<div class="panel"><h3>${esc(t("res_plan"))}</h3><p>${esc(r.plan_today)}</p></div>`;
     h += r.cards.map(resCard).join("");
@@ -882,7 +885,9 @@ async function printHandout(style = "color") {
   const r = LAST_RES;
   const items = r.cards.map((c) => ({ resource_id: c.id, why: c.why, first_step: c.first_step, watch_out: c.watch_out }));
   const resp = await fetch("/api/handout", { method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ items, plan_today: r.plan_today, lang: LANG, danger: r.danger, style }) });
+    // The name only goes into this PDF. It is not saved here or on the server.
+    body: JSON.stringify({ items, plan_today: r.plan_today, lang: LANG, danger: r.danger, style,
+      client_name: ($("#handout-name")?.value || "").trim() }) });
   if (!resp.ok) return toast(t("error"));
   const url = URL.createObjectURL(await resp.blob());
   window.open(url, "_blank");

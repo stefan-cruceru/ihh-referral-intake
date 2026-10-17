@@ -687,6 +687,14 @@
   "en": "Print for the client (color)",
   "es": "Imprimir para el cliente (color)"
  },
+ "res_client_name": {
+  "en": "Client's name (optional)",
+  "es": "Nombre del cliente (opcional)"
+ },
+ "res_client_name_note": {
+  "en": "The name is only printed on the page. It is not saved and not sent anywhere.",
+  "es": "El nombre solo se imprime en la hoja. No se guarda ni se envía a ningún lado."
+ },
  "res_print_bw": {
   "en": "Black and white",
   "es": "Blanco y negro"
