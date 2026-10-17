@@ -8,7 +8,7 @@ import re
 from html import escape
 from urllib.parse import parse_qs, quote, urlparse
 
-from . import auth, config, drafts, kipu, teams
+from . import auth, config, drafts, kipu, kipu_check, teams
 
 # /mcp is not open: an agent calling it over HTTP signs in with a personal token (/api/me/token).
 # The local stdio MCP server (Copilot in VS Code, Claude Desktop) runs as the Windows user instead.
@@ -328,6 +328,9 @@ def _kipu(h, method: str, p: str, parts: list[str]):
     from . import webapp
 
     me = person(h) or {"name": "", "role": ""}
+    if p == "/api/kipu/checks" and method == "GET":
+        # The background readiness checks (kipu_check.py). Reading them never writes to Kipu.
+        return h._json(kipu_check.summary(webapp.TRACK))
     if p == "/api/kipu/status" and method == "GET":
         out = {"mode": kipu.mode(), "write": kipu.write_enabled()}
         if kipu.mode() != "off":

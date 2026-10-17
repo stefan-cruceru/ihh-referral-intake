@@ -108,3 +108,21 @@ We used Kipu's public client libraries, not Kipu's own documentation:
 
 The practice Kipu checks signatures the same way, so a wrong key fails there too. Check everything
 against Kipu's documentation before a pilot.
+
+## Kipu readiness, checked in the background
+
+Every few seconds, `kipu_check.py` builds what each Kipu step would send for every referral on
+the board (the chart, the packet, the intake note) and checks it against what Kipu needs:
+
+- **Chart:** referral number, referring hospital and contact known, reason for referral filled
+  in, the returning-client check done, no chart linked yet. Name and birth date are blacked out
+  in every packet; the person making the chart types them in Kipu.
+- **Packet:** on file, really a PDF or image (by its first bytes) within the security scan's size
+  limit, and the security scan passed.
+- **Intake note:** the packet was read, a person decided, only the clinical line said no, and the
+  note carries rule IDs and pages only.
+
+Each referral is **ready**, **waiting on a person**, or **to fix**. It shows as a chip on the board,
+a checklist in the open referral, and a table with a log on the Kipu and Teams page. In practice
+mode it also sends one signed, read-only request to the practice Kipu to show the signed connection
+works. It never writes, and it never calls live Kipu: every write is still one click by a person.

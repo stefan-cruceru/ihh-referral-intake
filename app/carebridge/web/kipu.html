@@ -45,6 +45,15 @@
     <div id="status" class="k-row"></div>
   </section>
 
+  <!-- Kipu readiness, checked in the background (kipu_check.py). Nothing here writes to Kipu. -->
+  <section class="k-box">
+    <h2 id="h-bg"></h2>
+    <p class="k-m" id="bg-help"></p>
+    <div class="k-row" id="bg-sum"></div>
+    <table class="k-t" id="bg-cards"></table>
+    <details><summary class="k-m" id="bg-log-l" style="cursor:pointer"></summary><table class="k-t" id="bg-log"></table></details>
+  </section>
+
   <section class="k-box">
     <h2 id="h-in"></h2>
     <p class="k-m" id="in-help"></p>
@@ -105,6 +114,14 @@ const T = {
   h_writes: ["What went into Kipu", "Lo que se escribió en Kipu"],
   writes_help: ["Practice Kipu keeps a list so you can see each write. No patient details are shown here.", "El Kipu de práctica guarda una lista para ver cada escritura. Aquí no se muestran datos del paciente."],
   off_msg: ["Kipu is off.", "Kipu está apagado."],
+  h_bg: ["Checked in the background", "Revisado en segundo plano"],
+  bg_help: ["Every few seconds, Care Bridge builds what each Kipu step would send (chart, packet, intake note) and checks it against what Kipu needs. It only checks: nothing is written to Kipu until a person clicks a step.",
+            "Cada pocos segundos, Care Bridge arma lo que mandaría cada paso a Kipu (expediente, paquete, nota) y lo revisa contra lo que pide Kipu. Solo revisa: no se escribe nada en Kipu hasta que una persona haga clic."],
+  conn_ok: ["Connection checked", "Conexión revisada"], conn_fail: ["Connection problem", "Problema de conexión"], conn_off: ["Kipu is off", "Kipu está apagado"],
+  ck_ok: ["ready", "listos"], ck_wait: ["waiting on a person", "esperan a una persona"], ck_fail: ["to fix", "por arreglar"],
+  th_check: ["Kipu check", "Revisión de Kipu"], th_open: ["Still open", "Pendiente"], ago: ["s ago", "s"],
+  st_ok: ["Ready", "Listo"], st_wait: ["Waiting", "Espera"], st_fail: ["Fix first", "Arreglar"],
+  bg_log: ["Recent results", "Resultados recientes"], bg_none: ["Nothing on the board yet. Pull referrals from Kipu or start a practice run.", "Todavía no hay nada en el tablero. Traiga referidos de Kipu o empiece una práctica."],
 };
 let LANG = "en";
 const $ = (s) => document.querySelector(s);
@@ -122,7 +139,9 @@ const post = (p, b) => api(p, { method: "POST", headers: { "Content-Type": "appl
 function words() {
   document.documentElement.lang = LANG;
   for (const id of ["back", "title", "signout", "save", "sync", "find"]) $("#" + id).textContent = t(id);
-  for (const id of ["h-conn", "h-in", "h-find", "h-cards", "h-writes", "th-case", "th-status", "th-kipu", "th-steps"]) $("#" + id).textContent = t(id.replace("-", "_"));
+  for (const id of ["h-conn", "h-bg", "h-in", "h-find", "h-cards", "h-writes", "th-case", "th-status", "th-kipu", "th-steps"]) $("#" + id).textContent = t(id.replace("-", "_"));
+  $("#bg-help").textContent = t("bg_help");
+  $("#bg-log-l").textContent = t("bg_log");
   for (const id of ["conn-help", "in-help", "find-help", "cards-help", "writes-help"]) $("#" + id).textContent = t(id.replace("-", "_"));
   $("#write-l").textContent = t("write_l"); $("#live-warn").textContent = t("live_warn");
   $("#f-first").placeholder = t("first"); $("#f-last").placeholder = t("last");
@@ -180,7 +199,27 @@ $("#find").addEventListener("click", async () => {
     $("#find-out").innerHTML = r.matches.length ? `${esc(t("found"))} ${r.matches.map((m) => `<span class="k-pill">${esc(m.id)} · ${esc(m.mr_number || "")} · ${esc(m.location || "")}</span>`).join("")}` : esc(t("none"));
   } catch (e) { $("#find-out").textContent = e.message; }
 });
-$("#lang").addEventListener("click", () => { LANG = LANG === "es" ? "en" : "es"; words(); cards(); });
+$("#lang").addEventListener("click", () => { LANG = LANG === "es" ? "en" : "es"; words(); cards(); bgChecks(); });
+
+async function bgChecks() {
+  let s;
+  try { s = await api("/api/kipu/checks"); } catch (e) { return; }
+  const c = s.connection || {};
+  const conn = c.state === "ok" ? "conn_ok" : c.state === "off" ? "conn_off" : "conn_fail";
+  $("#bg-sum").innerHTML = `<span class="k-pill" style="background:var(--${c.state === "ok" ? "green" : c.state === "off" ? "gray" : "red"}-soft)">${esc(t(conn))}${c.detail ? ": " + esc(c.detail) : ""}${c.ms ? ` · ${c.ms} ms` : ""}</span>
+    <span class="k-pill">${s.count.ok} ${esc(t("ck_ok"))}</span><span class="k-pill">${s.count.wait} ${esc(t("ck_wait"))}</span><span class="k-pill">${s.count.fail} ${esc(t("ck_fail"))}</span>`;
+  const label = (k) => (s.labels[k] ? s.labels[k][LANG === "es" ? 1 : 0] : k);
+  const now = Date.now() / 1000;
+  $("#bg-cards").innerHTML = s.cards.length
+    ? `<tr><th>${esc(t("th_case"))}</th><th>${esc(t("th_check"))}</th><th>${esc(t("th_open"))}</th></tr>` +
+      s.cards.map((r) => `<tr><td><b>${esc(r.case_no)}</b>${r.kipu_id ? ` <span class="k-m">· ${esc(r.kipu_id)}</span>` : ""}</td>
+        <td><span class="k-pill" style="background:var(--${r.check.status === "ok" ? "green" : r.check.status === "fail" ? "red" : "yellow"}-soft)">${esc(t("st_" + r.check.status))}</span>
+          <span class="k-m">${Math.max(0, Math.round(now - r.check.checked_at))}${esc(t("ago"))}</span></td>
+        <td class="k-m">${r.check.items.filter((i) => i.state !== "ok").map((i) => `${i.state === "fail" ? "✗" : "…"} ${esc(label(i.key))}`).join("<br>")}</td></tr>`).join("")
+    : `<tr><td class="k-m">${esc(t("bg_none"))}</td></tr>`;
+  $("#bg-log").innerHTML = s.log.map((l) => `<tr><td class="k-m">${new Date(l.t * 1000).toLocaleTimeString()}</td><td>${esc(l.case_no)}</td>
+    <td>${esc(t("st_" + l.status))}</td><td class="k-m">${[...l.fails, ...l.waits].map(label).map(esc).join(", ")}</td></tr>`).join("");
+}
 
 (async function boot() {
   try { const me = await api("/api/me"); $("#me").textContent = me.name ? `${t("signed")} ${me.name} (${me.role})` : ""; } catch (e) {}
@@ -188,6 +227,8 @@ $("#lang").addEventListener("click", () => { LANG = LANG === "es" ? "en" : "es";
   words();
   status().catch((e) => ($("#status").textContent = e.message));
   cards(); writes();
+  bgChecks();
+  setInterval(bgChecks, 4000);
 })();
 </script>
 </body>
