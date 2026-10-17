@@ -51,6 +51,11 @@ purpose.
      hands-on care.
   2. **Psychiatric stability:** no active suicidal thoughts and no active psychosis.
   - Also excluded: certain medications and medical equipment IHH can't handle.
+- **Why those two decide it: IHH has no Title 22 license.** Title 22 is the part of California's
+  regulations that licenses health and care facilities. Without it, IHH can't give hands-on care or
+  administer medications. So every referral has to be checked for two things before the patient can
+  stay: **they can care for themselves, and they are behaviorally stable.** **(staff)** Section 5
+  maps both gates to rule IDs.
 - **Nobody is denied without a clinical second check.** Every possible "no" goes to the clinical
   line, staffed 24/7. Unconfirmed: whether an LVN staffs it. **(lead)**
 - The criteria are reviewed yearly and rarely change. Updates come from IHH's own quality reviews
@@ -105,7 +110,9 @@ purpose.
 - **Does clinical check the yeses too?** The earlier conversation said clinical approves after
   intake, and that overturned yeses cause problems. The Q&A said every possible *no* goes to the
   clinical line, and said nothing about yeses. Unknown: do approvals also get a clinical check?
-  This decides whether the "do not discharge yet" status in section 5 is needed.
+  This decides whether the "do not discharge yet" status in section 5 is needed. Staff later
+  explained that the self-care and behavioral gates must be checked for every referral (section 5).
+  Whether a clinician does that check every time is still unconfirmed.
 - **30 minutes or 2 hours.** IHH's older page ([ifhomeless.org/recup](https://www.ifhomeless.org/recup))
   says referrals are confirmed within 30 minutes. The current form and the lead say 2 hours. We use
   2 hours.
@@ -217,7 +224,26 @@ This is where the lost quarter goes.
 
 ---
 
-## 5. The clinical check
+## 5. The two gates and the clinical check
+
+### The two gates come first
+
+Because IHH has no Title 22 license, two checks decide whether a patient can stay. The review screen
+leads with them, above everything else, each marked met, not met or can't tell, with page and quote:
+
+| Gate | Rule IDs (`admission-criteria.json`) | What the chart has to show |
+|---|---|---|
+| **Can care for themselves** | ADL-1, ADL-2, ADL-3, MOB-1, MOB-3, MOB-4, COG-1, COG-2; form FORM-M3 to M6, FORM-X1 to X3 | Bathes, toilets and moves without hands-on help; uses any DME alone; takes their own medications; fully oriented |
+| **Behaviorally stable** | MH-1, MH-2, MH-3, MH-4, MH-5, OTH-1; form FORM-M2, FORM-X5, FORM-X7 | Stable on medications; no suicidal thoughts; no command hallucinations; not in alcohol withdrawal; no conservatorship; not aggressive |
+
+- The evidence for these usually sits deep in the chart: PT/OT evaluations and nursing notes for
+  self-care, psychiatry consults and progress notes for behavior. The form-vs-chart check matters
+  most here.
+- Everything else (infection, diabetes, cardiac, wounds, missing documents) sits below the gates.
+- A "not met" or "can't tell" on either gate makes the referral a likely "no" and sends it to the
+  clinical line.
+
+### The clinical check
 
 - **IHH's rule: nobody is denied without a clinician.** The tool can flag a likely "no", but only
   the clinical line can deny.
@@ -360,8 +386,10 @@ A design checklist, not legal advice. IHH's counsel should review it.
 
 ### Still open, most important first
 
-1. **Do approvals also get a clinical check, or only possible denials?** The earlier conversation
-   and the Q&A disagree. This decides the status messages in section 5.
+1. **Does a clinician check the two gates (self-care and behavior) on every referral, or only on
+   possible denials?** Staff said both gates must be checked for anyone to qualify (no Title 22
+   license). The Q&A said possible "no"s go to the clinical line. If every referral gets the
+   clinical check, approvals need it too, and the status messages in section 5 apply.
 2. **How many minutes does one referral take, and which step is longest?** It replaces every
    placeholder in the capacity math.
 3. **When a case manager goes quiet, how long do you wait before following up, and who do you
