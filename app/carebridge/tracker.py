@@ -148,7 +148,8 @@ class Tracker:
         self.persist(cid)
 
     # ---- actions -------------------------------------------------------------------------
-    def act(self, cid: str, action: str, who: str = "", reason: str = "") -> dict:
+    def act(self, cid: str, action: str, who: str = "", reason: str = "", role: str | None = None) -> dict:
+        """role comes from the signed-in staff list (auth.py). Without sign-in, the old name check stands."""
         c = self.cards[cid]
         now = self.clock.now()
         if action in ("viewing", "leave"):
@@ -178,7 +179,8 @@ class Tracker:
         elif action == "intake_cleared":
             c["status"] = "intake_cleared"
         elif action in ("accepted", "denied", "withdrawn"):
-            if action == "denied" and not who.lower().startswith("clinic"):
+            clinical = role == "clinical" if role is not None else who.lower().startswith("clinic")
+            if action == "denied" and not clinical:
                 raise ValueError("Only the clinical line can deny a referral.")
             c["status"], c["decision"] = action, action
             c["decision_reason"] = reason

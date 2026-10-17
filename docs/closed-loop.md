@@ -47,6 +47,10 @@ Then back to step 1. No step depends on a system outside IHH.
   service. A person copies drafts into Outlook, the census row is a CSV, and the Kipu fields are a
   list to copy. So it can run on day one without IT work. Power Automate can feed the watched inbox
   later, inside IHH's Microsoft setup (`docs/workflow-and-timing.md` section 8).
+  - **Update (team decision, Oct 17):** a Kipu connector and a Teams sign-in are now built, but
+    switched off. By default the app still needs no connection: it uses a practice Kipu on the
+    same computer and a practice sign-in. IHH turns on live Kipu and Teams sign-in only after IT
+    and a BAA say yes (`docs/kipu-and-teams.md`).
 - **The upload page has to be reachable by hospitals,** so in a pilot it would be hosted inside
   IHH's own environment, for example its Microsoft setup, not on an outside service. How is open.
   In the prototype it is a local page.
