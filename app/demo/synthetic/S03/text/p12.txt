@@ -1,0 +1,24 @@
+08/20/2026 10:12 FROM: LOS OLIVOS REGIONAL CASE MGMT FAX 949-555-0177 TO: IHH RECUP                                                   P.12/14
+
+
+
+
+
+
+WHITLOCK, GREGORY (MRN: SYN-318255) DOB: 11/02/1978 47y M                                     Los Olivos Regional Hospital · Orthopedic Unit 2B
+
+
+Discharge Medication List
+Reconciled 08/20/2026
+
+        Medication      Dose             Route              Frequency                                Notes
+        Aspirin         81 mg            By mouth           Twice daily                              For 28 days, clot prevention
+        Acetaminophen   1000 mg          By mouth           Every 8 hours                            For pain
+        Oxycodone       5 mg             By mouth           Every 6 hours as needed                  5 days, 20 tablets
+        Docusate        100 mg           By mouth           Twice daily                              While taking oxycodone
+30-day supply dispensed to bedside 08/20/2026, except oxycodone (5 days).
+
+
+
+
+                               SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

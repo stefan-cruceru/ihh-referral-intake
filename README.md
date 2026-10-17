@@ -99,7 +99,10 @@ cd app
 .\dist\ihh-care-bridge.exe install   # optional: Start menu + Copilot / Claude Desktop
 ```
 
-Click **Practice with made-up referrals** to run the 4 PM demo with invented patients. No key needed.
+Click **Practice with made-up referrals** to run the 4 PM demo with the synthetic practice
+patients. No key needed. Open **Practice patients** to see each made-up patient's profile, their
+faxed pages, what the app points out, the organizers' answer, and a printable next-steps PDF made
+for that patient.
 To read real (de-identified) packets, an admin adds a Claude API key in Settings (saved in Windows
 Credential Manager) or sets `ANTHROPIC_API_KEY`. For Claude in IHH's Azure, pick Foundry in
 Settings, or set `CAREBRIDGE_PROVIDER=foundry`, `ANTHROPIC_FOUNDRY_RESOURCE` and
@@ -112,7 +115,7 @@ cd app
 pip install -r requirements.txt
 python -m carebridge              # the app
 python -m carebridge mcp          # MCP server on stdio
-python -m pytest tests            # 10 tests on the safety logic
+python -m pytest tests            # tests on the safety logic and the practice patients
 ```
 
 **Docker (one command):** `.\start.ps1` on Windows or `./start.sh` on Mac or Linux. It builds the
@@ -121,7 +124,8 @@ or in Settings to read packets; the demo works without it. Stop with `.\start.ps
 See [docs/run-with-docker.md](docs/run-with-docker.md).
 
 **Packets:** download R01 to R11 into `challenges/1-referral-intake/packets/` (gitignored). The
-demo uses R02 and R07 when they are there, and invented packets when they are not.
+practice demo never needs them: it uses the organizers' 10 synthetic patients in
+`app/demo/synthetic/`.
 
 **Score it:** `python app/eval_packets.py run`, then `python app/eval_packets.py score`. The
 first step never opens `eval/decisions.json`.
@@ -135,7 +139,8 @@ first step never opens `eval/decisions.json`.
 | Drafts (missing items, chase ladder, clinical, decision, handoffs) | Working. Templates filled from the review; never sent |
 | 2-hour tracker, assignment, escalation alerts, peak warning | Working |
 | Watched inbox folder | Working on a local folder. No real fax or email connection |
-| Monday 4 PM demo | Invented hospitals, contacts and 3 invented packets with hand-written sample reviews (labeled "Practice") |
+| Monday 4 PM demo and practice patients | The organizers' 10 synthetic patients (S01-S10): invented people with realistic faxed packets. Practice reviews come from the organizers' answer key, run through the app's own checks |
+| Per-patient next-steps PDF | Working. Needs come from the patient's story; resources come only from the sourced list (Claude picks them when a key is set, otherwise matched by need) |
 | Manual vs. tool comparison | Placeholder numbers (40 vs 10 minutes per referral) until IHH gives real ones |
 | Outcome log and weekly report | Working, local SQLite. Practice runs are marked and can be left out |
 | Client resources | Working. Sourced seed list from the event repo, checked 2026-10-13 |

@@ -67,14 +67,35 @@ def safety_cards() -> list[dict]:
     return [_card(by_id[i]) for i in ("988-suicide-and-crisis-lifeline", "oc-links", "211-orange-county") if i in by_id]
 
 
-def offline_match(needs: list[str], limit: int = 6) -> list[dict]:
-    """No-AI fallback: match by category and tags."""
-    out = []
-    for r in catalog():
-        hay = {r["category"], *r.get("tags", [])}
-        if any(n in hay for n in needs):
-            out.append(_card(r))
-    return out[:limit]
+# Programs only for a group: skipped by the no-AI match unless the situation names that group.
+GROUP_WORDS = {
+    "families": ["child", "children", "kids", "family with", "pregnant"], "youth": ["youth", "teen", "under 25"],
+    "youth 12-21": ["youth", "teen"], "youth 18-24": ["youth", "under 25"], "veterans": ["veteran"],
+    "women": ["woman", "women", "female", " she ", " her "], "survivors of domestic violence": ["abuse", "domestic violence"],
+    "seniors": ["senior", "older"], "students": ["student"], "pregnant people": ["pregnant"],
+}
+
+
+def offline_match(needs: list[str], limit: int = 6, situation: str = "") -> list[dict]:
+    """No-AI fallback: match by category and tags, leaving out programs for a group the situation
+    doesn't mention (a families-only program for a single adult, for example)."""
+    low = f" {situation.lower()} "
+
+    def fits(r):
+        pop = set(r.get("population") or [])
+        if pop and not pop & {"anyone", "adults", "adults without children", "Medi-Cal members", "people with disabilities"}:
+            return any(w in low for g in pop for w in GROUP_WORDS.get(g, []))
+        return True
+
+    # Round-robin across needs (best match for each need first), so one need can't fill every slot.
+    pools = [[r for r in catalog() if need in {r["category"], *r.get("tags", [])} and fits(r)] for need in needs]
+    picked: list[dict] = []
+    for rank in range(2):
+        for pool in pools:
+            fresh = [r for r in pool if r["id"] not in {p["id"] for p in picked}]
+            if len(fresh) > 0 and len(picked) < limit and rank < len(pool):
+                picked.append(fresh[0])
+    return [_card(r) for r in picked]
 
 
 def find(situation: str, lang: str = "en", needs_hint: list[str] | None = None, use_ai: bool = True) -> dict:
@@ -85,7 +106,7 @@ def find(situation: str, lang: str = "en", needs_hint: list[str] | None = None, 
     result = {"blocked": False, "danger": danger, "safety": safety_cards() if danger else [],
               "disclaimer": disclaimer(), "ai": False}
     if not use_ai:
-        result.update(needs=needs_hint or [], cards=offline_match(needs_hint or []), plan_today="", ask_staff=[])
+        result.update(needs=needs_hint or [], cards=offline_match(needs_hint or [], situation=situation), plan_today="", ask_staff=[])
         return result
     listing = "\n".join(
         f"{r['id']} | {r['category']} | {r['name']} | tags: {', '.join(r.get('tags', []))} | eligibility: {r.get('eligibility')} "

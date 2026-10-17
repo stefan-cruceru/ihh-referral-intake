@@ -1,0 +1,36 @@
+08/06/2026 15:42 FROM: PACIFIC CREST MED CTR CASE MGMT FAX 714-555-0142 TO: IHH RECUP                                                         P.3/13
+
+
+
+
+
+
+ELLERY, MARCUS (MRN: SYN-104417) DOB: 02/11/1972 54y M                                          Pacific Crest Medical Center · 4 West Medical-Surgical
+
+
+Patient Face Sheet
+Printed 08/06/2026 15:42 by Karen Lindqvist
+
+PATIENT INFORMATION
+       Patient               ELLERY, MARCUS                                                        Sex                        M
+       DOB                   02/11/1972                                                            Age                        54y
+       Address               NO FIXED ADDRESS                                                      Language                   English
+       Phone                 NONE                                                                  Marital Status             Single
+       Emergency Contact     None listed                                                           Interpreter                No
+
+INSURANCE INFORMATION
+       Primary               Medi-Cal managed care plan                         Member ID                     SYN-M-552019
+       Secondary             None                                               Financial Class               Medi-Cal Managed Care
+
+ENCOUNTER INFORMATION
+       Admit Date/Time       08/03/2026 21:17                               Mode of Arrival                Walk-in
+       Patient Class         Inpatient                                      Unit                           4 West Medical-Surgical
+       Admitting Diagnosis   Cellulitis of left lower leg                   Diagnosis Code                 L03.116, Z59.02
+       Attending             Priya Nandakumar, MD                           Expected Discharge             08/07/2026
+
+Pacific Crest Medical Center, 4100 Harbor Mesa Parkway, Orange County, CA. Main 714-555-0100.
+
+
+
+
+                                   SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

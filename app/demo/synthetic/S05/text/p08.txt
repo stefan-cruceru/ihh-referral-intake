@@ -1,0 +1,22 @@
+09/01/2026 09:30 FROM: PACIFIC CREST MED CTR CASE MGMT FAX 714-555-0142 TO: IHH RECUP                                                P.8/13
+
+
+
+
+
+
+PRUITT, DWAYNE (MRN: SYN-118903) DOB: 07/19/1987 39y M                                          Pacific Crest Medical Center · 6 East Medical
+
+
+Vital Signs Flowsheet
+         Date/Time                     BP                  HR         RR          Temp F              SpO2           O2
+         08/31/2026 12:00              124/78              88         16          98.4                99%            Room air
+         08/31/2026 16:00              128/80              92         18          98.6                99%            Room air
+         08/31/2026 20:00              122/76              86         16          98.2                98%            Room air
+         09/01/2026 00:00              120/74              84         16          98.0                99%            Room air
+         09/01/2026 06:00              126/78              82         16          98.3                99%            Room air
+
+
+
+
+                            SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

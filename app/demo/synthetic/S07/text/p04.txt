@@ -1,0 +1,29 @@
+09/08/2026 10:48 FROM: ST BRENDAN COMM HOSP CASE MGMT FAX 657-555-0163 TO: IHH RECUP                                          P.4/12
+
+
+
+
+
+KESSLER, BERNARD (MRN: SYN-245571) DOB: 12/14/1967                        58y M             St. Brendan Community Hospital · 2 South
+                                                                                                                             Medical
+
+
+Authorization Request: Recuperative Care (Community Support)
+Submitted 09/08/2026 10:48 by Miguel Ortega
+        Health Plan          Medi-Cal managed care plan
+        Member ID            SYN-M-730946
+        Service Requested    Recuperative care (medical respite)
+        Requested Provider   Illumination Health + Home
+        Days Requested       30
+        Diagnosis Code(s)    A04.72, E86.0, N17.9, Z59.02
+        Status               Pending health plan review
+        Authorization #      Not yet assigned
+
+CLINICAL JUSTIFICATION
+Recuperative care referral. 58-year-old man admitted with dehydration. Kidney function back to normal.
+Eating and walking. Unhoused. Ready 09/09.
+
+
+
+
+                                  SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

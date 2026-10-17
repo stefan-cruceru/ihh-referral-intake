@@ -1,0 +1,61 @@
+08/06/2026 15:42 FROM: PACIFIC CREST MED CTR CASE MGMT FAX 714-555-0142 TO: IHH RECUP                                                            P.5/13
+
+
+
+
+
+
+ELLERY, MARCUS (MRN: SYN-104417) DOB: 02/11/1972 54y M                                             Pacific Crest Medical Center · 4 West Medical-Surgical
+
+
+History and Physical
+Priya Nandakumar, MD - Admission date 08/03/2026 - Signed
+
+CHIEF COMPLAINT
+Redness, swelling and pain of the left lower leg for 3 days.
+
+HISTORY OF PRESENT ILLNESS
+54-year-old man with hypertension who scraped his left shin on a fence about one week ago. Over the last 3 days he developed
+spreading redness, warmth and pain from the ankle to mid-calf, with chills. Temperature 101.1 F in the emergency department.
+No drainage, no prior similar episodes.
+Bedside ultrasound showed no fluid collection. Venous duplex negative for deep vein thrombosis. Blood cultures drawn. Started
+IV cefazolin and admitted for IV antibiotics and leg elevation.
+
+PAST MEDICAL HISTORY
+             Hypertension
+             Tobacco use, half a pack per day
+
+PAST SURGICAL HISTORY
+None.
+
+HOME MEDICATIONS
+             Lisinopril 10 mg by mouth daily (takes inconsistently)
+
+ALLERGIES
+No known drug allergies.
+
+SOCIAL HISTORY
+Unhoused for about 14 months. Sleeps outdoors. Works occasional day labor. Denies alcohol or drug use. Manages his own
+medications and appointments when he has them.
+
+PHYSICAL EXAM
+General: Awake, alert, in no acute distress.
+HEENT: Normocephalic. Mucous membranes moist.
+Cardiovascular: Regular rate and rhythm. No murmurs.
+Respiratory: Clear to auscultation bilaterally. No increased work of breathing.
+Abdomen: Soft, non-tender, non-distended.
+Extremities: Left lower leg with erythema, warmth and mild edema from ankle to mid-calf. Borders marked. No fluctuance, no
+crepitus, no drainage. Healing 2 cm abrasion over the shin. Pulses intact.
+Skin: As above. Otherwise intact.
+Neuro: Alert and oriented x4. No focal deficits.
+Psych: Calm, cooperative. Normal mood and affect.
+
+ASSESSMENT AND PLAN
+             Left lower leg cellulitis, non-purulent: IV cefazolin, elevate, mark borders, follow cultures.
+             Hypertension: resume lisinopril.
+             Disposition: unhoused. Case management consult for recuperative care.
+
+
+
+
+                                         SYNTHETIC RECORD FOR A HACKATHON - NOT A REAL PATIENT - Claude Impact Lab OC 2026

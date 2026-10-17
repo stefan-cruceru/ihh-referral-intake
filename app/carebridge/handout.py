@@ -25,6 +25,13 @@ T = {
     "hours": ("Open", "Horario"),
     "online": ("Online", "En internet"),
     "know": ("Good to know", "Bueno saber"),
+    # When there is no first step from a review: what the sourced list says about how to get in.
+    "first_phone": ("Call them.", "Llámeles."),
+    "first_walk-in": ("Go in person. Call first to check the hours.", "Vaya en persona. Llame antes para confirmar el horario."),
+    "first_appointment": ("Call to make an appointment.", "Llame para hacer una cita."),
+    "first_online": ("Apply online. Ask staff to help.", "Haga la solicitud en internet. Pida ayuda al personal."),
+    "first_referral-only": ("Ask staff to make the referral.", "Pida al personal que haga el referido."),
+    "first_mixed": ("Call them, or ask staff to help.", "Llámeles, o pida ayuda al personal."),
     "referral": ("You need a referral first. Ask staff to help.", "Primero necesita un referido. Pida ayuda al personal."),
     "no_address": ("Ask staff where to go.", "Pregunte al personal adónde ir."),
     "called": ("I called", "Llamé"),
@@ -80,7 +87,7 @@ def build(items: list[dict], plan_today: str = "", lang: str = "en", danger: boo
 
     def text(s, size=14, style="", h=None, gap=1.5):
         pdf.set_font("Helvetica", style, size)
-        pdf.multi_cell(w, h or size * 0.5, _safe(s), new_x="LMARGIN", new_y="NEXT")
+        pdf.multi_cell(w, h or size * 0.5, _safe(s), align="L", new_x="LMARGIN", new_y="NEXT")
         pdf.ln(gap)
 
     def box(label):
@@ -117,12 +124,15 @@ def build(items: list[dict], plan_today: str = "", lang: str = "en", danger: boo
             pdf.add_page()
         pdf.set_fill_color(235, 235, 235)
         pdf.set_font("Helvetica", "B", 18)
-        pdf.cell(w, 11, _safe(f" {_t('step', lang)} {n}.  {r['name']}"), fill=True, new_x="LMARGIN", new_y="NEXT")
+        pdf.multi_cell(w, 9, _safe(f" {_t('step', lang)} {n}.  {r['name']}"), fill=True, align="L", new_x="LMARGIN", new_y="NEXT")
         pdf.ln(2)
         if it.get("why"):
             text(it["why"], 14, h=7)
-        if it.get("first_step"):
-            text(f"{_t('do_first', lang)}: {it['first_step']}", 14, "B", h=7)
+        first = it.get("first_step")
+        if not first and f"first_{r.get('how_to_access')}" in T:
+            first = _t(f"first_{r['how_to_access']}", lang)
+        if first:
+            text(f"{_t('do_first', lang)}: {first}", 14, "B", h=7)
         if r.get("phone"):
             text(f"{_t('call', lang)}: {r['phone']}", 16, "B", h=8)
         survivor = {"survivors", "domestic-violence", "confidential-location"} & set(r.get("tags", []))
