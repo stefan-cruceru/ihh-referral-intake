@@ -1,5 +1,5 @@
 "use strict";
-// Care Bridge front end. Plain JS, no build step. Every on-screen string comes from strings.json.
+// Lamplight front end. Plain JS, no build step. Every on-screen string comes from strings.json.
 
 let S = {}; // strings
 let LANG = "en";

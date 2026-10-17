@@ -201,6 +201,8 @@ def test_review_isolates_instruction_pages_and_holds(monkeypatch):
 
     assert all(f["page"] == 1 for f in rep["facts"])
     assert rep["security"]["isolated_pages"] == [2, 3]
+    assert not {2, 3} & set(rep["flags"]["low_confidence_pages"]), "isolated pages must stay out of OCR review"
+    assert all(p["isolated"] for p in rep["pages"] if p["page"] in (2, 3))
     assert rep["recommendation"]["code"] == "security_hold"
     assert "previous instructions" not in rep["summary"].lower()
     assert "security" in "".join(review.progress).lower()

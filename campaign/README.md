@@ -1,7 +1,7 @@
 # In our language · En nuestro idioma
 
-The staff campaign for **Lamplight**, the proposed name staff will see for the app in `app/`. The
-code still calls it Care Bridge until the team agrees on the rename.
+The staff campaign for **Lamplight**, the adopted name staff will see for the app in `app/`.
+The internal `carebridge` package name remains for compatibility.
 
 **Status: draft.** Before anything in this folder is printed, posted or read aloud:
 
@@ -61,3 +61,9 @@ numbers written by hand.
 
 Public Sans only. Warm colors: ink brown `#3B2B22`, terracotta for Spanish `#A0461F`, amber
 `#E39235`, cream `#FFF8F0`, peach `#FBE3CC`, sand `#F4EADB`.
+
+The lamp mark keeps a broad shade, a warm opening and a visible bulb above a steady base.
+Use the SVG whenever possible; the PNG is transparent and 1024 × 1024 px. Both have the same
+64-unit square framing and are legible from 24 px. Place the full-color mark on cream or
+another light background with at least one bulb-width of clear space around it. Keep the
+colors and proportions intact; the light and the lamp form one mark.

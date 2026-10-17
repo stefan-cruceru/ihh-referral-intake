@@ -432,12 +432,12 @@ def run(review: Review, workers: int = 6) -> dict:
 
     # 5. qc
     review.stage = "qc"
+    for n in isolated:
+        sorted_pages[n]["isolated"] = True
     report = quality_control(assessment, facts, sorted_pages, page_summaries, page_text)
     report.update(id=review.id, packet=review.name, received_at=review.received_at, reviewed_at=time.time(),
                   model=config.model(), fast_model=config.fast_model(), cost=review.usage.as_dict())
     report["flags"]["phi_pages"] = phi_pages
-    for n in isolated:
-        report["pages"][[p["page"] for p in report["pages"]].index(n)]["isolated"] = True
     report = guard.hold(report, review.threat, isolated, output_hits)
     if report["security"]["verdict"] != guard.OK:
         # A held packet may have been steered, so its score means nothing.
@@ -557,8 +557,10 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
     conditions = [r for r in out_rules if r["rule_id"] in rules.CONDITIONAL and r["status"] != "not_applicable"]
     conditions += [d for d in diagnoses if d["rule_id"] in rules.CONDITIONAL]
 
-    # illegible_pages is every page a person must read: unreadable handwriting or under the OCR gate.
-    reader = {n: needs_reader(t) for n, t in page_text.items()}
+    # A read response can omit a page. Every page we expected to read must clear the OCR gate;
+    # blank, duplicate and security-isolated pages were deliberately excluded from the read.
+    expected = {n for n, p in sorted_pages.items() if not (p.get("blank") or p.get("duplicate_of") or p.get("isolated"))}
+    reader = {n: needs_reader(page_text.get(n, {})) for n in expected}
     illegible = sorted(n for n, why in reader.items() if why)
     low_confidence = sorted(n for n, why in reader.items() if "low_confidence" in why)
     recommendation = route(out_rules, diagnoses, checklist, gates, illegible)
@@ -567,7 +569,7 @@ def quality_control(assessment: dict, facts: list[dict], sorted_pages: dict, pag
         "pages": [{**sorted_pages[n], "summary": page_summaries.get(n, ""),
                    "transcript": page_text.get(n, {}).get("transcript", ""),
                    "handwriting": page_text.get(n, {}).get("handwriting", "none"),
-                   "ocr_confidence": ocr_confidence(page_text[n]) if n in page_text else None,
+                   "ocr_confidence": ocr_confidence(page_text.get(n, {})) if n in expected else None,
                    "needs_reader": reader.get(n, [])} for n in sorted(sorted_pages)],
         "facts": facts,
         "reason_for_referral": assessment["reason_for_referral"],

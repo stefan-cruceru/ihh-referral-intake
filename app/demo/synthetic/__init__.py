@@ -12,6 +12,7 @@ from functools import lru_cache
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+TRANSLATION_NOTE_ES = "Traducción por IA; pendiente de revisión por personal bilingüe de IHH."
 
 # Answer-key document types -> referral checklist IDs.
 DOC_OF = {"form": "DOC-1", "face": "DOC-2", "auth": "DOC-3", "hp": "DOC-4", "progress": "DOC-5",
@@ -31,6 +32,17 @@ def profiles() -> list[dict]:
 @lru_cache(maxsize=1)
 def answer_key() -> dict:
     return {p["packet_id"]: p for p in json.loads((HERE / "answer-key.json").read_text(encoding="utf-8"))["packets"]}
+
+
+@lru_cache(maxsize=1)
+def _translations() -> dict[str, str]:
+    return json.loads((HERE / "translations.es.json").read_text(encoding="utf-8"))
+
+
+def _spanish(text: str) -> str:
+    # Keyed by the original wording so an edited answer cannot silently reuse a stale translation.
+    # These practice translations are bundled, not fetched from a model or external service.
+    return _translations()[text]
 
 
 def packet_path(pid: str) -> Path | None:
@@ -78,7 +90,7 @@ def _report(pid: str) -> dict:
             q = _best_line(page_text(pid, pg), f["why"])
             if q:
                 fid = f"F{len(facts) + 1}"
-                facts.append({"id": fid, "page": pg, "topic": "other", "statement": f["why"], "statement_es": f["why"],
+                facts.append({"id": fid, "page": pg, "topic": "other", "statement": f["why"], "statement_es": _spanish(f["why"]),
                               "quote": q, "verify": "found"})
                 ids.append(fid)
         by_rule[f["rule"]] = (f, ids)
@@ -90,10 +102,10 @@ def _report(pid: str) -> dict:
             continue
         if meta["group"] in ("eligible", "ineligible"):
             if meta["group"] == "eligible" and f["status"] == "met" or meta["group"] == "ineligible" and f["status"] != "met":
-                diagnoses.append({"rule_id": rid, "fact_ids": ids, "explanation": f["why"], "explanation_es": f["why"]})
+                diagnoses.append({"rule_id": rid, "fact_ids": ids, "explanation": f["why"], "explanation_es": _spanish(f["why"])})
         else:
             assessed.append({"rule_id": rid, "status": STATUS[f["status"]], "fact_ids": ids,
-                             "explanation": f["why"], "explanation_es": f["why"]})
+                             "explanation": f["why"], "explanation_es": _spanish(f["why"])})
     listed = {r["rule_id"] for r in assessed}
     for rid in rules.assessed_rule_ids():
         if rid not in listed:
@@ -107,7 +119,7 @@ def _report(pid: str) -> dict:
             pages_of.setdefault(DOC_OF[m["document"]], []).append(m["page"])
     checklist = [{"doc_id": d, "status": "missing" if d in key["missing_documents"] else ("present" if pages_of.get(d) else "cant_tell"),
                   "pages": [] if d in key["missing_documents"] else pages_of.get(d, [])} for d in rules.checklist_ids()]
-    conflicts = [{"topic": ", ".join(c["documents"]), "description": c["what"], "description_es": c["what"], "fact_ids": []}
+    conflicts = [{"topic": ", ".join(c["documents"]), "description": c["what"], "description_es": _spanish(c["what"]), "fact_ids": []}
                  for c in key["contradictions"]]
     sorted_pages = {m["page"]: {"page": m["page"], "page_type": TYPE_OF.get(m["document"], "other"), "rotation": 0,
                                 "mostly_redacted": False, "earlier_stay": False, "language": "en",
@@ -115,13 +127,14 @@ def _report(pid: str) -> dict:
                     for m in key["page_map"]}
     prof = next(p for p in profiles() if p["id"] == pid)
     assessment = {
-        "reason_for_referral": prof["diagnosis"], "reason_for_referral_es": prof["diagnosis"],
+        "reason_for_referral": prof["diagnosis"], "reason_for_referral_es": _spanish(prof["diagnosis"]),
         "wheelchair_dependent": "unknown", "preferred_language": prof["patient"].get("language") or "",
         "rules": assessed, "diagnoses": diagnoses, "checklist": checklist, "conflicts": conflicts,
-        "questions": [{"en": q, "es": q, "rule_ids": []} for q in key["follow_up"]],
+        "questions": [{"en": q, "es": _spanish(q), "rule_ids": []} for q in key["follow_up"]],
         # The key's summary opens with the organizers' verdict ("Deny."). The review only points
         # things out, so the verdict stays in answer_key_decision, shown on the practice page's reveal.
-        "summary": _no_verdict(key["summary"]), "summary_es": _no_verdict(key["summary"]),
+        "summary": _no_verdict(key["summary"]),
+        "summary_es": _spanish(_no_verdict(key["summary"])) + "\n\n" + TRANSLATION_NOTE_ES,
     }
     # The organizers' typed text of each page, so the viewer and the critical-value check can read it.
     # A person typed it, so it is read for sure (100) and clears the OCR gate.

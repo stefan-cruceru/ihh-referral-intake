@@ -13,6 +13,7 @@ CHALLENGE2 = REPO / "challenges" / "2-finding-the-right-resource"
 
 datas = [
     (str(APP / "carebridge" / "web"), "web"),
+    (str(REPO / "campaign" / "logo" / "lamplight-logo.svg"), "data"),
     (str(CHALLENGE1 / "criteria" / "admission-criteria.json"), "data"),
     (str(CHALLENGE2 / "data" / "oc-resources.seed.json"), "data"),
     (str(CHALLENGE2 / "scenarios" / "client-scenarios.json"), "data"),

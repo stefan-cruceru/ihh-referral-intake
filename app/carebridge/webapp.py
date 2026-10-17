@@ -20,7 +20,7 @@ from urllib.parse import parse_qs, urlparse
 
 from . import APP_NAME, __version__, auth, config, critical, drafts, gateway, guard, handout, hospital, intake, kipu_check, llm, mail, mcp, phi, resources, rules, staff, store, tracker
 from .pages import load_packet
-from .paths import BUNDLE, DEMO_DIR, FROZEN, load_json, packets_dir
+from .paths import BUNDLE, DEMO_DIR, FROZEN, LOGO, load_json, packets_dir
 
 if not FROZEN:
     sys.path.insert(0, str(BUNDLE.parent))  # app/, so `demo` imports in a source checkout
@@ -596,6 +596,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"error": str(e)}, 500)
 
     def _static(self, rel: str):
+        if rel == "lamplight-logo.svg":
+            return self._send(200, LOGO.read_bytes(), "image/svg+xml")
         base = (BUNDLE / "web").resolve()
         f = (base / rel).resolve()
         if base not in f.parents and f != base or not f.is_file():

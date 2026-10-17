@@ -1,4 +1,4 @@
-"""MCP server so Copilot (or any MCP client) can use Care Bridge as a plugin.
+"""MCP server so Copilot (or any MCP client) can use Lamplight as a plugin.
 
 Two transports share one handler:
   - stdio: `ihh-care-bridge.exe mcp`, for GitHub Copilot in VS Code, Claude Desktop and others.
@@ -52,7 +52,7 @@ TOOLS = [
                              "language": LANG}, [])},
     {"name": "list_practice_patients",
      "description": "List the 10 invented practice patients (S01 to S10) with age, reason for the hospital stay "
-                    "and page count. Use one with review_referral_packet to try Care Bridge.",
+                    "and page count. Use one with review_referral_packet to try Lamplight.",
      "inputSchema": _schema({}, [])},
     {"name": "lookup_admission_rule",
      "description": "Get the exact text of one IHH admission rule by ID (e.g. ADL-2, MOB-4, DOC-6, NEU-X1), "
@@ -74,7 +74,7 @@ TOOLS = [
                     "address and hours from the sourced list, boxes to tick, a notes box under each step for staff "
                     "to write in, how to get there and what to bring. One or two pages, in color or black and white. "
                     "Saves it to Documents\\IHH Care Bridge\\handouts and returns the path. No identifiers: "
-                    "the name line stays blank to write by hand (to print a name, use the Care Bridge app itself).",
+                    "the name line stays blank to write by hand (to print a name, use the Lamplight app itself).",
      "inputSchema": _schema({"situation": {"type": "string"}, "language": LANG,
                              "style": {"type": "string", "enum": ["color", "bw"],
                                        "description": "color (default) or bw for black-and-white printers."}}, ["situation"])},
@@ -146,7 +146,7 @@ def practice_list() -> str:
     rows = ["| ID | Age | Why they were in the hospital | Pages |", "|---|---|---|---|"]
     for p in _synthetic().profiles():
         rows.append(f"| {p['id']} | {p['patient']['age']} | {p['diagnosis']} | {p['pages']} |")
-    return "\n".join(["**Practice patients.** All invented. Use them to try Care Bridge.", ""] + rows)
+    return "\n".join(["**Practice patients.** All invented. Use them to try Lamplight.", ""] + rows)
 
 
 def _practice_id(v: str) -> str | None:
@@ -398,7 +398,7 @@ def handle(msg: dict, allow=None) -> dict | None:
             p = msg.get("params") or {}
             if allow is not None and not allow(p.get("name")):
                 return {"jsonrpc": "2.0", "id": mid, "result": {"isError": True, "content": [
-                    {"type": "text", "text": "Your Care Bridge role can't run this tool. Ask your lead."}]}}
+                    {"type": "text", "text": "Your Lamplight role can't run this tool. Ask your lead."}]}}
             try:
                 token = _OVER_HTTP.set(allow is not None)
                 try:

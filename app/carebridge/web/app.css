@@ -1,25 +1,34 @@
-/* Care Bridge: calm, plain and friendly. A front desk, not a dashboard.
-   White paper, evergreen for actions, lamplight yellow used sparingly. Light by default, even when
+/* Lamplight: Sam's warm, people-first identity. A front desk, not a dashboard.
+   Cream paper, brown ink, amber light and terracotta Spanish. Light by default, even when
    the computer is set to dark mode. Dark, colorblind-safe and easy-to-see looks are opt-in from
    the Display button (display.js sets data-theme / data-colors / data-easy on <html>).
-   Fonts are system fonts on purpose: the app makes no network calls. */
+   Public Sans is bundled locally: opening the app never requests a font service. */
+@font-face {
+  font-family: "Public Sans";
+  src: url("/static/fonts/PublicSans-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
 :root {
-  --bg: #ffffff; --panel: #ffffff; --ink: #23302d; --muted: #5d6b67; --line: #dbe3dc;
-  --brand: #2f6b4f; --brand-ink: #ffffff; --brand-soft: #e3eee6; --lamp: #f2b43a; --lamp-soft: #fdf3dc;
+  --bg: #fff8f0; --panel: #fffdf9; --ink: #3b2b22; --muted: #715d50; --line: #dfd0bf;
+  --brand: #3b2b22; --brand-ink: #fff8f0; --brand-soft: #f4eadb; --lamp: #e39235; --lamp-soft: #fbe3cc;
+  --translation: #a0461f; --focus: #a0461f;
   --green: #2e7d4f; --green-soft: #e3f2e8; --yellow: #8a5a00; --yellow-soft: #fbefd5;
-  --red: #b3261e; --red-soft: #fbe7e4; --blue-soft: #e7eef4; --gray-soft: #edf1ed;
-  --amber: #b7791f; --on-strong: #ffffff; --scrim: rgba(20,30,27,.4); --shadow: rgba(0,0,0,.08);
+  --red: #b3261e; --red-soft: #fbe7e4; --blue-soft: #e7eef4; --gray-soft: #f4eadb;
+  --amber: #8a5314; --on-strong: #ffffff; --scrim: rgba(59,43,34,.4); --shadow: rgba(59,43,34,.08);
   --radius: 18px; --radius-sm: 12px;
   color-scheme: light;
-  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Roboto, sans-serif;
+  font-family: "Public Sans", "Segoe UI", system-ui, sans-serif;
   color: var(--ink); background: var(--bg);
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-size: 1.0625rem; line-height: 1.55; }
-h1, h2 { font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif; font-weight: 600; letter-spacing: -.01em; }
+h1, h2 { font-family: inherit; font-weight: 600; letter-spacing: -.025em; }
 h1 { font-size: 1.85rem; line-height: 1.2; margin: 0 0 .5rem; }
 h2 { font-size: 1.35rem; margin: 0 0 .6rem; }
 h3 { font-size: 1.05rem; font-weight: 600; margin: 1.4rem 0 .5rem; }
+html[lang="es"] h1, html[lang="es"] h2 { color: var(--translation); }
 p { margin: .3rem 0 .9rem; }
 .muted { color: var(--muted); }
 .small { font-size: .88rem; }
@@ -28,15 +37,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 input, select, textarea { background: var(--panel); border: 1.5px solid var(--line); border-radius: var(--radius-sm); padding: .7rem .85rem; width: 100%; }
 input:hover, select:hover, textarea:hover { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); }
 textarea { resize: vertical; line-height: 1.5; }
-:focus-visible { outline: 3px solid var(--lamp); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 details > summary { cursor: pointer; }
 
 /* ---- top: name, language, settings ---- */
 .top { display: flex; align-items: center; gap: 1rem; padding: .9rem 1.5rem; background: var(--panel); flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: .75rem; }
-.logo { width: 44px; height: 44px; border-radius: 50%; background: var(--lamp-soft); color: var(--brand); display: grid; place-items: center; }
-.logo svg { width: 28px; height: 28px; }
-.name { font-weight: 600; font-size: 1.15rem; }
+.logo { width: 46px; height: 46px; border-radius: 13px; background: #fbe3cc; display: grid; place-items: center; }
+.logo img { width: 36px; height: 36px; }
+.name { font-weight: 700; font-size: 1.3rem; letter-spacing: -.035em; }
 .tag { font-size: .88rem; color: var(--muted); }
 .right { margin-left: auto; display: flex; gap: .6rem; align-items: center; }
 .lang { display: flex; background: var(--gray-soft); border-radius: 999px; padding: 3px; }
@@ -293,10 +302,11 @@ a.chip.kipu:hover { text-decoration: underline; }
 
 /* Dark: warm charcoal, not pure black. Status colors are lighter so text on dark stays readable. */
 :root[data-theme="dark"] {
-  --bg: #121816; --panel: #1b2321; --ink: #e8eeeb; --muted: #a9b7b2; --line: #34423e;
-  --brand: #7fcca4; --brand-ink: #0f1714; --brand-soft: #1e3329; --lamp: #f2b43a; --lamp-soft: #362c18;
+  --bg: #211a16; --panel: #2d231d; --ink: #fff2e3; --muted: #cbb6a3; --line: #594639;
+  --brand: #f2ba79; --brand-ink: #211a16; --brand-soft: #493323; --lamp: #edaa58; --lamp-soft: #493323;
+  --translation: #efb68b; --focus: #efb68b;
   --green: #74d39b; --green-soft: #17342a; --yellow: #f1c25e; --yellow-soft: #372c14;
-  --red: #ff8f85; --red-soft: #3e1f1d; --blue-soft: #1c2a35; --gray-soft: #26302d;
+  --red: #ff8f85; --red-soft: #3e1f1d; --blue-soft: #1c2a35; --gray-soft: #3a2d25;
   --amber: #e5a947; --on-strong: #10140f; --scrim: rgba(0,0,0,.6); --shadow: rgba(0,0,0,.4);
   color-scheme: dark;
 }

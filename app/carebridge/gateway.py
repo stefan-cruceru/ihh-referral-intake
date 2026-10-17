@@ -101,31 +101,31 @@ W = {
     "ms_h": ("Sign in with Microsoft", "Entrar con Microsoft"),
     "ms_not": ("Not connected in this demo. This is what happens at IHH once IT registers the app.",
                "No está conectado en esta demo. Esto pasa en IHH cuando TI registre la app."),
-    "ms_1": ("You click <b>Sign in with Microsoft</b>. Care Bridge sends you to IHH's own Microsoft sign-in page "
-             "(<code>login.microsoftonline.com</code>, IHH's tenant). Care Bridge never sees your password.",
-             "Usted hace clic en <b>Entrar con Microsoft</b>. Care Bridge lo lleva a la página de Microsoft de IHH "
-             "(<code>login.microsoftonline.com</code>, el inquilino de IHH). Care Bridge nunca ve su contraseña."),
+    "ms_1": ("You click <b>Sign in with Microsoft</b>. Lamplight sends you to IHH's own Microsoft sign-in page "
+             "(<code>login.microsoftonline.com</code>, IHH's tenant). Lamplight never sees your password.",
+             "Usted hace clic en <b>Entrar con Microsoft</b>. Lamplight lo lleva a la página de Microsoft de IHH "
+             "(<code>login.microsoftonline.com</code>, el inquilino de IHH). Lamplight nunca ve su contraseña."),
     "ms_2": ("You sign in with the same work account you use for Teams, with IHH's usual multi-factor check.",
              "Entra con la misma cuenta del trabajo que usa en Teams, con la revisión de varios pasos de siempre en IHH."),
-    "ms_3": ("Microsoft sends you back with a one-time code. Care Bridge trades it with Microsoft, over a secure "
-             "connection, for an ID token with your name, email and your <b>Care Bridge roles</b> (standard OAuth 2.0 "
+    "ms_3": ("Microsoft sends you back with a one-time code. Lamplight trades it with Microsoft, over a secure "
+             "connection, for an ID token with your name, email and your <b>Lamplight roles</b> (standard OAuth 2.0 "
              "with PKCE and OpenID Connect).",
-             "Microsoft lo regresa con un código de un solo uso. Care Bridge lo cambia con Microsoft, por una conexión "
-             "segura, por un token de identidad con su nombre, su correo y sus <b>roles de Care Bridge</b> (OAuth 2.0 "
+             "Microsoft lo regresa con un código de un solo uso. Lamplight lo cambia con Microsoft, por una conexión "
+             "segura, por un token de identidad con su nombre, su correo y sus <b>roles de Lamplight</b> (OAuth 2.0 "
              "estándar con PKCE y OpenID Connect)."),
-    "ms_4": ("Care Bridge checks the token was made for this app, for IHH's tenant and for this sign-in, then "
+    "ms_4": ("Lamplight checks the token was made for this app, for IHH's tenant and for this sign-in, then "
              "signs you in with those roles. The server checks every action against them.",
-             "Care Bridge revisa que el token sea para esta app, para el inquilino de IHH y para este inicio de sesión. "
+             "Lamplight revisa que el token sea para esta app, para el inquilino de IHH y para este inicio de sesión. "
              "Luego lo deja entrar con esos roles. El servidor revisa cada acción contra ellos."),
     "ms_roles": ("<b>Roles come from Microsoft Entra.</b> IT assigns these app roles to people or groups:",
                  "<b>Los roles vienen de Microsoft Entra.</b> TI asigna estos roles de la app a personas o grupos:"),
     "ms_norole": ("No role, no entry. Only the clinical role can deny a referral.",
                   "Sin rol, no hay entrada. Solo el rol clínico puede decir que no a un referido."),
-    "ms_it": ("<b>What IT does once:</b> register Care Bridge in Microsoft Entra, add the four app roles, assign "
+    "ms_it": ("<b>What IT does once:</b> register Lamplight in Microsoft Entra, add the four app roles, assign "
               "people or groups, then put the tenant ID and client ID in Settings (or <code>CAREBRIDGE_TEAMS_TENANT</code> "
               "and <code>CAREBRIDGE_TEAMS_CLIENT_ID</code>). From then on this button is the only way in, and practice "
               "sign-in turns off.",
-              "<b>Lo que TI hace una vez:</b> registra Care Bridge en Microsoft Entra, agrega los cuatro roles de la app, "
+              "<b>Lo que TI hace una vez:</b> registra Lamplight en Microsoft Entra, agrega los cuatro roles de la app, "
               "los asigna a personas o grupos y pone los ID del inquilino y del cliente en Ajustes (o "
               "<code>CAREBRIDGE_TEAMS_TENANT</code> y <code>CAREBRIDGE_TEAMS_CLIENT_ID</code>). Desde entonces este "
               "botón es la única forma de entrar y el inicio de práctica se apaga."),
@@ -134,7 +134,7 @@ W = {
     "try_again": ("Try again", "Intentar otra vez"),
     "pick": ("Pick someone on the list.", "Escoja a alguien de la lista."),
     "expired": ("This link has expired.", "Este enlace venció."),
-    "open_cb": ("Open Care Bridge", "Abrir Care Bridge"),
+    "open_cb": ("Open Lamplight", "Abrir Lamplight"),
     "not_yours": ("This link is for someone else", "Este enlace es para otra persona"),
     "sent_to": ("It was sent to {who}. Sign in as that person, or open the referral from the board.",
                 "Se envió a {who}. Entre como esa persona o abra el referido desde el tablero."),

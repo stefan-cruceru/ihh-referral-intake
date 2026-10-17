@@ -7,6 +7,8 @@ import tempfile
 from email.message import EmailMessage
 from pathlib import Path
 
+import pytest
+
 APP = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(APP))
 os.environ.setdefault("CAREBRIDGE_DB", os.path.join(tempfile.mkdtemp(), "test.db"))
@@ -20,7 +22,7 @@ PAGES = {1: {"page": 1, "page_type": "ihh_referral_form", "rotation": 0, "mostly
              "language": "en", "possible_unredacted_identifier": False, "duplicate_of": None, "blank": False}}
 
 
-def _qc(statuses, handwriting="none", confidence=95, transcript="Pt ambulates [illegible] ft"):
+def _qc(statuses, handwriting="none", confidence=95, transcript="Pt ambulates [illegible] ft", pages=None):
     facts = [{"id": "F1", "page": 1, "topic": "adl", "statement": "s", "statement_es": "s", "quote": "q", "verify": "found"}]
     assessment = {
         "reason_for_referral": "x", "reason_for_referral_es": "x", "wheelchair_dependent": "no", "preferred_language": "",
@@ -30,7 +32,7 @@ def _qc(statuses, handwriting="none", confidence=95, transcript="Pt ambulates [i
         "conflicts": [], "questions": [], "summary": "", "summary_es": "",
     }
     text = {1: {"transcript": transcript, "handwriting": handwriting, "ocr_confidence": confidence}}
-    return intake.quality_control(assessment, facts, PAGES, {}, text)
+    return intake.quality_control(assessment, facts, PAGES if pages is None else pages, {}, text)
 
 
 def test_illegible_handwriting_goes_to_a_person():
@@ -58,6 +60,33 @@ def test_ocr_under_80_percent_goes_to_a_person():
     assert _qc(all_met(), confidence=250, transcript=ok)["pages"][0]["ocr_confidence"] == 100
     # The gate never turns a "likely no" into anything softer.
     assert _qc(all_met(**{"ADL-2": "not_met"}), confidence=40, transcript=ok)["recommendation"]["code"] == "likely_no"
+
+
+def test_a_page_omitted_from_the_read_requires_clinical_review_before_acceptance():
+    pages = {**PAGES, 2: {**PAGES[1], "page": 2, "page_type": "progress_note"}}
+    rep = _qc(all_met(), transcript="Pt ambulates 150 ft", pages=pages)
+    assert rep["pages"][1]["ocr_confidence"] == 0
+    assert rep["pages"][1]["needs_reader"] == ["low_confidence"]
+    assert rep["recommendation"]["code"] == "clinical_check"
+    assert rep["flags"]["low_confidence_pages"] == [2] == rep["recommendation"]["illegible_pages"]
+    t = tracker.Tracker()
+    cid = t.add({"hospital": "H", "channel": "fax"})["id"]
+    t.attach_review(cid, rep)
+    with pytest.raises(ValueError, match=r"page\(s\) 2"):
+        t.act(cid, "accepted", who="Coordinator A", role="coordinator")
+    assert t.cards[cid]["status"] != "accepted"
+    t.act(cid, "clinical_done", who="Clinical B", role="clinical")
+    assert t.act(cid, "accepted", who="Coordinator A", role="coordinator")["status"] == "accepted"
+
+
+@pytest.mark.parametrize("skip", [{"blank": True}, {"duplicate_of": 1}, {"isolated": True}])
+def test_pages_intentionally_not_read_do_not_require_an_ocr_review(skip):
+    pages = {**PAGES, 2: {**PAGES[1], "page": 2, **skip}}
+    rep = _qc(all_met(), transcript="Pt ambulates 150 ft", pages=pages)
+    assert rep["pages"][1]["needs_reader"] == []
+    assert rep["pages"][1]["ocr_confidence"] is None
+    assert rep["flags"]["low_confidence_pages"] == [] == rep["recommendation"]["illegible_pages"]
+    assert rep["recommendation"]["code"] != "clinical_check"
 
 
 def test_full_review_carries_the_ocr_score_to_the_route(monkeypatch):

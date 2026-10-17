@@ -184,8 +184,8 @@
   "es": "Si escribe uno por error, la app se detiene y le avisa."
  },
  "ob_safe_3": {
-  "en": "Care Bridge helps you. It does not replace you.",
-  "es": "Care Bridge le ayuda. No le reemplaza."
+  "en": "Lamplight helps you. It does not replace you.",
+  "es": "Lamplight le ayuda. No le reemplaza."
  },
  "ob_next": {
   "en": "Next",
@@ -248,16 +248,16 @@
   "es": "por llegar"
  },
  "sim_title": {
-  "en": "The same 5 referrals, two ways. (Sample times: 40 minutes each by hand, 10 with Care Bridge, 1 person.)",
-  "es": "Los mismos 5 referidos, de dos formas. (Tiempos de ejemplo: 40 minutos cada uno a mano, 10 con Care Bridge, 1 persona.)"
+  "en": "The same 5 referrals, two ways. (Sample times: 40 minutes each by hand, 10 with Lamplight, 1 person.)",
+  "es": "Los mismos 5 referidos, de dos formas. (Tiempos de ejemplo: 40 minutos cada uno a mano, 10 con Lamplight, 1 persona.)"
  },
  "sim_manual": {
   "en": "By hand",
   "es": "A mano"
  },
  "sim_tool": {
-  "en": "With Care Bridge",
-  "es": "Con Care Bridge"
+  "en": "With Lamplight",
+  "es": "Con Lamplight"
  },
  "sim_missed": {
   "en": "late",
