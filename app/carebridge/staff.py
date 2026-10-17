@@ -4,7 +4,7 @@ Each practice shows exactly what was sent to the AI and what it cost. The note h
 own draft: every sentence must point to words the staff member actually wrote, or it is flagged.
 """
 
-from . import llm, phi, rules
+from . import config, llm, phi, rules
 
 S = llm.strict
 
@@ -52,7 +52,7 @@ def note_draft(jottings: str, lang: str = "en") -> dict:
     usage = llm.Usage()
     res = llm.call_json(system=NOTE_PROMPT.format(lang="Spanish" if lang == "es" else "English"),
                         content=[{"type": "text", "text": f"JOTTINGS\n{jottings}"}],
-                        schema=NOTE_SCHEMA, effort="low", max_tokens=8000, usage=usage)
+                        schema=NOTE_SCHEMA, model=config.side_model(), effort="low", max_tokens=8000, usage=usage)
     norm = " ".join(jottings.lower().split())
     for s in res["sentences"]:
         src = " ".join(s["source"].lower().split())
@@ -69,6 +69,6 @@ def explain_rule(rule_id: str, lang: str = "en") -> dict:
     usage = llm.Usage()
     sent = f"RULE {r['id']} [{r['kind']}, {r['section']}]: {r['text']}" + (f"\nKNOWN GAP: {gap[0]}" if gap else "")
     res = llm.call_json(system=EXPLAIN_PROMPT.format(lang="Spanish" if lang == "es" else "English"),
-                        content=[{"type": "text", "text": sent}], schema=EXPLAIN_SCHEMA, effort="low",
-                        max_tokens=4000, usage=usage)
+                        content=[{"type": "text", "text": sent}], schema=EXPLAIN_SCHEMA,
+                        model=config.side_model(), effort="low", max_tokens=4000, usage=usage)
     return {"rule": r, "gap": gap[0] if gap else None, "sent_to_ai": sent, **res, "cost": usage.as_dict()}

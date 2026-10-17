@@ -422,7 +422,7 @@ class Handler(BaseHTTPRequestHandler):
                 prod = config.production()
                 real = sorted(x.stem for x in packets_dir().glob("R*.pdf")) if packets_dir() and not prod else []
                 return self._json({"app": APP_NAME, "version": __version__, "has_key": bool(config.get_api_key()),
-                                   "model": config.model(), "fast_model": config.fast_model(),
+                                   "model": config.model(), "fast_model": config.fast_model(), "side_model": config.side_model(),
                                    "lang": s.get("lang", "en"), "real_packets": real, "provider": config.provider(),
                                    "foundry_resource": config.foundry_resource(), "inbox_dir": config.inbox_dir(), "kipu_url": config.kipu_url(),
                                    "overnight_clock": TRACK.overnight_clock, "auto_hospital_messages": hospital.auto(),
@@ -516,7 +516,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(send_page_upload(data, name, form))
             if p == "/api/settings":
                 b = self._jbody()
-                keys = ("lang", "model", "fast_model", "provider", "foundry_resource", "inbox_dir", "kipu_url",
+                keys = ("lang", "model", "fast_model", "side_model", "provider", "foundry_resource", "inbox_dir", "kipu_url",
                         "overnight_clock", "auto_hospital_messages")
                 if "overnight_clock" in b:
                     if b["overnight_clock"] not in ("arrival", "morning"):
