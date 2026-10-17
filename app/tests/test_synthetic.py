@@ -43,7 +43,7 @@ def test_denials_and_needs_info_match_the_answer_key():
 def test_demo_inbox_points_at_synthetic_patients():
     import json
 
-    inbox = json.loads((APP / "demo" / "inbox.json").read_text(encoding="utf-8"))
+    inbox = json.loads((APP.parent / "demo" / "inbox.json").read_text(encoding="utf-8"))
     ids = {p["id"] for p in synthetic.profiles()}
     assert all(r["packet"] in ids for r in inbox["referrals"])
 

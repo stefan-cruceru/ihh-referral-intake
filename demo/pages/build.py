@@ -1,11 +1,11 @@
-"""Builds the public GitHub Pages site: python app/pages/build.py [out_dir]  (default _site/).
+"""Builds the public GitHub Pages site: python demo/pages/build.py [out_dir]  (default _site/).
 
   index.html          the landing page: demo video, architecture, docs, campaign
   404.html            any other path: installs the service worker so links into app/ work cold
   app/                the working app, run in the browser by sw.js (see README.md here)
   carebridge.zip      the Lamplight source and practice data the app reads, laid out as in the repo
   architecture.html   docs/architecture.html, the system map
-  media/              docs/media: the demo video, its cover and subtitles
+  media/              demo/media: the demo video, its cover and subtitles
   docs/*.html         the repo's Markdown docs, rendered
   campaign/           the staff campaign
 
@@ -26,9 +26,11 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 GITHUB = "https://github.com/stefan-cruceru/ihh-referral-intake/blob/main/"
 # The code, plus every data file paths.py names with _data(..., "<repo path>"), so a new one ships too.
-INCLUDE = ["app/carebridge", "app/pages/bridge.py", "challenges", "m365", "copilot"]
+INCLUDE = ["app/carebridge", "demo/pages/bridge.py", "challenges", "m365", "copilot"]
 DATA = re.findall(r'_data\(\s*"[^"]*"\s*,\s*"([^"]+)"\s*\)', (REPO / "app/carebridge/paths.py").read_text(encoding="utf-8"))
 SKIP_DIRS = {"__pycache__", "packets"}
+# The demo folder ships its practice data, not the site itself or the video (those are copied separately).
+SKIP_PREFIXES = ("demo/media/", "demo/pages/")
 # Rendered docs, in the order the landing page lists them: (repo path, page name).
 DOCS = [("README.md", "readme"), ("docs/closed-loop.md", "closed-loop"), ("docs/workflow-and-timing.md", "workflow-and-timing"),
         ("docs/kipu-and-teams.md", "kipu-and-teams"), ("docs/notifications.md", "notifications"), ("docs/bilingual.md", "bilingual"),
@@ -84,7 +86,8 @@ def _zip_app(out: Path) -> None:
             for p in files:
                 parts = p.relative_to(REPO).parts
                 name = "/".join(parts)
-                if SKIP_DIRS & set(parts) or p.suffix == ".pyc" or name in seen:
+                if SKIP_DIRS & set(parts) or p.suffix == ".pyc" or name in seen or \
+                        (src.is_dir() and name.startswith(SKIP_PREFIXES)):
                     continue
                 seen.add(name)
                 z.write(p, name)
@@ -163,7 +166,7 @@ def build(out: Path) -> Path:
     (out / ".nojekyll").write_text("")
     _zip_app(out)
     shutil.copy2(REPO / "docs/architecture.html", out / "architecture.html")
-    shutil.copytree(REPO / "docs/media", out / "media")
+    shutil.copytree(REPO / "demo/media", out / "media")
     shutil.copytree(REPO / "campaign", out / "campaign", ignore=shutil.ignore_patterns("README.md"))
     docs = _render_docs(out)
     items = "\n".join(f'      <li><a href="{d["href"]}">{html.escape(d["title"])}</a> <span class="path">{d["path"]}</span></li>'

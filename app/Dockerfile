@@ -21,7 +21,7 @@ COPY challenges/2-finding-the-right-resource/scenarios/client-scenarios.json cha
 COPY m365/status-messages.json m365/
 COPY campaign/logo/lamplight-logo.svg campaign/logo/
 COPY app/carebridge app/carebridge
-COPY app/demo app/demo
+COPY demo demo
 COPY app/tests app/tests
 
 RUN useradd --create-home --uid 1000 carebridge \
