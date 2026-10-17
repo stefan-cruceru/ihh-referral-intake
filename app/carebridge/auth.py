@@ -50,9 +50,14 @@ PERMISSIONS = {
     "alert_mark": _STAFF + ("admin",), "alert_mark_any": ("lead", "admin"), "people_edit": ("lead", "admin"),
     # settings
     "settings": ("lead", "admin"), "api_key": ("admin",),
+    # a personal token so an agent (Microsoft 365 Copilot) can call /mcp as the person who made it
+    "mcp_token": _STAFF + ("admin",),
     # help for clients, practice, rules: anyone signed in
     "staff_tools": _STAFF + ("admin",),
 }
+# What each MCP tool needs over HTTP (/mcp). Tools not listed need "staff_tools".
+MCP_TOOLS = {"review_referral_packet": "review"}
+
 # Practice mode is made-up data: anyone may restart the demo there.
 PRACTICE_OPEN = {"demo"}
 SESSION_HOURS = 12
@@ -72,9 +77,21 @@ _used_links: set[str] = set()
 _lock = threading.Lock()
 
 
+def microsoft_configured() -> bool:
+    """IHH IT has registered the app in Entra (tenant and client IDs are set). Same keys as teams.py."""
+    s = config.load_settings()
+    return bool((os.environ.get("CAREBRIDGE_TEAMS_TENANT") or s.get("teams_tenant")) and
+                (os.environ.get("CAREBRIDGE_TEAMS_CLIENT_ID") or s.get("teams_client_id")))
+
+
 def mode() -> str:
+    """Once IHH's Microsoft sign-in is set up, it is the only way in: practice sign-in (pick anyone,
+    even a made-up clinician) and no sign-in are refused, whatever a setting says. Without it, the
+    practice sign-in is the default and "off" is allowed for a single-user laptop."""
+    if microsoft_configured():
+        return "teams"
     m = os.environ.get("CAREBRIDGE_AUTH") or config.load_settings().get("auth") or "practice"
-    return m if m in ("practice", "teams", "off") else "practice"
+    return m if m in ("practice", "off") else "practice"
 
 
 def staff() -> list[dict]:
@@ -110,6 +127,16 @@ def session(cookie_header: str | None) -> dict | None:
     if s and s["exp"] > time.time():
         return s
     return None
+
+
+def bearer_session(authorization: str | None) -> dict | None:
+    """A session from "Authorization: Bearer <token>", for agents calling /mcp. The token is one a
+    signed-in person made (/api/me/token), so it carries their identity and roles."""
+    kind, _, token = (authorization or "").partition(" ")
+    if kind.lower() != "bearer" or not token:
+        return None
+    s = _sessions.get(token.strip())
+    return s if s and s["exp"] > time.time() else None
 
 
 def end_session(cookie_header: str | None) -> None:
