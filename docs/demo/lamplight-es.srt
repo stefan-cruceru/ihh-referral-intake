@@ -11,16 +11,16 @@ Para quien coordina, hay páginas de fax, expedientes pendientes y otro hospital
 Lamplight reúne la evidencia y el próximo paso en un solo lugar.
 
 4
-00:00:15,250 --> 00:00:20,032
-Esta es la app: cada referido tiene una persona responsable y un plazo.
+00:00:15,250 --> 00:00:18,861
+Empiece con cuatro pasos de bienvenida, pensados para el personal.
 
 5
-00:00:20,032 --> 00:00:24,229
-Los pacientes son ficticios. Las revisiones de práctica usan las respuestas de los organizadores,
+00:00:18,861 --> 00:00:22,080
+Después, una lista con responsables y plazos.
 
 6
-00:00:24,229 --> 00:00:29,321
-pasadas por las comprobaciones de la app. Esta grabación no muestra extracción de IA en vivo.
+00:00:22,080 --> 00:00:28,439
+Estos pacientes ficticios usan revisiones basadas en las respuestas de referencia y comprobadas por la app; no muestran extracción de IA en vivo.
 
 7
 00:00:30,250 --> 00:00:33,830
@@ -83,20 +83,20 @@ Las citas conservan el idioma original.
 El personal revisa las traducciones de IA. Sigue pendiente la revisión bilingüe de IHH.
 
 22
-00:01:32,250 --> 00:01:35,833
-Después de resolver las dudas, el personal puede registrar la aceptación.
+00:01:34,250 --> 00:01:36,830
+El personal aclara las dudas y registra la aceptación.
 
 23
-00:01:35,833 --> 00:01:38,749
-Entonces quedan listos los borradores para la entrega: los campos del expediente,
+00:01:36,830 --> 00:01:38,812
+Siguen los borradores de entrega: los campos del expediente,
 
 24
-00:01:38,749 --> 00:01:41,630
+00:01:38,812 --> 00:01:41,879
 la fila del censo y el correo al centro.
 
 25
-00:01:41,630 --> 00:01:45,810
-La decisión y la persona que la tomó quedan en el registro local.
+00:01:41,879 --> 00:01:45,581
+Un admin puede revisar quién hizo qué y cuándo.
 
 26
 00:01:47,250 --> 00:01:50,877

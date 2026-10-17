@@ -71,21 +71,21 @@
     },
     {
       "start": 15.25,
-      "end": 20.032,
-      "en": "Here is the working app: an owner and a deadline for every referral.",
-      "es": "Esta es la app: cada referido tiene una persona responsable y un plazo."
+      "end": 18.861,
+      "en": "Start with a four-step welcome, built for staff.",
+      "es": "Empiece con cuatro pasos de bienvenida, pensados para el personal."
     },
     {
-      "start": 20.032,
-      "end": 24.229,
-      "en": "These are invented patients. Practice reviews use the organizers' answer key,",
-      "es": "Los pacientes son ficticios. Las revisiones de práctica usan las respuestas de los organizadores,"
+      "start": 18.861,
+      "end": 22.08,
+      "en": "Then one queue, with owners and deadlines.",
+      "es": "Después, una lista con responsables y plazos."
     },
     {
-      "start": 24.229,
-      "end": 29.321,
-      "en": "passed through the app's checks. This recording does not show live AI extraction.",
-      "es": "pasadas por las comprobaciones de la app. Esta grabación no muestra extracción de IA en vivo."
+      "start": 22.08,
+      "end": 28.439,
+      "en": "These invented practice patients use answer-key reviews passed through app checks, not live AI extraction.",
+      "es": "Estos pacientes ficticios usan revisiones basadas en las respuestas de referencia y comprobadas por la app; no muestran extracción de IA en vivo."
     },
     {
       "start": 30.25,
@@ -178,28 +178,28 @@
       "es": "El personal revisa las traducciones de IA. Sigue pendiente la revisión bilingüe de IHH."
     },
     {
-      "start": 92.25,
-      "end": 95.833,
-      "en": "After staff resolve open questions, they can record acceptance.",
-      "es": "Después de resolver las dudas, el personal puede registrar la aceptación."
+      "start": 94.25,
+      "end": 96.83,
+      "en": "Staff resolve questions and record acceptance.",
+      "es": "El personal aclara las dudas y registra la aceptación."
     },
     {
-      "start": 95.833,
-      "end": 98.749,
-      "en": "Then the handoff drafts are ready: chart fields,",
-      "es": "Entonces quedan listos los borradores para la entrega: los campos del expediente,"
+      "start": 96.83,
+      "end": 98.812,
+      "en": "Handoff drafts follow: chart fields,",
+      "es": "Siguen los borradores de entrega: los campos del expediente,"
     },
     {
-      "start": 98.749,
-      "end": 101.63,
+      "start": 98.812,
+      "end": 101.879,
       "en": "the census row, and the site email.",
       "es": "la fila del censo y el correo al centro."
     },
     {
-      "start": 101.63,
-      "end": 105.81,
-      "en": "The decision and who made it stay in the local log.",
-      "es": "La decisión y la persona que la tomó quedan en el registro local."
+      "start": 101.879,
+      "end": 105.581,
+      "en": "An admin can review who did what and when.",
+      "es": "Un admin puede revisar quién hizo qué y cuándo."
     },
     {
       "start": 107.25,

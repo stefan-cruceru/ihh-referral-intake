@@ -137,6 +137,33 @@ def sign_in(browser, base):
     return context, page, me
 
 
+def practice_admin_state(browser, base):
+    """A separate invented IT account; Avery keeps the lead role throughout."""
+    context = browser.new_context(viewport=VIEWPORT)
+    context.add_init_script(INIT)
+    page = context.new_page()
+    page.goto(base + "/auth/signin?lang=en", wait_until="networkidle")
+    if "Practice sign-in" not in page.locator("body").inner_text():
+        raise RuntimeError("Refusing to create an IT fixture outside practice sign-in.")
+    existing = page.get_by_role("button", name=re.compile(r"^Demo IT \(fictional\)"))
+    if existing.count():
+        existing.click()
+    else:
+        page.get_by_text("Add a practice person", exact=True).click()
+        form = page.locator('form[action="/auth/practice/add"]')
+        form.locator('[name="name"]').fill("Demo IT (fictional)")
+        form.locator('[name="email"]').fill("demo.it@ihh.example.org")
+        form.locator('[name="role"]').select_option("admin")
+        form.get_by_role("button", name="Add and sign in", exact=True).click()
+    page.wait_for_url(base + "/", wait_until="networkidle")
+    me = check_response(context.request.get(base + "/api/me"), "practice IT identity")
+    assert me.get("auth") == "practice" and me.get("via") == "practice" and me.get("role") == "admin", me
+    assert me.get("email") == "demo.it@ihh.example.org", me
+    state = context.storage_state()
+    context.close()
+    return state
+
+
 def seed_practice(context, base):
     queue = check_response(context.request.get(base + "/api/queue"), "existing queue")
     if any(not card.get("practice") for card in queue.get("cards", [])):
@@ -223,12 +250,14 @@ def first_clean_frame(path):
     raise RuntimeError("Could not detect the discarded recording pre-roll marker.")
 
 
-def record(browser, state, args):
+def record(browser, state, admin_state, args):
     recordings = args.scratch / "lamplight-recordings"
     recordings.mkdir(exist_ok=True)
     context = browser.new_context(viewport=VIEWPORT, storage_state=state,
                                   record_video_dir=str(recordings), record_video_size=VIEWPORT)
     context.add_init_script(INIT)
+    context.add_init_script("if(location.origin===" + json.dumps(args.base) +
+                            "){localStorage.removeItem('cb_onboarded')}")
     page = context.new_page()
     context.new_cdp_session(page).send("Emulation.setDefaultBackgroundColorOverride",
                                        {"color": {"r": 255, "g": 248, "b": 240, "a": 1}})
@@ -308,13 +337,22 @@ def record(browser, state, args):
         page.wait_for_function("lang=>document.documentElement.lang===lang", arg=lang)
 
     mark("opening")
-    at(15)
+    at(13)
     page.goto(args.base + "/", wait_until="domcontentloaded")
     page.evaluate(CURSOR)
+    page.locator("#onboard:not(.hidden)").wait_for()
+    page.locator("#ob-title").wait_for()
+    mark("four-step welcome: lamp and staff promise")
+    at(15); click(page.locator("#ob-next")); mark("welcome role selection")
+    at(16); click(page.locator("#ob-next")); mark("welcome human decision and AI limits")
+    at(18); click(page.locator("#ob-next")); mark("welcome practice invitation")
+    at(19); click(page.locator("#ob-skip"))
+    page.locator("#onboard").wait_for(state="hidden")
     page.locator(".card").first.wait_for()
-    mark("practice queue")
-    at(17); page.mouse.move(340, 560, steps=30)
-    at(19); page.evaluate("window.scrollTo({top:310,behavior:'smooth'})")
+    queue = check_response(context.request.get(args.base + "/api/queue"), "retained practice queue")
+    assert queue["pending"] == 0 and queue["speed"] == 0 and len(queue["cards"]) == 5
+    mark("practice queue; welcome skipped without reset")
+    at(20); page.mouse.move(340, 560, steps=30); page.evaluate("window.scrollTo({top:310,behavior:'smooth'})")
     at(22); callout("Fictional patients.<br>A working workflow.", "Pacientes ficticios.<br>Un flujo de trabajo en acción.")
     at(26); clear(); page.mouse.move(550, 390, steps=20)
     at(30); open_card("DEMO-101"); callout("Check the chart.<br>Keep the conflict.", "Revise el expediente.<br>Muestre la contradicción."); mark("S06 self-care evidence")
@@ -337,16 +375,36 @@ def record(browser, state, args):
     at(82); language("es"); open_card("DEMO-103"); mark("same S09 card Spanish")
     at(84); smooth_to(panel("En pocas palabras"), 40)
     at(86); smooth_to(page.locator(".drafts-tabs"), 40); click(page.locator('[data-draft="chase_nudge"]')); callout("Same referral.<br>Spanish follow-up.", "El mismo referido.<br>Seguimiento en español.")
-    at(92); language("en"); open_card("DEMO-102"); smooth_to(page.locator('[data-act="hospital_replied"]'), 120); mark("staff resolve questions and decide")
+    at(90); language("en")
+    at(92); open_card("DEMO-102"); smooth_to(page.locator('[data-act="hospital_replied"]'), 120); mark("staff resolve questions and decide")
     callout("People resolve questions.<br>People decide.", "Las personas aclaran las dudas.<br>Las personas deciden.")
-    at(95); click(page.locator('[data-act="hospital_replied"]'))
-    at(96); click(page.locator('[data-act="intake_cleared"]'))
-    at(98); click(page.locator('[data-act="accepted"]')); mark("accepted by Avery practice lead")
+    at(94.5); click(page.locator('[data-act="hospital_replied"]'))
+    at(95.5); click(page.locator('[data-act="intake_cleared"]'))
+    at(96.5); click(page.locator('[data-act="accepted"]')); mark("accepted by Avery practice lead")
     accepted = check_response(context.request.get(args.base + "/api/cards/DEMO-102"), "practice acceptance")
     assert accepted["card"]["status"] == "accepted"
     assert any(a["what"] == "accepted" and "Avery" in a["who"] for a in accepted["audit"])
-    at(100); smooth_to(page.locator(".drafts-tabs"), 38); click(page.locator('[data-draft="handoffs"]')); clear()
-    at(103); smooth_to(page.get_by_role("heading", name=re.compile(r"^For the census sheet")), 30)
+    at(98); smooth_to(page.locator(".drafts-tabs"), 38); click(page.locator('[data-draft="handoffs"]')); clear()
+    at(100.5); smooth_to(page.get_by_role("heading", name=re.compile(r"^For the census sheet")), 30)
+    at(103)
+    admin_cookies = [cookie for cookie in admin_state["cookies"] if cookie["name"] == "cb_session"]
+    assert len(admin_cookies) == 1
+    context.add_cookies(admin_cookies)
+    page.goto(args.base + "/static/audit.html", wait_until="domcontentloaded")
+    page.locator("#rows tr").first.wait_for()
+    page.locator("#case").fill("DEMO-102")
+    page.locator("#kind").select_option("decision")
+    with page.expect_response(lambda response: response.url.startswith(args.base + "/api/audit-log?")
+                              and "case=DEMO-102" in response.url) as filtered:
+        page.locator("#go").click()
+    assert filtered.value.ok
+    decision = page.locator("#rows tr").filter(has_text="accepted").filter(has_text="Avery").last
+    decision.wait_for()
+    decision.scroll_into_view_if_needed()
+    focus(decision.locator("td").nth(3))
+    me = check_response(context.request.get(args.base + "/api/me"), "audit viewer identity")
+    assert me.get("role") == "admin" and me.get("email") == "demo.it@ihh.example.org"
+    mark("separate fictional admin audit: who, what, when")
     at(107); page.goto(args.film + "/lamplight-closing.html", wait_until="networkidle"); page.locator("video").evaluate("v=>v.play()"); mark("closing")
     at(120.25)
     stem = "lamplight-smoke" if args.quick else "lamplight"
@@ -361,6 +419,7 @@ def record(browser, state, args):
     offset = first_clean_frame(raw)
     result = {"raw": raw.name, "video_offset": offset, "duration": 120 if not args.quick else None,
               "practice_only": True, "cases": SYNTHETIC, "viewport": VIEWPORT,
+              "roles": {"decision": "Avery (lead)", "audit": "Demo IT (fictional)"},
               "events": events, "page_errors": errors}
     (args.scratch / f"{stem}-capture.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     if errors:
@@ -383,6 +442,7 @@ def main():
     parser.add_argument("--inspect", action="store_true")
     parser.add_argument("--skip-visual-qa", action="store_true")
     args = parser.parse_args()
+    args.base, args.film = args.base.rstrip("/"), args.film.rstrip("/")
     if urlparse(args.base).hostname != "127.0.0.1":
         parser.error("Only the local practice server on 127.0.0.1 is allowed.")
     args.scratch.mkdir(parents=True, exist_ok=True)
@@ -401,7 +461,8 @@ def main():
         if not args.skip_visual_qa:
             visual_qa(browser, state, args.base, args.scratch)
         if not args.inspect:
-            record(browser, state, args)
+            admin_state = practice_admin_state(browser, args.base)
+            record(browser, state, admin_state, args)
         browser.close()
 
 
