@@ -87,7 +87,7 @@ def test_every_word_on_these_pages_has_both_languages():
 
 def test_app_pages_share_one_language_choice():
     # Every page with its own language switch saves it the same way, so the next page opens in it.
-    for name in ("kipu.html", "profiles.html", "access.html", "send.html"):
+    for name in ("kipu.html", "access.html", "send.html"):
         src = (WEB / name).read_text(encoding="utf-8")
         assert "cbLang?.set(" in src and "cbLang?.get()" in src, name
     app = (WEB / "app.js").read_text(encoding="utf-8")

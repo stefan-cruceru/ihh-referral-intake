@@ -142,33 +142,6 @@ def test_handout_prints_no_model_phone_or_advice():
     assert "949" not in text and "lawyer" not in text and "dosage" not in text
 
 
-def test_practice_handout_renders_for_every_practice_patient(tmp_path, monkeypatch):
-    """GET /api/profiles/<id>/handout.pdf for S01 to S10: the guard stays on, and the made-up situations pass it."""
-    import threading
-    import urllib.request
-    from http.server import ThreadingHTTPServer
-
-    from demo import synthetic
-
-    monkeypatch.setenv("CAREBRIDGE_AUTH", "off")
-    monkeypatch.setenv("CAREBRIDGE_PRODUCTION", "0")
-    from carebridge import config, phi, webapp
-
-    monkeypatch.setattr(config, "get_api_key", lambda: None)  # the offline match, no model call
-    ids = [p["id"] for p in synthetic.profiles()]
-    assert {f"S{i:02d}" for i in range(1, 11)} <= set(ids)
-    srv = ThreadingHTTPServer(("127.0.0.1", 0), webapp.Handler)
-    threading.Thread(target=srv.serve_forever, daemon=True).start()
-    try:
-        for pid in ids:
-            assert phi.check(synthetic.client_situation(pid)[0])["ok"], pid
-            url = f"http://127.0.0.1:{srv.server_address[1]}/api/profiles/{pid}/handout.pdf"
-            with urllib.request.urlopen(url) as r:
-                assert r.status == 200 and len(pdfium.PdfDocument(r.read())) >= 1, pid
-    finally:
-        srv.shutdown()
-
-
 # ---- 4. what the log and the store keep -----------------------------------------------------------
 
 def test_clinical_ask_text_stays_out_of_the_audit_log():

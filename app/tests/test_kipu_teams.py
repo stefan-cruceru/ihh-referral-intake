@@ -1,11 +1,13 @@
 """Kipu connector against the practice Kipu, Teams sign-in rules and signed links, end to end."""
 
+import base64
 import http.cookiejar
 import json
 import os
 import sys
 import tempfile
 import threading
+import types
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -20,7 +22,53 @@ os.environ["LOCALAPPDATA"] = _tmp  # settings, link key: a throwaway folder
 os.environ["CAREBRIDGE_KIPU_MODE"] = "mock"
 os.environ["CAREBRIDGE_AUTH"] = "practice"
 
-from carebridge import auth, kipu, kipu_mock, teams, tracker  # noqa: E402
+from carebridge import auth, intake, kipu, kipu_mock, rules, teams, tracker  # noqa: E402
+
+
+def _packet() -> bytes:
+    from fpdf import FPDF
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.multi_cell(0, 8, "Made-up referral for a test. Pt ambulates 150 ft with rolling walker.")
+    return bytes(pdf.output())
+
+
+def _seed() -> dict:
+    """Made-up records for the practice Kipu: 4 in care at the practice sites, 2 referrals with a packet."""
+    recs = {}
+    for i in range(6):
+        kid = f"K-{1001 + i}"
+        in_care = i < 4
+        recs[kid] = {"id": kid, "first_name": "Test", "last_name": f"Person{i + 1}", "dob": f"01/0{i + 1}/1960",
+                     "status": "admitted" if in_care else "pre_admission",
+                     "location_name": kipu_mock.SITES[i % len(kipu_mock.SITES)] if in_care else None,
+                     "referral_source": "Practice Hospital", "care_team": [],
+                     "documents": [] if in_care else [{"id": f"{kid}-referral", "name": f"{kid}-referral.pdf",
+                                                       "content_type": "application/pdf",
+                                                       "data": base64.b64encode(_packet()).decode()}]}
+    return recs
+
+
+kipu_mock.ensure_running().records.update(_seed())
+
+
+def _report() -> dict:
+    """A finished review with one blocker on page 1, built the way a live review is (quality_control)."""
+    facts = [{"id": "F1", "page": 1, "topic": "adl", "statement": "s", "statement_es": "s", "quote": "q", "verify": "found"}]
+    statuses = {rid: "met" for rid in rules.assessed_rule_ids()}
+    statuses["ADL-1"] = "not_met"
+    assessment = {
+        "reason_for_referral": "x", "reason_for_referral_es": "x", "wheelchair_dependent": "no", "preferred_language": "",
+        "rules": [{"rule_id": rid, "status": st, "fact_ids": ["F1"] if st in ("met", "not_met") else [],
+                   "explanation": "", "explanation_es": ""} for rid, st in statuses.items()],
+        "diagnoses": [], "checklist": [{"doc_id": d, "status": "present", "pages": [1]} for d in rules.checklist_ids()],
+        "conflicts": [], "questions": [], "summary": "", "summary_es": "",
+    }
+    pages = {1: {"page": 1, "page_type": "ihh_referral_form", "rotation": 0, "mostly_redacted": False, "earlier_stay": False,
+                 "language": "en", "possible_unredacted_identifier": False, "duplicate_of": None, "blank": False}}
+    return intake.quality_control(assessment, facts, pages, {})
 
 
 def test_signature_matches_and_bad_secret_is_refused():
@@ -37,7 +85,7 @@ def test_signature_matches_and_bad_secret_is_refused():
 def test_census_and_pending():
     s = kipu.census()
     assert s["total"] == 4 and sum(s["by_site"].values()) == 4
-    assert len(kipu.pending_referrals()) == 6
+    assert len(kipu.pending_referrals()) == 2
 
 
 def test_returning_client_check_needs_all_three_identifiers():
@@ -91,13 +139,11 @@ def test_signed_links_are_tamper_proof_and_one_time():
 
 
 def test_teams_card_has_no_names_and_links_are_personal():
-    from demo import synthetic
-
-    rep = synthetic.sample_reports()["S06"]
+    rep = _report()
     to = next(s for s in auth.staff() if s["role"] == "clinical")
     card = teams.review_card({"case_no": "DEMO-101"}, rep, to, "http://127.0.0.1:1")
     text = json.dumps(card)
-    assert "HENSLEY" not in text.upper() and "LORRAINE" not in text.upper()
+    assert "PERSON" not in text.upper() and "1960" not in text
     for a in card["actions"]:
         data = auth.read_link_token(a["url"].rsplit("/go/", 1)[1])
         assert data["e"] == to["email"] and data["c"] == "DEMO-101"
@@ -132,9 +178,12 @@ def test_sign_in_sync_and_teams_link_end_to_end():
     call("/auth/practice", {"email": "bea.coordinator@ihh.example.org", "next": "/"}, form=True)
     assert json.load(call("/api/me"))["role"] == "coordinator"
     added = json.load(call("/api/kipu/sync", {}))["added"]
-    assert len(added) == 6
+    assert len(added) == 2
     cid = added[0]
-    assert webapp.TRACK.cards[cid].get("sample")  # practice patient got its practice review
+    assert cid in webapp.PACKETS  # the referral's packet came over from Kipu
+    rep = _report()
+    webapp.REVIEWS[cid] = types.SimpleNamespace(report=rep, stage="done", progress=[], pages=None)
+    webapp.TRACK.attach_review(cid, rep)
     card = json.load(call(f"/api/cards/{cid}/teams-card"))
     deny_url = next(a["url"] for a in card["card"]["actions"] if "no" in a["title"].lower())
     path = urllib.parse.urlparse(deny_url).path

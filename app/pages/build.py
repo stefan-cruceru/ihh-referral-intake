@@ -2,13 +2,13 @@
 
   index.html          the landing page: demo video, architecture, docs, campaign
   app/                the working app, run in the browser by sw.js (see README.md here)
-  carebridge.zip      the Lamplight source and practice data the app reads, laid out as in the repo
+  carebridge.zip      the Lamplight source and the data files the app reads, laid out as in the repo
   architecture.html   docs/architecture.html, the system map
   media/              docs/media: the demo video, its cover and subtitles
   docs/*.html         the repo's Markdown docs, rendered
   campaign/           the staff campaign
 
-No packets: R01-R11 are never in git, and only the synthetic S01-S10 patients ship.
+No packets: R01-R11 are never in git, and no practice patients ship.
 Needs `pip install markdown`.
 """
 
@@ -32,7 +32,7 @@ SKIP_DIRS = {"__pycache__", "packets"}
 DOCS = [("README.md", "readme"), ("docs/closed-loop.md", "closed-loop"), ("docs/workflow-and-timing.md", "workflow-and-timing"),
         ("docs/kipu-and-teams.md", "kipu-and-teams"), ("docs/notifications.md", "notifications"), ("docs/bilingual.md", "bilingual"),
         ("copilot/README.md", "copilot"), ("m365/README.md", "m365"), ("docs/getting-started.md", "getting-started"),
-        ("docs/run-with-docker.md", "run-with-docker"), ("app/demo/synthetic/README.md", "practice-patients"),
+        ("docs/run-with-docker.md", "run-with-docker"),
         ("challenges/1-referral-intake/README.md", "challenge-1"), ("challenges/2-finding-the-right-resource/README.md", "challenge-2"),
         ("challenges/3-staff-ai-confidence/README.md", "challenge-3"), ("campaign/README.md", "campaign"), ("docs/glossary.md", "glossary")]
 

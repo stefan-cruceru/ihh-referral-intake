@@ -46,7 +46,6 @@ def test_permission_table():
     assert not auth.can(RENE, "kipu_find") and auth.can(BEA, "kipu_find")
     assert not auth.can(BEA, "made_up_action")  # unknown actions are refused
     assert not auth.can(None, "accepted")
-    assert auth.can(BEA, "demo")  # practice mode: anyone may restart the made-up demo
     # Someone who is both lead and clinical can deny, and tracker.act is told "clinical".
     both = {"name": "Sam", "role": "lead", "roles": ["lead", "clinical"]}
     assert auth.can(both, "denied") and auth.act_role(both) == "clinical"

@@ -22,7 +22,6 @@
     <button role="tab" data-tab="resources"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg><span data-i18n="tab_resources"></span></button>
     <button role="tab" data-tab="staff"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg><span data-i18n="tab_staff"></span></button>
     <button role="tab" data-tab="rules"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3Z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg><span data-i18n="tab_rules"></span></button>
-<a class="tab-link practice-only" href="/static/profiles.html"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 5.5a3 3 0 0 1 0 5.6M18 19a5 5 0 0 0-2.5-4.3"/></svg><span data-i18n="tab_profiles"></span></a>
 <a class="tab-link" href="/static/kipu.html"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span data-i18n="tab_kipu"></span></a>
 <a class="tab-link" href="/static/access.html"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span data-i18n="tab_access"></span></a>
 <a class="tab-link" href="/static/audit.html" data-permission="audit_view"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></svg><span data-i18n="tab_audit"></span></a>
@@ -47,16 +46,13 @@
       </div>
       <div class="hero-actions">
         <label class="btn primary big" for="file-input" tabindex="0"><span data-i18n="add_packet"></span></label>
-        <button class="btn big ghost practice-only" id="start-demo" data-i18n="start_demo"></button>
         <input type="file" id="file-input" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg,.eml" hidden>
       </div>
     </div>
     <div id="drop" class="drop" data-i18n="drop_hint"></div>
-    <div id="sim" class="sim hidden practice-only"></div>
     <div id="urgent" class="urgent hidden" role="status" aria-live="polite"></div>
     <div class="board-head">
       <div class="clock"><span data-i18n="clock"></span> <b id="clock-time">–</b>
-        <select id="speed" class="practice-only"><option value="1" data-i18n="speed_real"></option><option value="60" data-i18n="speed_fast"></option></select>
       </div>
       <div class="whoami">
         <label for="me" data-i18n="me_label"></label>

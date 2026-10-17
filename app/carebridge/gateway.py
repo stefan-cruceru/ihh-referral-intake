@@ -23,9 +23,7 @@ OPEN = ("/static/", "/auth/", "/go/", "/api/state", "/send")
 ROUTES = [
     ("POST", re.compile(r"^/api/key(/clear)?$"), "api_key"),
     ("POST", re.compile(r"^/api/settings$"), "settings"),
-    ("POST", re.compile(r"^/api/(demo|clock)$"), "demo"),
     ("POST", re.compile(r"^/api/upload$"), "upload"),
-    ("POST", re.compile(r"^/api/profiles/[^/]+/send$"), "upload"),
     ("POST", re.compile(r"^/api/cards/[^/]+/review$"), "review"),
     ("POST", re.compile(r"^/api/cards/[^/]+/kipu$"), "kipu_write"),
     ("POST", re.compile(r"^/api/cards/[^/]+/act$"), None),
@@ -603,7 +601,7 @@ def _kipu(h, method: str, p: str, parts: list[str]):
 
 def sync(me: dict | None = None) -> dict:
     """Pull pre-admission referrals from Kipu onto the board (data in, one place). Each becomes a
-    card keyed by its Kipu id, with its packet attached; practice patients get their practice review."""
+    card keyed by its Kipu id, with its packet attached."""
     from . import webapp
 
     added = []
@@ -611,17 +609,12 @@ def sync(me: dict | None = None) -> dict:
         cid = f"KIPU-{r['id']}"
         if cid in webapp.TRACK.cards:
             continue
-        card = webapp.TRACK.add({"id": cid, "case_no": cid, "channel": "kipu", "hospital": r.get("referral_source") or "unknown",
-                                 "kipu_id": r["id"], "practice": kipu.mode() == "mock",
-                                 "synthetic": bool(r.get("practice_id"))})
+        webapp.TRACK.add({"id": cid, "case_no": cid, "channel": "kipu", "hospital": r.get("referral_source") or "unknown",
+                          "kipu_id": r["id"], "practice": kipu.mode() == "mock"})
         got = kipu.fetch_packet(r["id"])
         if got:
             webapp.PACKETS[cid] = got
-        if r.get("practice_id"):
-            card["packet_id"] = r["practice_id"]
-            webapp.PACKETS.pop(cid, None)
-            webapp._on_land(card)
-        elif got and config.get_api_key():
+        if got and config.get_api_key():
             webapp.start_review(cid)
         added.append(cid)
     webapp.TRACK.log(None, (me or {}).get("name") or "system", "Kipu sync", f"{len(added)} new referral(s)")

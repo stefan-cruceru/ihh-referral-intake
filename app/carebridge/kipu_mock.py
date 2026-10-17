@@ -1,9 +1,8 @@
-"""A fake Kipu on 127.0.0.1 for demos and tests. It never touches IHH's real Kipu.
+"""A fake Kipu on 127.0.0.1 for practice and tests. It never touches IHH's real Kipu.
 
-It answers the same paths kipu.py calls, checks the APIAuth signature and app_id the same way, and
-is loaded with the invented practice patients in demo/synthetic: S01-S04 are "in care" at three
-practice sites, S05-S10 are pre-admission referrals with their faxed packet attached. Everything
-written to it is kept in memory so the demo can show what would have gone into the chart.
+It answers the same paths kipu.py calls and checks the APIAuth signature and app_id the same way.
+It starts empty (tests load their own made-up records). Patients created through it, and everything
+written to it, are kept in memory so staff can see what would have gone into the chart.
 """
 
 import base64
@@ -24,26 +23,6 @@ SITES = ["Santa Ana site (practice)", "Anaheim site (practice)", "Riverside site
 _server = None
 _lock = threading.Lock()
 WRITES: list[dict] = []
-
-
-def _records() -> dict[str, dict]:
-    from demo import synthetic
-
-    out = {}
-    for i, p in enumerate(synthetic.profiles()):
-        last, _, first = p["patient"]["name"].partition(", ")
-        kid = f"K-{1001 + i}"
-        in_care = i < 4
-        out[kid] = {
-            "id": kid, "practice_id": p["id"], "first_name": first.title(), "last_name": last.title(),
-            "dob": p["patient"]["dob"], "mr_number": p["patient"]["mrn"], "sex": p["patient"]["sex"],
-            "preferred_language": p["patient"]["language"],
-            "status": "admitted" if in_care else "pre_admission",
-            "location_name": SITES[i % len(SITES)] if in_care else None,
-            "referral_source": p["hospital"], "diagnosis": p["diagnosis"],
-            "care_team": [{"role": "Case manager (referring)", "name": p["case_manager"]["name"]}],
-        }
-    return out
 
 
 def _verify(handler, method: str, body: bytes) -> str | None:
@@ -103,16 +82,11 @@ class _Handler(BaseHTTPRequestHandler):
             if len(parts) == 3:
                 return self._json({"patient": r})
             if parts[3] == "care_team":
-                return self._json({"care_team": r["care_team"]})
+                return self._json({"care_team": r.get("care_team", [])})
             if parts[3] == "vital_signs":
                 return self._json({"vital_signs": []})
             if parts[3] == "documents":
-                from demo import synthetic
-
-                path = synthetic.packet_path(r["practice_id"])
-                docs = [{"id": f"{r['id']}-referral", "name": f"{r['practice_id']}-referral.pdf", "content_type": "application/pdf",
-                         "data": base64.b64encode(path.read_bytes()).decode()}] if path and r["status"] == "pre_admission" else []
-                return self._json({"documents": docs + [w["body"] for w in WRITES if w["path"] == p]})
+                return self._json({"documents": r.get("documents", []) + [w["body"] for w in WRITES if w["path"] == p]})
         return self._json({"error": "not found"}, 404)
 
     def do_POST(self):
@@ -139,7 +113,7 @@ def ensure_running(port: int = 0):
     with _lock:
         if _server is None:
             srv = ThreadingHTTPServer(("127.0.0.1", port), _Handler)
-            srv.records = _records()
+            srv.records = {}
             srv.url = f"http://127.0.0.1:{srv.server_address[1]}"
             threading.Thread(target=srv.serve_forever, daemon=True).start()
             _server = srv

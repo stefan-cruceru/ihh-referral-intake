@@ -45,7 +45,6 @@ PERMISSIONS = {
     "act:viewing": _STAFF + ("admin",), "act:leave": _STAFF + ("admin",), "act:claim": _STAFF,
     "act:kipu_id": ("coordinator", "lead"),
     "upload": ("coordinator", "lead"), "review": _STAFF, "teams_card": ("coordinator", "lead"),
-    "demo": ("lead", "admin"),
     # Kipu
     "kipu_sync": ("coordinator", "lead"), "kipu_find": ("coordinator", "lead"),
     "kipu_write": ("coordinator", "lead"), "kipu_settings": ("lead", "admin"),
@@ -57,14 +56,12 @@ PERMISSIONS = {
     "audit_view": ("admin",),
     # a personal token so an agent (Microsoft 365 Copilot) can call /mcp as the person who made it
     "mcp_token": _STAFF + ("admin",),
-    # help for clients, practice, rules: anyone signed in
+    # help for clients, rules: anyone signed in
     "staff_tools": _STAFF + ("admin",),
 }
 # What each MCP tool needs over HTTP (/mcp). Tools not listed need "staff_tools".
 MCP_TOOLS = {"review_referral_packet": "review"}
 
-# Practice mode is made-up data: anyone may restart the demo there.
-PRACTICE_OPEN = {"demo"}
 SESSION_HOURS = 12
 COOKIE = "cb_session"
 
@@ -262,8 +259,6 @@ def can(person: dict | None, action: str) -> bool:
         return True
     if person is None:
         return False
-    if action in PRACTICE_OPEN and mode() == "practice":
-        return True
     key = action if action in PERMISSIONS else f"act:{action}"
     return bool(roles_of(person) & set(PERMISSIONS.get(key, ())))
 

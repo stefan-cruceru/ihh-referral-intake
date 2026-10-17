@@ -109,7 +109,6 @@ def test_server_has_no_practice_data_in_production(monkeypatch, tmp_path):
 
     try:
         monkeypatch.setenv("CAREBRIDGE_PRODUCTION", "0")
-        assert get("/api/profiles")[0] == 200
         assert get("/api/scenarios")[1]["scenarios"]
 
         monkeypatch.setenv("CAREBRIDGE_PRODUCTION", "1")
@@ -117,9 +116,12 @@ def test_server_has_no_practice_data_in_production(monkeypatch, tmp_path):
         monkeypatch.setenv("CAREBRIDGE_TEAMS_CLIENT_ID", "mock-client")
         st = get("/api/state")[1]
         assert st["production"] is True and st["real_packets"] == []
-        for path, body in (("/api/demo", {}), ("/api/clock", {"speed": 60}), ("/api/profiles", None),
-                           ("/api/profiles/S01", None), ("/static/profiles.html", None)):
-            assert get(path, body) == (404, {"error": "practice_off"}), path
+        # The practice patients, the demo board and its fast clock were removed: the POSTs are not
+        # listed routes, so they are refused, and the pages are not there.
+        for path, body in (("/api/demo", {}), ("/api/clock", {"speed": 60})):
+            assert get(path, body)[1]["error"] == "not_allowed", path
+        for path in ("/api/profiles", "/api/profiles/S01", "/static/profiles.html"):
+            assert get(path)[0] == 404, path
         assert get("/api/scenarios")[1] == {"scenarios": [], "examples": {}}
     finally:
         srv.shutdown()

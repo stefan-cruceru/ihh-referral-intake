@@ -36,7 +36,6 @@ def _sync() -> None:
         return
     _last_sync = time.time()
     try:
-        webapp.land()
         notify.sync(webapp.TRACK)
         hospital.sync(webapp.TRACK)
     except Exception:

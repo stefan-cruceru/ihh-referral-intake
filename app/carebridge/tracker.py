@@ -32,24 +32,6 @@ STAFF_CHECKS = {"returning_client": ("new", "returning"), "background": ("clear"
 WITHDRAW_REASONS = ["left_ama", "other_facility", "someones_home", "hospital_couldnt_wait", "no_reply", "other"]
 
 
-def simulate(arrivals_min: list[float], minutes_each: float, people: int, withdraw_after: list[float | None] | None = None) -> list[dict]:
-    """First-free-person queue: when each referral is decided, and whether it misses 2 hours or walks.
-
-    withdraw_after: minutes after arrival a hospital stops waiting (None = it waits)."""
-    free = [0.0] * people
-    out = []
-    for i, a in enumerate(arrivals_min):
-        k = free.index(min(free))
-        start = max(a, free[k])
-        done = start + minutes_each
-        free[k] = done
-        walk = (withdraw_after or [None] * len(arrivals_min))[i]
-        walked = walk is not None and done - a > walk
-        out.append({"arrive": a, "start": start, "done": done, "minutes": done - a,
-                    "missed": done - a > CLOCK_MIN, "withdrawn": walked})
-    return out
-
-
 STATUSES = ["received", "reviewing", "needs_info", "clinical_check", "likely_no", "intake_cleared",
             "accepted", "denied", "withdrawn"]
 CLOSED = {"accepted", "denied", "withdrawn"}
@@ -79,22 +61,10 @@ def queue_key(v: dict) -> tuple:
 
 
 class Clock:
-    """Real time by default. The demo can fast-forward (speed 60 = one second is one minute)."""
-
-    def __init__(self):
-        self.speed = 1.0
-        self._real0 = time.time()
-        self._sim0 = self._real0
+    """The time the tracker runs on. Real time; tests swap in their own."""
 
     def now(self) -> float:
-        return self._sim0 + (time.time() - self._real0) * self.speed
-
-    def set(self, sim_time: float | None = None, speed: float | None = None):
-        now = self.now()
-        self._real0 = time.time()
-        self._sim0 = sim_time if sim_time is not None else now
-        if speed is not None:
-            self.speed = speed
+        return time.time()
 
 
 def is_overnight(ts: float) -> bool:
@@ -121,7 +91,6 @@ class Tracker:
             {"name": "Coordinator 3", "role": "coordinator", "on_shift": False},
         ]
         self.audit: list[dict] = []
-        self.pending: list[tuple[float, dict]] = []
         self._rr = itertools.count()
         self._lock = threading.Lock()
 
@@ -325,22 +294,8 @@ class Tracker:
                 "alerts": alerts, "hospital_silent_min": silent, "viewers": viewers,
                 "withdraw_risk": bool(silent and silent >= LADDER["nudge"])}
 
-    def schedule(self, card: dict, at: float):
-        """A mock arrival that lands in the queue when the clock reaches `at`."""
-        self.pending.append((at, card))
-        self.pending.sort(key=lambda x: x[0])
-
-    def tick(self) -> list[dict]:
-        landed = []
-        now = self.clock.now()
-        while self.pending and self.pending[0][0] <= now:
-            at, card = self.pending.pop(0)
-            landed.append(self.add(card, arrived_at=at))
-        return landed
-
     def reset(self):
         self.cards.clear()
-        self.pending.clear()
         self.audit.clear()
         self._rr = itertools.count()
 

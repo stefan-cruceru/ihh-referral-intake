@@ -75,10 +75,6 @@
   "en": "The rules",
   "es": "Las reglas"
  },
- "tab_profiles": {
-  "en": "Practice patients",
-  "es": "Pacientes de práctica"
- },
  "tab_kipu": {
   "en": "Kipu and Teams",
   "es": "Kipu y Teams"
@@ -175,10 +171,6 @@
   "en": "When we answer late, the patient may go somewhere else. This board starts a timer when a referral comes in. It gives each one an owner. It reads the pages. It helps you follow up with the hospital.",
   "es": "Si respondemos tarde, el paciente puede irse a otro lugar. Este tablero pone un reloj cuando llega un referido. Le da un responsable. Lee las páginas. Le ayuda a dar seguimiento al hospital."
  },
- "start_demo": {
-  "en": "Practice with made-up referrals",
-  "es": "Practique con referidos inventados"
- },
  "add_packet": {
   "en": "Add a referral",
   "es": "Agregar un referido"
@@ -195,49 +187,13 @@
   "en": "Time",
   "es": "Hora"
  },
- "speed_real": {
-  "en": "Normal speed",
-  "es": "Velocidad normal"
- },
- "speed_fast": {
-  "en": "Fast (1 second = 1 minute)",
-  "es": "Rápido (1 segundo = 1 minuto)"
- },
  "queue_empty": {
-  "en": "No referrals yet. Add a referral PDF above. To look around first, click \"Practice with made-up referrals\".",
-  "es": "Todavía no hay referidos. Agregue el PDF de un referido arriba. Para conocer la app primero, haga clic en \"Practique con referidos inventados\"."
+  "en": "No referrals yet. Add a referral PDF above.",
+  "es": "Todavía no hay referidos. Agregue el PDF de un referido arriba."
  },
  "queue_empty_prod": {
   "en": "No referrals yet. Drag a referral PDF above. Faxes and emails saved to the inbox folder show up here on their own.",
   "es": "Todavía no hay referidos. Arrastre arriba el PDF de un referido. Los faxes y correos guardados en la carpeta de entrada aparecen aquí solos."
- },
- "arriving": {
-  "en": "still coming in",
-  "es": "por llegar"
- },
- "sim_title": {
-  "en": "The same 5 referrals, two ways. (Sample times: 40 minutes each by hand, 10 with Lamplight, 1 person.)",
-  "es": "Los mismos 5 referidos, de dos formas. (Tiempos de ejemplo: 40 minutos cada uno a mano, 10 con Lamplight, 1 persona.)"
- },
- "sim_manual": {
-  "en": "By hand",
-  "es": "A mano"
- },
- "sim_tool": {
-  "en": "With Lamplight",
-  "es": "Con Lamplight"
- },
- "sim_missed": {
-  "en": "late",
-  "es": "tarde"
- },
- "sim_walked": {
-  "en": "lost",
-  "es": "perdido"
- },
- "sim_ok": {
-  "en": "on time",
-  "es": "a tiempo"
  },
  "peak_warn": {
   "en": "At this speed, these will be late:",
@@ -286,10 +242,6 @@
  "silent_for": {
   "en": "No answer from hospital",
   "es": "El hospital no contesta"
- },
- "sample_badge": {
-  "en": "Practice: made-up patient",
-  "es": "Práctica: paciente inventado"
  },
  "live_badge": {
   "en": "Read just now",
@@ -1968,8 +1920,8 @@
   "es": "Nada de esto es real. Pruébelo primero con ejemplos inventados, a su propio ritmo. Usted sigue a cargo todo el tiempo."
  },
  "ob_try_1": {
-  "en": "Made-up referrals and clients, never a real person.",
-  "es": "Referidos y clientes inventados, nunca una persona real."
+  "en": "Made-up clients and examples, never a real person.",
+  "es": "Clientes y ejemplos inventados, nunca una persona real."
  },
  "ob_try_2": {
   "en": "In practice, nothing is sent.",
@@ -1980,12 +1932,12 @@
   "es": "Al cerrar la app, las páginas y los resultados se borran."
  },
  "ob_try_btn_coord": {
-  "en": "Practice with made-up referrals",
-  "es": "Practicar con referidos inventados"
+  "en": "Open the referral board",
+  "es": "Abrir el tablero de referidos"
  },
  "ob_try_btn_clinical": {
-  "en": "Practice with made-up referrals",
-  "es": "Practicar con referidos inventados"
+  "en": "Open the referral board",
+  "es": "Abrir el tablero de referidos"
  },
  "ob_try_btn_lvn": {
   "en": "Practice with made-up examples",

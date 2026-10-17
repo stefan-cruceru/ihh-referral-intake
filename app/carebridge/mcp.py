@@ -3,7 +3,7 @@
 Two transports share one handler:
   - stdio: `ihh-care-bridge.exe mcp`, for GitHub Copilot in VS Code, Claude Desktop and others.
   - HTTP:  POST /mcp on the local app, for clients that speak MCP over HTTP.
-Rule lookups and the practice patients (S01-S10) need no API key. Live packet reviews, resource
+Rule lookups need no API key. Live packet reviews, resource
 picks and note drafts use Claude.
 
 Prompts show up in Copilot Chat's "/" menu, and their arguments offer a pick list (completion), so
@@ -12,13 +12,12 @@ staff can run a check without typing a file path.
 
 import contextvars
 import json
-import re
 import sys
 import time
 from pathlib import Path
 
 from . import __version__, config, guard, handout, intake, mail, resources, rules, staff
-from .paths import BUNDLE, FROZEN, packets_dir
+from .paths import packets_dir
 
 PROTOCOL = "2025-06-18"
 
@@ -31,13 +30,6 @@ LANG = {"type": "string", "enum": ["en", "es"], "description": "Language for tex
 PACKET_TYPES = (".pdf", ".tif", ".tiff", ".png", ".jpg", ".jpeg")
 
 
-def _synthetic():
-    if not FROZEN and str(BUNDLE.parent) not in sys.path:
-        sys.path.insert(0, str(BUNDLE.parent))  # app/, so `demo` imports in a source checkout
-    from demo import synthetic
-
-    return synthetic
-
 TOOLS = [
     {"name": "review_referral_packet",
      "description": "Review a de-identified hospital referral packet (PDF or TIFF on this computer, or a referral "
@@ -45,15 +37,9 @@ TOOLS = [
                     "recuperative care admission criteria. Returns the two gates (self-care, behavioral stability), "
                     "a suggested route (never a decision), each flag with page number and verified quote, missing "
                     "documents, form-vs-chart conflicts, questions for the hospital and the cost. A live review takes "
-                    "1 to 4 minutes. Give practice_patient (S01 to S10) instead of path for an invented practice "
-                    "patient: that answer is instant and needs no API key.",
+                    "1 to 4 minutes.",
      "inputSchema": _schema({"path": {"type": "string", "description": "Full path to the packet file or the saved .eml email."},
-                             "practice_patient": {"type": "string", "description": "S01 to S10, an invented practice patient."},
                              "language": LANG}, [])},
-    {"name": "list_practice_patients",
-     "description": "List the 10 invented practice patients (S01 to S10) with age, reason for the hospital stay "
-                    "and page count. Use one with review_referral_packet to try Lamplight.",
-     "inputSchema": _schema({}, [])},
     {"name": "lookup_admission_rule",
      "description": "Get the exact text of one IHH admission rule by ID (e.g. ADL-2, MOB-4, DOC-6, NEU-X1), "
                     "plus any known gap in the written rules.",
@@ -142,18 +128,6 @@ def report_markdown(rep: dict, lang: str = "en") -> str:
     return "\n".join(out)
 
 
-def practice_list() -> str:
-    rows = ["| ID | Age | Why they were in the hospital | Pages |", "|---|---|---|---|"]
-    for p in _synthetic().profiles():
-        rows.append(f"| {p['id']} | {p['patient']['age']} | {p['diagnosis']} | {p['pages']} |")
-    return "\n".join(["**Practice patients.** All invented. Use them to try Lamplight.", ""] + rows)
-
-
-def _practice_id(v: str) -> str | None:
-    m = re.match(r"\s*(S\d\d)\b", v, re.I)
-    return m.group(1).upper() if m else None
-
-
 _OVER_HTTP = contextvars.ContextVar("mcp_over_http", default=False)
 
 
@@ -168,18 +142,8 @@ def _in_packet_folder(p: Path) -> bool:
 
 def _review(args: dict, lang: str) -> str:
     path = str(args.get("path") or "").strip().strip('"')
-    # A patient picked from the "/" list ("S06 · Acute ischemic stroke...") can land in either field.
-    pid = _practice_id(str(args.get("practice_patient") or "")) or _practice_id(path)
-    if args.get("practice_patient") and not pid:
-        return f"No practice patient {args['practice_patient']}. Pick S01 to S10 (list_practice_patients)."
-    if pid:
-        rep = _synthetic().sample_reports().get(pid)
-        if not rep:
-            return f"No practice patient {pid}. Pick S01 to S10 (list_practice_patients)."
-        return ("_Practice review: an invented patient, read from the organizers' answer key. No API call._\n\n"
-                + report_markdown(rep, lang))
     if not path:
-        return "Give a packet file path, or a practice patient from S01 to S10."
+        return "Give the full path to a packet file or a saved .eml email."
     p = Path(path)
     # An MCP client is driven by a model; only packet-shaped files are opened, so it can't be talked into
     # reading keys, mail or other files on this computer.
@@ -205,7 +169,7 @@ def _review(args: dict, lang: str) -> str:
         return f"Blocked by the security check ({e}). The file was not opened."
     if not config.get_api_key():
         return "\n".join(head + ["No Claude API key on this computer yet, so a live review can't run. Run "
-                                 "`ihh-care-bridge.exe set-key` once, or try a practice patient (S01 to S10)."])
+                                 "`ihh-care-bridge.exe set-key` once."])
     return "\n".join(head) + report_markdown(intake.run(review), lang)
 
 
@@ -224,8 +188,6 @@ def _blocked(res: dict, what: str) -> str:
 
 def call_tool(name: str, args: dict) -> str:
     lang = args.get("language", "en")
-    if name == "list_practice_patients":
-        return practice_list()
     if name == "lookup_admission_rule":
         r = rules.all_rules().get(str(args["rule_id"]).strip().upper())
         if not r:
@@ -281,17 +243,15 @@ def call_tool(name: str, args: dict) -> str:
 SHOW = ("Show the tool's answer in full, in the same order, with every page number and quote. Do not shorten it, "
         "do not add advice, and do not decide for staff. If something is unknown, say \"unknown\".")
 PATIENT = {"name": "patient", "required": True,
-           "description": "A practice patient (S01 to S10), or the full path to a packet file or a saved .eml email"}
+           "description": "The full path to a packet file or a saved .eml email"}
 LANG_ARG = {"name": "language", "required": False, "description": "en or es (default en)"}
 PROMPTS = [
     {"name": "check_referral", "title": "Check a referral",
-     "description": "Check a referral packet against IHH's admission rules. Pick a practice patient or give a file.",
+     "description": "Check a referral packet against IHH's admission rules. Pick a file from the list or give its path.",
      "arguments": [PATIENT, LANG_ARG]},
     {"name": "missing_documents", "title": "What is missing?",
      "description": "Which of the 10 required documents are missing, and a draft note to the case manager.",
      "arguments": [PATIENT, LANG_ARG]},
-    {"name": "practice_patients", "title": "Practice patients",
-     "description": "List the 10 invented practice patients you can try.", "arguments": []},
     {"name": "explain_rule", "title": "Explain a rule",
      "description": "Show one admission rule word for word, and where to look for it in a packet.",
      "arguments": [{"name": "rule_id", "required": True, "description": "A rule ID, like MOB-4 or DOC-6"}]},
@@ -312,8 +272,6 @@ PROMPTS = [
 def _patient_args(a: dict) -> str:
     v = str(a.get("patient") or "").strip().strip('"')
     lang = a.get("language") or "en"
-    if pid := _practice_id(v):
-        return f'practice_patient "{pid}", language "{lang}"'
     return f"path {json.dumps(v)}, language \"{lang}\""
 
 
@@ -325,7 +283,6 @@ def get_prompt(name: str, a: dict) -> dict:
                                       "Show only the missing documents and the questions for the hospital, with rule IDs. "
                                       "Then write one short draft message to the case manager asking for them. "
                                       "Mark it DRAFT: a person checks it and sends it."),
-        "practice_patients": lambda: f"Use the ihh-care-bridge tool list_practice_patients. {SHOW}",
         "explain_rule": lambda: (f"Use the ihh-care-bridge tool lookup_admission_rule with rule_id {json.dumps(a.get('rule_id', ''))}. "
                                  "Show the rule word for word. Then say in plain words, at a 4th-grade level, what it "
                                  "means and which pages of a packet usually answer it. Show any known gap."),
@@ -348,7 +305,7 @@ def complete(arg: str, value: str) -> list[str]:
     """Pick list for a prompt argument, filtered by what has been typed so far."""
     v = value.strip().strip('"').lower()
     if arg == "patient":
-        opts = [f"{p['id']} · {p['patient']['age']} · {p['diagnosis'][:60]}" for p in _synthetic().profiles()]
+        opts = []
         inbox = config.inbox_dir()
         for d in filter(None, [packets_dir(), Path(inbox) if inbox else None]):
             if d.is_dir():

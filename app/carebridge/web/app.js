@@ -56,7 +56,6 @@ async function setLang(l) {
   applyI18n();
   post("/api/settings", { lang: l }).catch(() => {});
   renderQueue(LAST_Q);
-  if (LAST_SIM) renderSim(LAST_SIM);
   if (OPEN) openCard(OPEN, true);
   renderRules();
   loadScenarios();
@@ -83,8 +82,8 @@ const pref = {
 let ME = pref.get("cb_me"); // who is using this screen: a staff name, kept on this computer only
 let SCOPE = pref.get("cb_scope") || "all";
 
-// Simulated "now" in seconds, between polls (the demo clock can run fast).
-const nowSim = () => (LAST_Q ? LAST_Q.now + ((Date.now() - Q_AT) / 1000) * (LAST_Q.speed || 1) : Date.now() / 1000);
+// The server's "now" in seconds, between polls.
+const nowSim = () => (LAST_Q ? LAST_Q.now + (Date.now() - Q_AT) / 1000 : Date.now() / 1000);
 function mmss(sec) {
   const s = Math.abs(Math.round(sec));
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
@@ -227,13 +226,10 @@ function statusChip(st) {
 function renderQueue(q) {
   if (!q) return;
   $("#clock-time").textContent = fmtClock(q.now);
-  $("#speed").value = q.speed >= 30 ? "60" : "1";
-  $("#speed").classList.toggle("hidden", !(q.speed >= 30 || q.cards.some((c) => c.sample)));
   const rep = q.report;
   const wd = Object.values(q.withdraw_reasons || {}).reduce((a, b) => a + b, 0);
   $("#stats").innerHTML = rep.total
     ? `<span class="pill">${rep.within_2h}/${rep.decided} ${esc(t("within_2h"))}</span><span class="pill">${wd} ${esc(t("withdrawn_count"))}</span>` +
-      (q.pending ? `<span class="pill">${q.pending} ${esc(t("arriving"))}</span>` : "") +
       (rep.clinical && rep.clinical.median_min != null ? `<span class="pill" title="${esc(t("cr_stat_tip"))}">${esc(t("cr_stat", { n: rep.clinical.median_min, w: rep.clinical.waiting }))}</span>` : "")
     : "";
   const peak = q.peak;
@@ -251,7 +247,7 @@ function renderQueue(q) {
       const left = c.left_min;
       const timer = c.color === "done" ? `<b>✓</b><span>${c.elapsed_min} ${t("min")}</span>` : `<b class="countdown" data-fmt="min" data-deadline="${c.deadline}">${left >= 0 ? left : "+" + -left}</b><span>${t("min")} ${t(left >= 0 ? "left" : "over")}</span>`;
       const review =
-        c.review_stage && c.review_stage !== "done" && c.review_stage !== "sample" && c.review_stage !== "error"
+        c.review_stage && c.review_stage !== "done" && c.review_stage !== "error"
           ? `<span class="chip info"><span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:-2px"></span> ${esc(c.review_progress || t("reviewing"))}</span>`
           : "";
       const alerts = (c.alerts || []).map((a) => `<span class="chip alert">${esc(t("al_" + a.code))}</span>`).join("")
@@ -265,7 +261,7 @@ function renderQueue(q) {
           <div class="title">${esc(c.case_no)} · ${esc(c.hospital || t("unknown"))}</div>
           <div class="meta">${sourceText(c)} · ${esc(t("owner"))}: <b>${esc(c.owner)}</b>${c.owner === ME ? ` (${esc(t("you"))})` : ""}</div>
           ${contactLine(c)}
-          <div class="chips">${dangerChip(c)}${statusChip(c.status)}${overnightChip(c)}${kipuChip(c)}${kipuCheckChip(c)}${viewersChip(c)}${handwritingChip(c)}${review}${alerts}${silent}${c.sample ? `<span class="chip">${esc(t("sample_badge"))}</span>` : ""}</div>
+          <div class="chips">${dangerChip(c)}${statusChip(c.status)}${overnightChip(c)}${kipuChip(c)}${kipuCheckChip(c)}${viewersChip(c)}${handwritingChip(c)}${review}${alerts}${silent}</div>
           ${oddsLine(c)}
         </div>
         <div class="side">${fmtClock(c.arrived_at)}</div>
@@ -304,33 +300,6 @@ async function poll() {
   } catch (e) {}
   setTimeout(poll, 1500);
 }
-
-$("#speed").addEventListener("change", (e) => post("/api/clock", { speed: Number(e.target.value) }));
-
-let LAST_SIM = null; // the practice run's before/after chart, redrawn when the language changes
-function renderSim(sim) {
-  LAST_SIM = sim;
-  const max = Math.max(150, ...sim.manual.map((r) => r.done), ...sim.tool.map((r) => r.done));
-  const lane = (rows) =>
-    rows
-      .map((r, i) => {
-        const cls = r.withdrawn ? "walk" : r.missed ? "miss" : "ok";
-        const lbl = r.withdrawn ? t("sim_walked") : r.missed ? t("sim_missed") : t("sim_ok");
-        return `<div class="sim-bar ${cls}" title="${esc(lbl)}" style="left:${(r.start / max) * 100}%;width:${((r.done - r.start) / max) * 100}%">#${i + 1} ${esc(lbl)}</div>`;
-      })
-      .join("") + `<div class="sim-limit" style="left:${(120 / max) * 100}%"></div>`;
-  const count = (rows) => `${rows.filter((r) => !r.missed && !r.withdrawn).length}/${rows.length} ${t("sim_ok")}`;
-  $("#sim").innerHTML = `<h3>${esc(t("sim_title"))}</h3>
-    <div class="sim-row"><b>${esc(t("sim_manual"))}<br><span class="muted small">${esc(count(sim.manual))}</span></b><div class="sim-track">${lane(sim.manual)}</div></div>
-    <div class="sim-row"><b>${esc(t("sim_tool"))}<br><span class="muted small">${esc(count(sim.tool))}</span></b><div class="sim-track">${lane(sim.tool)}</div></div>`;
-  $("#sim").classList.remove("hidden");
-}
-
-$("#start-demo").addEventListener("click", async () => {
-  const sim = await post("/api/demo", { speed: 60 });
-  renderSim(sim);
-  toast(t("start_demo"));
-});
 
 async function upload(file) {
   if (!file) return;
@@ -450,7 +419,7 @@ function renderDetail() {
   } else {
     const rec = rep.recommendation;
     h += `<div class="route ${rec.code}"><div><b>${esc(t("route_" + rec.code))}</b><div class="muted">${esc(t("route_note"))}</div></div>
-      <span class="badge">${esc(rep.sample ? t("sample_badge") : t("live_badge"))}</span></div>`;
+      <span class="badge">${esc(t("live_badge"))}</span></div>`;
     if (rep.flags.no_referral_form) h += `<div class="phi">${esc(t("no_referral_form"))}</div>`;
     const flags = rep.danger?.flags || [];
     if (flags.length) {
@@ -925,19 +894,19 @@ function renderOnboard() {
   $("#ob-back")?.addEventListener("click", () => { OB.step--; renderOnboard(); });
   // Opens the Display panel (display.js). Stop the click here so its click-outside check doesn't close it again.
   $("#ob-display")?.addEventListener("click", (e) => { e.stopPropagation(); $(".disp-btn")?.click(); });
-  // Practice: referral staff get the made-up referrals; the other jobs land where their practice lives.
-  const finish = (practice) => {
+  // Each job lands on its own tab.
+  const finish = () => {
     store.set("cb_onboarded", "1");
     store.set("cb_role", OB.role);
     $("#onboard").classList.add("hidden");
     if (OB.role === "cm") goTab("resources");
     else if (OB.role === "lvn") { goTab("staff"); $('.role[data-role="lvn"]').click(); }
-    else { goTab("referrals"); if (practice && !STATE.production) $("#start-demo")?.click(); }
+    else goTab("referrals");
   };
-  $("#ob-skip")?.addEventListener("click", () => finish(false));
+  $("#ob-skip")?.addEventListener("click", finish);
   $("#ob-next").addEventListener("click", () => {
     if (!last) { OB.step++; return renderOnboard(); }
-    finish(!STATE.production);
+    finish();
   });
   $("#onboard-body").scrollTop = 0;
   $("#ob-next").focus({ preventScroll: true });

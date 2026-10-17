@@ -9,122 +9,22 @@ import mimetypes
 import os
 import re
 import secrets
-import sys
 import threading
 import time
 import traceback
-from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from . import APP_NAME, __version__, auth, config, critical, drafts, gateway, guard, handout, hospital, intake, kipu_check, llm, mail, mcp, phi, resources, rules, staff, store, tracker
 from .pages import load_packet
-from .paths import BUNDLE, DEMO_DIR, FROZEN, LOGO, load_json, packets_dir
-
-if not FROZEN:
-    sys.path.insert(0, str(BUNDLE.parent))  # app/, so `demo` imports in a source checkout
+from .paths import BUNDLE, LOGO, packets_dir
 
 TRACK = tracker.Tracker()
 TRACK.overnight_clock = config.load_settings().get("overnight_clock") or "arrival"
 PACKETS: dict[str, tuple[bytes, str]] = {}  # card id -> (file bytes, filename), in memory only
 REVIEWS: dict[str, intake.Review] = {}  # card id -> running or finished review
-SAMPLES: dict[str, dict] = {}
 LOCK = threading.Lock()
-
-
-def _demo_samples() -> dict:
-    """Practice reviews for the synthetic patients, built from the organizers' answer key."""
-    if not SAMPLES:
-        try:
-            from demo import synthetic
-
-            SAMPLES.update(synthetic.sample_reports())
-        except Exception:
-            traceback.print_exc()
-    return SAMPLES
-
-
-def _demo_packet(pid: str) -> tuple[bytes, str] | None:
-    """A synthetic practice patient (S01...), or a de-identified event packet (R01...) read by path."""
-    if not re.fullmatch(r"[RS]\d\d", pid or ""):
-        return None  # it becomes a file name below
-    if pid.startswith("R"):
-        d = packets_dir()
-        p = d / f"{pid}.pdf" if d else None
-    else:
-        from demo import synthetic
-
-        p = synthetic.packet_path(pid)
-    return (p.read_bytes(), f"{pid}.pdf") if p and p.is_file() else None
-
-
-def send_profile(pid: str) -> dict:
-    """Put one synthetic patient on the board now, as a practice referral with its practice review."""
-    from demo import synthetic
-
-    prof = next((p for p in synthetic.profiles() if p["id"] == pid), None)
-    if not prof:
-        raise KeyError(pid)
-    cm = prof["case_manager"]
-    case = f"{pid}-{sum(1 for c in TRACK.cards if c.startswith(pid)) + 1}"
-    card = TRACK.add({"id": case, "case_no": case, "channel": "fax", "hospital": prof["hospital"],
-                      "packet_id": pid, "case_manager": f"{cm['name']}, {cm['title']}", "cm_email": cm["email"],
-                      "cm_phone": cm["phone"], "practice": True, "synthetic": True})
-    _on_land(card)
-    return TRACK.view(card["id"])
-
-
-def load_demo(start_hour: int = 16, speed: float = 60.0) -> dict:
-    """The Monday 4:00 PM burst (docs/workflow-and-timing.md section 6), on a fast-forward clock."""
-    inbox = load_json(DEMO_DIR / "inbox.json")
-    TRACK.reset()
-    REVIEWS.clear()
-    PACKETS.clear()
-    today = datetime.now()
-    monday = (today - timedelta(days=today.weekday())).replace(hour=start_hour, minute=0, second=0, microsecond=0)
-    t0 = monday.timestamp()
-    TRACK.clock.set(sim_time=t0 - 30, speed=speed)
-    def on_shift(s):
-        a, b = (s.get("shift") or "00:00-24:00").split("-")
-        mins = lambda x: int(x[:2]) * 60 + int(x[3:])
-        return mins(a) <= start_hour * 60 < mins(b)
-
-    if inbox.get("staff"):
-        TRACK.staff = [{"name": s["name"], "role": s.get("role", "coordinator"), "on_shift": on_shift(s)}
-                       for s in inbox["staff"] if s.get("role") != "clinical_line"]
-    contacts = {c["hospital"]: c for c in inbox.get("contacts", [])}
-    for i, r in enumerate(inbox["referrals"]):
-        c = contacts.get(r["hospital"], {})
-        card = {"id": r["case_no"], "case_no": r["case_no"], "channel": r.get("channel"), "hospital": r["hospital"],
-                "subject": r.get("subject"), "body": r.get("body"), "packet_id": r.get("packet"),
-                "fallback_packet": r.get("fallback_packet"), "case_manager": c.get("case_manager"),
-                "cm_email": c.get("cm_email"), "cm_phone": c.get("cm_phone"), "supervisor": c.get("supervisor"),
-                "sup_email": c.get("sup_email"), "sup_phone": c.get("sup_phone"), "site": r.get("site", "Orange County"),
-                "practice": True, "synthetic": r.get("packet", "").startswith("S")}
-        TRACK.schedule(card, t0 + r["arrives_min"] * 60)
-    arrivals = [r["arrives_min"] for r in inbox["referrals"]]
-    walk = [r.get("withdraw_after_silence_min") for r in inbox["referrals"]]
-    people = 1
-    return {"manual": tracker.simulate(arrivals, 40, people, walk), "tool": tracker.simulate(arrivals, 10, people, walk),
-            "minutes_manual": 40, "minutes_tool": 10, "people": people, "placeholder": True}
-
-
-def _on_land(card: dict):
-    """When a card lands: attach its packet and, for invented demo packets, the sample review."""
-    pid = card.get("packet_id")
-    if not pid or card["id"] in PACKETS:
-        return
-    got = _demo_packet(pid) or (_demo_packet(card["fallback_packet"]) if card.get("fallback_packet") else None)
-    if got:
-        PACKETS[card["id"]] = got
-    used = pid if not card.get("fallback_packet") or (got and got[1].startswith(pid)) else card["fallback_packet"]
-    card["packet_used"] = used
-    sample = _demo_samples().get(used)
-    if sample:
-        TRACK.cards[card["id"]]["sample"] = True
-        TRACK.attach_review(card["id"], sample)
-        REVIEWS[card["id"]] = None  # sample, not a live run
 
 
 def arrive(cid: str, data: bytes, name: str) -> None:
@@ -162,7 +62,6 @@ def start_review(cid: str) -> None:
     # Every step the AI takes goes in the audit log. The messages are counts and page numbers, never chart text.
     review.on_log = lambda stage, msg: TRACK.log(cid, "Claude", f"AI step: {stage}", msg, role="ai")
     REVIEWS[cid] = review
-    TRACK.cards[cid]["sample"] = False
     TRACK.cards[cid]["review_state"] = "running"
     TRACK.log(cid, "system", "review started", f"{len(review.pages)} pages")
 
@@ -322,11 +221,7 @@ def send_page_checklist() -> list[dict]:
 
 def card_report(cid: str) -> dict | None:
     r = REVIEWS.get(cid)
-    if r is None:
-        if TRACK.cards[cid].get("sample"):
-            return _demo_samples().get(TRACK.cards[cid].get("packet_used"))
-        return None
-    return r.report
+    return r.report if r else None
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -381,20 +276,10 @@ class Handler(BaseHTTPRequestHandler):
         return True
 
     # ---- routes ----------------------------------------------------------------------------
-    def _practice_off(self, p: str) -> bool:
-        """In production the practice patients, the demo board and its fast clock do not exist."""
-        if config.production() and (p in ("/api/demo", "/api/clock", "/static/profiles.html")
-                                    or p == "/api/profiles" or p.startswith("/api/profiles/")):
-            self._json({"error": "practice_off"}, 404)
-            return True
-        return False
-
     def do_GET(self):
         if not self._local_only():
             return
         if not gateway.allowed(self, urlparse(self.path).path) or gateway.handle(self, "GET"):
-            return
-        if self._practice_off(urlparse(self.path).path):
             return
         u = urlparse(self.path)
         q = parse_qs(u.query)
@@ -422,17 +307,16 @@ class Handler(BaseHTTPRequestHandler):
                                    "overnight_clock": TRACK.overnight_clock, "auto_hospital_messages": hospital.auto(),
                                    "production": prod, "db": str(store.db_path())})
             if p == "/api/queue":
-                land()
                 q_ = TRACK.queue(owner=q.get("owner", [""])[0] or None)
                 for v in q_:
                     r = REVIEWS.get(v["id"])
-                    v["review_stage"] = r.stage if r else ("sample" if v.get("sample") else None)
+                    v["review_stage"] = r.stage if r else None
                     v["review_progress"] = r.progress[-1] if r and r.progress else None
                     v["has_packet"] = v["id"] in PACKETS
                     v.pop("body", None)
                     v.pop("receipt_key", None)
-                return self._json({"now": TRACK.clock.now(), "speed": TRACK.clock.speed, "cards": q_,
-                                   "pending": len(TRACK.pending), "peak": TRACK.peak_warning(),
+                return self._json({"now": TRACK.clock.now(), "cards": q_,
+                                   "peak": TRACK.peak_warning(),
                                    "report": TRACK.report(), "withdraw_reasons": TRACK.report_withdrawals(),
                                    "staff": TRACK.staff})
             parts = p.strip("/").split("/")
@@ -458,8 +342,6 @@ class Handler(BaseHTTPRequestHandler):
                 if config.production():  # made-up clients and jottings are practice material
                     return self._json({"scenarios": [], "examples": {}})
                 return self._json({"scenarios": resources.scenarios(), "examples": staff.EXAMPLES})
-            if p == "/api/profiles" or p.startswith("/api/profiles/"):
-                return self._profiles(p.strip("/").split("/")[2:], q.get("lang", ["en"])[0], q.get("style", ["color"])[0])
             if p == "/api/report":
                 return self._json(store.weekly_report(int(q.get("days", ["7"])[0]),
                                                       q.get("practice", ["0"])[0] == "1" and not config.production()))
@@ -476,8 +358,6 @@ class Handler(BaseHTTPRequestHandler):
         if not self._local_only():
             return
         if not gateway.allowed(self, urlparse(self.path).path) or gateway.handle(self, "POST"):
-            return
-        if self._practice_off(urlparse(self.path).path):
             return
         p = urlparse(self.path).path
         try:
@@ -521,14 +401,6 @@ class Handler(BaseHTTPRequestHandler):
                 changed = {k: v for k, v in b.items() if k in keys}
                 gateway.audit(self, "settings changed", ", ".join(f"{k}={v}" for k, v in changed.items())[:300])
                 return self._json(config.save_settings(changed))
-            if p == "/api/demo":
-                b = self._jbody()
-                gateway.audit(self, "practice demo restarted")
-                return self._json(load_demo(speed=float(b.get("speed", 60))))
-            if p == "/api/clock":
-                b = self._jbody()
-                TRACK.clock.set(speed=float(b.get("speed", 1)))
-                return self._json({"speed": TRACK.clock.speed})
             if p == "/api/upload":
                 data = self._body()
                 name = re.sub(r"[^\w .()-]", "_", Path(self.headers.get("X-Filename") or "packet.pdf").name)[:120]
@@ -580,11 +452,6 @@ class Handler(BaseHTTPRequestHandler):
                 b = self._jbody()
                 return self._json(resources.find(b.get("situation", ""), b.get("lang", "en"), b.get("needs") or None,
                                                  use_ai=bool(b.get("use_ai", True)) and bool(config.get_api_key())))
-            if p.startswith("/api/profiles/") and p.endswith("/send"):
-                try:
-                    return self._json({"card": send_profile(p.split("/")[3])})
-                except KeyError:
-                    return self._json(gateway.error("not found"), 404)
             if p == "/api/handout":
                 b = self._jbody()
                 # client_name goes onto the printed page only: not logged, not stored, not sent to Claude,
@@ -624,52 +491,12 @@ class Handler(BaseHTTPRequestHandler):
             ctype += "; charset=utf-8"
         return self._send(200, f.read_bytes(), ctype)
 
-    def _profiles(self, parts: list[str], lang: str = "en", style: str = "color"):
-        """Synthetic practice patients: the list, one profile with its practice review, a page image,
-        or the patient's take-home next-steps PDF."""
-        from demo import synthetic
-
-        if not parts:
-            return self._json({"profiles": synthetic.profiles()})
-        pid = parts[0]
-        prof = next((x for x in synthetic.profiles() if x["id"] == pid), None)
-        if not prof:
-            return self._json(gateway.error("not found"), 404)
-        if len(parts) == 1:
-            return self._json({"profile": prof, "review": _demo_samples().get(pid)})
-        if len(parts) == 2 and parts[1] == "handout.pdf":
-            situation, needs = synthetic.client_situation(pid)
-            res = resources.find(situation, lang, needs, use_ai=bool(config.get_api_key()))
-            if res["blocked"]:
-                return self._json({"error": "blocked"}, 400)
-            items = [{"resource_id": c["id"], "why": c["why"], "first_step": c["first_step"], "watch_out": c["watch_out"]}
-                     for c in res["cards"]]
-            # The situation sent to Claude has no name; the (made-up) name goes on the printed page only.
-            last, _, first = prof["patient"]["name"].partition(", ")
-            pdf = handout.build(items, res.get("plan_today", ""), lang, res["danger"], style, f"{first} {last}".title().strip())
-            name = f"{pid}-{'proximos-pasos' if lang == 'es' else 'next-steps'}{'-bw' if style == 'bw' else ''}.pdf"
-            return self._send(200, pdf, "application/pdf", {"Content-Disposition": f'inline; filename="{name}"'})
-        if len(parts) == 3 and parts[1] == "pages":
-            n = int(parts[2].split(".")[0])
-            path = synthetic.packet_path(pid)
-            pages = load_packet(path.read_bytes(), path.name) if path else []
-            if not 1 <= n <= len(pages):
-                return self._json(gateway.error("not found"), 404)
-            return self._send(200, pages[n - 1].jpeg(long_edge=1400), "image/jpeg")
-        return self._json(gateway.error("not found"), 404)
-
     def _page(self, cid: str, n: int):
         r = REVIEWS.get(cid)
         pages = r.pages if r else None
         if pages is None and cid in PACKETS:
             data, name = PACKETS[cid]
             pages = load_packet(data, name)
-            if TRACK.cards[cid].get("sample"):
-                rep = card_report(cid) or {}
-                for pg in pages:
-                    meta = next((m for m in rep.get("pages", []) if m["page"] == pg.number), None)
-                    if meta:
-                        pg.rotation = meta["rotation"]
         if not pages or not 1 <= n <= len(pages):
             return self._json(gateway.error("not found"), 404)
         return self._send(200, pages[n - 1].jpeg(upright=True, long_edge=1400), "image/jpeg")
@@ -742,17 +569,6 @@ class Handler(BaseHTTPRequestHandler):
         return self._json(gateway.error("not found"), 404)
 
 
-_LAND = threading.Lock()
-
-
-def land() -> None:
-    """Referrals whose arrival time has come join the board. Called by the board and by the alert
-    loop, so alerts for new arrivals are drafted even when nobody has the board open."""
-    with _LAND:
-        for c in TRACK.tick():
-            _on_land(c)
-
-
 def notify_loop(interval: float = 10.0) -> None:
     """Draft staff alerts as the clock runs, even when nobody has the outbox open."""
     from . import notify
@@ -760,7 +576,6 @@ def notify_loop(interval: float = 10.0) -> None:
     def loop():
         while True:
             try:
-                land()
                 notify.sync(TRACK)
                 hospital.sync(TRACK)
             except Exception:
