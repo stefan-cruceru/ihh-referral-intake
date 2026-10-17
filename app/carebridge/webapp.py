@@ -178,6 +178,28 @@ def add_email(raw: bytes, name: str, arrived_at: float | None = None, case: str 
     return card
 
 
+def _form_sidecar(packet: Path) -> dict:
+    """The hospital form's details, when the intake flow (m365/flows.md) saves them next to the
+    packet as <packet>.json: case code, hospital and who sent it. Missing fields stay unknown."""
+    try:
+        with open(packet.with_suffix(".json"), encoding="utf-8") as fh:
+            form = json.load(fh)
+    except (OSError, ValueError):
+        return {}
+    out = {"channel": "form"}
+    if form.get("case_code"):
+        out["id"] = out["case_no"] = str(form["case_code"])
+    if form.get("hospital"):
+        out["hospital"] = str(form["hospital"])
+    who = ", ".join(str(form[k]) for k in ("submitter_name", "submitter_role") if form.get(k))
+    if who:
+        out["case_manager"] = who
+    for src, dst in (("submitter_email", "cm_email"), ("submitter_phone", "cm_phone"), ("submitter_lang", "cm_lang")):
+        if form.get(src):
+            out[dst] = str(form[src])
+    return out
+
+
 def watch_inbox(interval: float = 5.0) -> None:
     """Step 1 of the closed loop: a referral saved into the inbox folder (fax PDF or email
     attachment) becomes a card. The clock starts from the file's arrival time, not when it is opened."""
@@ -204,8 +226,10 @@ def watch_inbox(interval: float = 5.0) -> None:
                             traceback.print_exc()
                         continue
                     case = f"REF-{len(TRACK.cards) + 1:03d}"
-                    card = TRACK.add({"id": case, "case_no": case, "channel": "fax" if "fax" in f.name.lower() else "email",
-                                      "hospital": "unknown", "packet_used": f.name}, arrived_at=f.stat().st_mtime)
+                    fields = {"id": case, "case_no": case, "channel": "fax" if "fax" in f.name.lower() else "email",
+                              "hospital": "unknown", "packet_used": f.name}
+                    fields.update(_form_sidecar(f))
+                    card = TRACK.add(fields, arrived_at=f.stat().st_mtime)
                     PACKETS[card["id"]] = (data, f.name)
                     if config.get_api_key():
                         start_review(card["id"])
@@ -287,7 +311,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"app": APP_NAME, "version": __version__, "has_key": bool(config.get_api_key()),
                                    "model": config.model(), "fast_model": config.fast_model(),
                                    "lang": s.get("lang", "en"), "real_packets": real, "provider": config.provider(),
-                                   "foundry_resource": config.foundry_resource(), "inbox_dir": config.inbox_dir(),
+                                   "foundry_resource": config.foundry_resource(), "inbox_dir": config.inbox_dir(), "kipu_url": config.kipu_url(),
                                    "db": str(store.db_path())})
             if p == "/api/queue":
                 for c in TRACK.tick():
@@ -351,7 +375,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": True})
             if p == "/api/settings":
                 b = self._jbody()
-                keys = ("lang", "model", "fast_model", "provider", "foundry_resource", "inbox_dir")
+                keys = ("lang", "model", "fast_model", "provider", "foundry_resource", "inbox_dir", "kipu_url")
                 return self._json(config.save_settings({k: v for k, v in b.items() if k in keys}))
             if p == "/api/demo":
                 b = self._jbody()

@@ -116,7 +116,7 @@ class Tracker:
                 "review_id": None, "review_state": None, "arrived_at": arrived_at or self.clock.now(),
                 "info_requested_at": None, "hospital_replied_at": None, "clinical_sent_at": None,
                 "clinical_picked_up": False, "decision": None, "decision_reason": None,
-                "withdraw_reason": None, "chase": [], "suggested_route": None, "patient_arrived": None,
+                "withdraw_reason": None, "chase": [], "suggested_route": None, "patient_arrived": None, "kipu_id": None,
                 "override": 0, "override_reason": None, "review_usd": None,
                 "danger": None, "danger_flags": [], "odds": None, "odds_why": [], "illegible_pages": [],
                 "viewers": {}, **card,
@@ -192,6 +192,9 @@ class Tracker:
                 c["override"], c["override_reason"] = 1, reason or None
         elif action == "patient_arrived":
             c["patient_arrived"] = 0 if reason == "no" else 1
+        elif action == "kipu_id":
+            # The client's record number in Kipu, typed by staff after they create it there.
+            c["kipu_id"] = reason.strip() or None
         else:
             raise ValueError(f"unknown action {action}")
         self.log(cid, who or c["owner"], action, reason)
