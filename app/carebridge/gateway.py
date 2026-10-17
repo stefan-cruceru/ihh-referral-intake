@@ -445,7 +445,7 @@ def handle(h, method: str) -> bool:
             out = io.StringIO()
             w = csv.writer(out)
             w.writerow(store.AUDIT_FIELDS + ["hash"])
-            w.writerows([r[f] for f in store.AUDIT_FIELDS] + [r["hash"]] for r in rows)
+            w.writerows([drafts._cell(r[f]) for f in store.AUDIT_FIELDS] + [drafts._cell(r["hash"])] for r in rows)
             h._send(200, out.getvalue().encode("utf-8-sig"), "text/csv; charset=utf-8",
                     {"Content-Disposition": 'attachment; filename="care-bridge-audit-log.csv"'})
             return True
