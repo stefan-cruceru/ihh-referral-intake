@@ -284,6 +284,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(store.weekly_report(int(q.get("days", ["7"])[0]), q.get("practice", ["0"])[0] == "1"))
             if p == "/api/audit":
                 return self._json(TRACK.audit[-300:])
+            if p.startswith("/api/notify"):
+                return self._notify_get(p, q)
             return self._json({"error": "not found"}, 404)
         except Exception as e:
             traceback.print_exc()
@@ -370,6 +372,8 @@ class Handler(BaseHTTPRequestHandler):
             if p == "/api/staff/explain":
                 b = self._jbody()
                 return self._json(staff.explain_rule(b.get("rule_id", ""), b.get("lang", "en")))
+            if p.startswith("/api/notify"):
+                return self._notify_post(p)
             return self._json({"error": "not found"}, 404)
         except llm.LLMError as e:
             return self._json({"error": str(e)}, 502)
@@ -449,6 +453,62 @@ class Handler(BaseHTTPRequestHandler):
             out["markdown"] = mcp.report_markdown(rep, lang)
         return out
 
+    # ---- staff alerts (notify.py): drafts in a local outbox, a person sends them ---------------
+    def _app_url(self) -> str:
+        return f"http://{self.headers.get('Host', '127.0.0.1')}/"
+
+    def _notify_get(self, p: str, q: dict):
+        from . import notify
+
+        if p == "/api/notify/people":
+            return self._json({"people": notify.people(TRACK.staff), "channels": notify.CHANNELS, "roles": notify.ROLES})
+        notify.APP_URL = self._app_url()
+        if p == "/api/notify/outbox":
+            notify.sync(TRACK)
+            return self._json({"outbox": notify.outbox(q.get("person", [None])[0], q.get("done", ["0"])[0] == "1")})
+        parts = p.strip("/").split("/")
+        if len(parts) >= 3 and parts[2].split(".")[0].isdigit():
+            row = store.get_notification(int(parts[2].split(".")[0]))
+            if not row:
+                return self._json({"error": "not found"}, 404)
+            if parts[2].endswith(".eml") and row["channel"] == "email":
+                return self._send(200, notify.eml(row), "message/rfc822",
+                                  {"Content-Disposition": f'attachment; filename="{row["case_no"]}-{row["event"]}.eml"'})
+            if len(parts) == 4 and parts[3] == "card.json" and row["channel"] == "teams":
+                return self._send(200, (row["card"] or "{}").encode("utf-8"), "application/json; charset=utf-8",
+                                  {"Content-Disposition": f'attachment; filename="{row["case_no"]}-{row["event"]}.json"'})
+        return self._json({"error": "not found"}, 404)
+
+    def _notify_post(self, p: str):
+        from . import notify
+
+        b = self._jbody()
+        try:
+            if p == "/api/notify/people":
+                return self._json({"person": notify.save_person(b)})
+            parts = p.strip("/").split("/")
+            if len(parts) == 4 and parts[2].isdigit() and parts[3] == "mark":
+                notify.mark(int(parts[2]), b.get("status", ""), b.get("who", ""))
+                return self._json({"ok": True})
+        except ValueError as e:
+            return self._json({"error": str(e)}, 400)
+        return self._json({"error": "not found"}, 404)
+
+
+def notify_loop(interval: float = 10.0) -> None:
+    """Draft staff alerts as the clock runs, even when nobody has the outbox open."""
+    from . import notify
+
+    def loop():
+        while True:
+            try:
+                notify.sync(TRACK)
+            except Exception:
+                traceback.print_exc()
+            time.sleep(interval)
+
+    threading.Thread(target=loop, daemon=True).start()
+
 
 def serve(port: int = 0, open_browser: bool = True) -> None:
     import webbrowser
@@ -465,6 +525,10 @@ def serve(port: int = 0, open_browser: bool = True) -> None:
         print(f"{APP_NAME} {__version__} is listening on {host}:{httpd.server_address[1]} in the container.")
         print("Open the host port from compose.yaml (default http://localhost:8780/). Reviews are not saved.")
     watch_inbox()
+    from . import notify
+
+    notify.APP_URL = url
+    notify_loop()
     if open_browser:
         threading.Timer(0.6, lambda: webbrowser.open(url)).start()
     try:

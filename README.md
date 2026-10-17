@@ -138,6 +138,7 @@ first step never opens `eval/decisions.json`.
 | Two gates, bilingual flags, checklist, conflicts, questions | Working |
 | Drafts (missing items, chase ladder, clinical, decision, handoffs) | Working. Templates filled from the review; never sent |
 | 2-hour tracker, assignment, escalation alerts, peak warning | Working |
+| Staff alerts by Outlook and Teams, per person, English or Spanish | Backend and API working: drafts in a local outbox (`.eml`, Teams card and chat link), a person sends. Outbox screen not built yet. See [docs/notifications.md](docs/notifications.md) |
 | Watched inbox folder | Working on a local folder. No real fax or email connection |
 | Monday 4 PM demo and practice patients | The organizers' 10 synthetic patients (S01-S10): invented people with realistic faxed packets. Practice reviews come from the organizers' answer key, run through the app's own checks |
 | Per-patient next-steps PDF | Working. Needs come from the patient's story; resources come only from the sourced list (Claude picks them when a key is set, otherwise matched by need) |
