@@ -111,6 +111,6 @@ Then back to step 1. No step depends on a system outside IHH.
 - A mock inbox folder runs the whole loop on R01 to R11 and on one unseen packet: in, read, route,
   chase, decide, hand off, track, learn.
 - The outcome log and the weekly report fill from the demo run.
-- The eval scores the reader against `eval/decisions.json` in a separate script.
+- The eval scores the reader against `challenges/1-referral-intake/eval/decisions.json` in a separate script.
 - The model runs through Anthropic's API with the de-identified packets only. The Foundry setting
   is shown but not tested at the event.
