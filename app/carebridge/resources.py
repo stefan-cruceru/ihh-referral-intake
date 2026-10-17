@@ -5,6 +5,8 @@ number, address, hour and eligibility line shown comes from the seed file, never
 nothing can be invented. Each card shows the date it was last checked and its source link.
 """
 
+import re
+
 from . import llm, phi
 from .paths import RESOURCES, SCENARIOS, load_json
 
@@ -77,15 +79,24 @@ GROUP_WORDS = {
 
 
 # Words in a situation -> needs in the resource list, for the match without an API key. English and
-# Spanish, since staff may type either. Plain substring match: a hint, never a decision.
+# Spanish, since staff may type either. A hint, never a decision. Spaces around short words
+# keep "bus" out of "business" and "work" out of "paperwork"; punctuation is normalized below.
 NEED_WORDS = {
     "shelter": ["unhoused", "homeless", "sleeps outdoors", "shelter", " car ", "street", "sin hogar", "refugio",
                 "duerme en la calle", "en su carro"],
     "housing-navigation": ["unhoused", "homeless", "housing", "sin hogar", "vivienda"],
+    "employment": [" job ", " jobs ", " work ", "employment", "career", "resume", "résumé", "trabajo", "empleo",
+                   "trabajar", "curriculum", "currículum"],
+    "microenterprise": ["microloan", "micro loan", "small loan", "business", "self employed", "microcrédito",
+                        "microcredito", "microempresa", "emprendimiento", "negocio", "préstamo pequeño",
+                        "prestamo pequeño", "pequeño préstamo", "pequeno prestamo"],
+    "family-reunification-travel": ["home to family", "home with family", "return to family", "reunite", "family reunif",
+                                    "travel home", "getting home", "get home", "volver con", "regresar con",
+                                    "reunificación", "reunificacion", "viajar a casa", "volver a casa", "regresar a casa"],
     "id-documents": [" id ", "identification", "lost his id", "lost her id", "no id", "identificación", "identificacion"],
     "benefits": ["medi-cal", "calfresh", "benefits", "income", "general relief", "beneficios", "ingreso"],
     "food": ["food", "meals", "hungry", "diabetes", "glucose", "comida", "hambre"],
-    "transportation": ["bus", "ride", "transport", "appointment", "follow-up", "follow up", "clinic", "transporte",
+    "transportation": [" bus ", "ride", "transport", "appointment", "follow-up", "follow up", "clinic", "transporte",
                        "cita", "clínica", "clinica"],
     "behavioral-health": ["depress", "anxiety", "psychiatr", "suicid", "alcohol", "substance", "detox", "ansiedad",
                           "psiquiatr", "drogas"],
@@ -94,8 +105,11 @@ NEED_WORDS = {
 
 
 def needs_from_text(text: str) -> list[str]:
-    low = f" {text.lower()} "
-    return [n for n, words in NEED_WORDS.items() if any(w in low for w in words)]
+    def normalize(value):
+        return re.sub(r"[\W_]+", " ", value.lower())
+
+    low = f" {normalize(text)} "
+    return [n for n, words in NEED_WORDS.items() if any(normalize(w) in low for w in words)]
 
 
 def offline_match(needs: list[str], limit: int = 6, situation: str = "") -> list[dict]:
