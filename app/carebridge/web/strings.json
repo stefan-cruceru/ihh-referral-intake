@@ -168,8 +168,8 @@
   "es": "Paso {n} de {m}"
  },
  "hero_title": {
-  "en": "Answer every referral in 2 hours",
-  "es": "Responda cada referido en 2 horas"
+  "en": "Every referral, answered with care.",
+  "es": "Cada referido, respondido con cuidado."
  },
  "hero_sub": {
   "en": "When we answer late, the patient may go somewhere else. This board starts a timer when a referral comes in. It gives each one an owner. It reads the pages. It helps you follow up with the hospital.",
@@ -1688,8 +1688,8 @@
   "es": "Mande un referido a Illumination Health + Home"
  },
  "send_intro": {
-  "en": "Upload the referral packet here. You get a case code right away. We answer within 2 hours.",
-  "es": "Suba aquí el paquete del referido. Recibe un código de caso enseguida. Respondemos en 2 horas."
+  "en": "Upload the referral packet here. You get a case code right away. A person at IHH will tell you what we need and give you a clear answer.",
+  "es": "Suba aquí el paquete del referido. Recibe un código de caso enseguida. Una persona de IHH le dirá qué necesitamos y le dará una respuesta clara."
  },
  "send_docs_title": {
   "en": "Please include:",
