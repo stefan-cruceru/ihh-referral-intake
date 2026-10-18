@@ -132,7 +132,9 @@ detail, and stay drafts unless IHH agrees to send them on their own.
 - **Built with Claude:** Claude Code wrote the app with our team, from the event repo, IHH's
   criteria and our notes from the Q&As with IHH (`docs/workflow-and-timing.md`,
   `docs/closed-loop.md`, `docs/bilingual.md`).
-- **Inside the tool:** `claude-haiku-5-5` sorts pages. `claude-opus-5-5` reads pages, applies the
+- **Inside the tool:** `claude-haiku-5-5` sorts pages and is the gating layer: if a page plainly fails
+  one of the two gates (with the words to show it), only the flagged pages get the full read and the
+  clinical line decides. It never says no, and a person can ask for every page to be read. `claude-opus-5-5` reads pages, applies the
   rules and verifies quotes, with structured JSON output. `claude-sonnet-5-5`, at about half Opus's
   price, does the second, independent page read, picks client resources and drafts practice notes.
   Claude never decides; a person reads the evidence and decides.

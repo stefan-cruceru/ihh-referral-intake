@@ -148,7 +148,7 @@ def arrive(cid: str, data: bytes, name: str) -> None:
         start_review(cid)
 
 
-def start_review(cid: str) -> None:
+def start_review(cid: str, full: bool = False) -> None:
     data, name = PACKETS[cid]
     threat = guard.scan_file(data, name)
     seen = TRACK.cards[cid].get("security")
@@ -167,6 +167,7 @@ def start_review(cid: str) -> None:
     review = intake.Review(load_packet(data, name), name, TRACK.cards[cid]["arrived_at"], threat)
     # Every step the AI takes goes in the audit log. The messages are counts and page numbers, never chart text.
     review.on_log = lambda stage, msg: TRACK.log(cid, "Claude", f"AI step: {stage}", msg, role="ai")
+    review.full_read = full
     REVIEWS[cid] = review
     TRACK.cards[cid]["sample"] = False
     TRACK.cards[cid]["review_state"] = "running"
@@ -566,7 +567,7 @@ class Handler(BaseHTTPRequestHandler):
                         return self._json(gateway.error("No packet file for this referral."), 400)
                     if not config.get_api_key():
                         return self._json({"error": "no_key"}, 400)
-                    start_review(cid)
+                    start_review(cid, full=bool(self._jbody().get("full")))
                     return self._json({"ok": True})
                 if what == "act":
                     b = self._jbody()

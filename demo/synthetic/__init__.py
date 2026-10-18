@@ -144,6 +144,13 @@ def _report(pid: str) -> dict:
     rep.update(id=f"sample-{pid}", packet=f"{pid}.pdf", received_at=None, reviewed_at=None, model="organizers' answer key",
                fast_model="", sample=True, synthetic=True, answer_key_decision=key["decision"])
     rep["flags"]["phi_pages"] = []
+    # The answer key read every page. Show where the gating layer would have stopped a live review.
+    fact = {f["id"]: f for f in rep["facts"]}
+    hits = [{"page": fact[i]["page"], "gate": r["gate"]} for r in rep["rules"] if r.get("gate") and r["status"] == "not_met"
+            for i in r["fact_ids"] if i in fact]
+    hits = [dict(t) for t in {tuple(sorted(h.items())) for h in hits}]
+    rep["gate_layer"] = {"stopped": bool(hits), "hits": sorted(hits, key=lambda h: (h["page"], h["gate"])),
+                         "pages_total": len(key["page_map"]), "pages_read": len(key["page_map"]), "practice": True}
     return rep
 
 

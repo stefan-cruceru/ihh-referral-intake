@@ -277,3 +277,71 @@ def test_packets_are_scanned_when_they_land_even_without_a_key(monkeypatch):
     assert webapp.TRACK.cards["SEC-2"]["security_findings"] == ["hidden_instructions"]
     webapp.TRACK.reset()
     webapp.PACKETS.clear()
+
+
+# ---- the gating layer ------------------------------------------------------------------------
+
+def _gate_claude(sent: list, quote: str = "requires 2-person assist for all transfers"):
+    """Page 2 plainly fails the self-care gate in the cheap sort pass; the rest is the usual fake."""
+    base = _fake_claude([])
+
+    def call(*, system, content, schema, usage=None, **kw):
+        sent.append((system, content))
+        if system == intake.SORT_PROMPT:
+            res = base(system=system, content=content, schema=schema)
+            for p in res["pages"]:
+                p["instructions_to_ai"] = False
+                p.update(gate_self_care="fails" if p["page"] == 2 else "fine", gate_calm_safe="fine",
+                         gate_quote=quote if p["page"] == 2 else "")
+            return res
+        if system == intake.READ_PROMPT:
+            return {"pages": [{"page": n, "summary": "Nursing note.", "facts": [
+                {"topic": "mobility", "statement": "Walks with a walker.", "statement_es": "Camina con andador.",
+                 "quote": "ambulates 150 ft with rolling walker"}]}
+                for n in [int(c["text"].split()[1].rstrip(":")) for c in content if c["type"] == "text" and c["text"].startswith("Page ")]]}
+        res = base(system=system, content=content, schema=schema)
+        if system == intake.RULES_PROMPT:
+            res["summary"] = "Walks with a walker."  # the shared fake's summary carries an attack on purpose
+        return res
+    return call
+
+
+def _three_pages():
+    pages = [Page(n, Image.new("L", (200, 260), 255)) for n in (1, 2, 3)]
+    for i, p in enumerate(pages):
+        p.image.putpixel((i * 50, i * 50), 0)
+        p.image.paste(0, (0, 0, 40 * (i + 1), 40 * (i + 1)))
+    return pages
+
+
+def _read_pages(sent):
+    calls = [c for s, c in sent if s in (intake.READ_PROMPT, intake.SECOND_READ_PROMPT)]
+    return {int(x["text"].split()[1].rstrip(":")) for c in calls for x in c if x["type"] == "text"}
+
+
+def test_gate_fail_reads_only_the_flagged_pages_and_never_looks_like_a_yes(monkeypatch):
+    sent = []
+    monkeypatch.setattr(llm, "call_json", _gate_claude(sent))
+    rep = intake.run(intake.Review(_three_pages(), "gate.pdf"), workers=1)
+    assert _read_pages(sent) == {2}
+    gl = rep["gate_layer"]
+    assert gl["stopped"] and gl["hits"] == [{"page": 2, "gate": "self_care"}]
+    assert (gl["pages_read"], gl["pages_total"]) == (1, 3)
+    assert rep["recommendation"]["code"] in ("clinical_check", "likely_no")
+
+
+def test_a_person_can_ask_for_every_page(monkeypatch):
+    sent = []
+    monkeypatch.setattr(llm, "call_json", _gate_claude(sent))
+    review = intake.Review(_three_pages(), "gate.pdf")
+    review.full_read = True
+    rep = intake.run(review, workers=1)
+    assert _read_pages(sent) == {1, 2, 3}
+    assert not rep["gate_layer"]["stopped"] and rep["gate_layer"]["full_read"]
+
+
+def test_a_gate_fail_without_words_to_show_does_not_stop_the_read(monkeypatch):
+    sent = []
+    monkeypatch.setattr(llm, "call_json", _gate_claude(sent, quote="  "))
+    rep = intake.run(intake.Review(_three_pages(), "gate.pdf"), workers=1)
+    assert _read_pages(sent) == {1, 2, 3} and not rep["gate_layer"]["stopped"]
