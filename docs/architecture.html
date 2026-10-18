@@ -157,7 +157,8 @@ td code { color: var(--brand); }
         <tbody>
           <tr><td>Watched inbox, email and upload page</td><td><code>webapp.py</code> <code>mail.py</code></td><td>IHH's computer</td><td><span class="pill on">On</span></td></tr>
           <tr><td>Safety check on every file</td><td><code>guard.py</code> <code>pages.py</code> <code>phi.py</code></td><td>IHH's computer, in memory</td><td><span class="pill on">On</span></td></tr>
-          <tr><td>Packet reader: gate, read, rules, verify, QC</td><td><code>intake.py</code> <code>rules.py</code> <code>critical.py</code></td><td>IHH's computer, calls Claude</td><td><span class="pill on">On</span></td></tr>
+          <tr><td>Gating layer: Haiku checks both gates on every page first</td><td><code>intake.py</code> <code>rules.py</code></td><td>IHH's computer, calls Claude</td><td><span class="pill on">On</span></td></tr>
+          <tr><td>Packet reader: read, second read, rules, verify, QC</td><td><code>intake.py</code> <code>rules.py</code> <code>critical.py</code></td><td>IHH's computer, calls Claude</td><td><span class="pill on">On</span></td></tr>
           <tr><td>Claude</td><td><code>llm.py</code> <code>config.py</code></td><td>Anthropic API or IHH's Azure Foundry</td><td><span class="pill on">API key</span></td></tr>
           <tr><td>2-hour tracker and chase ladder</td><td><code>tracker.py</code> <code>hospital.py</code></td><td>IHH's computer</td><td><span class="pill on">On</span></td></tr>
           <tr><td>Drafts, staff alerts and handout PDF</td><td><code>drafts.py</code> <code>notify.py</code> <code>handout.py</code></td><td>Local outbox; a person sends</td><td><span class="pill on">On</span></td></tr>
@@ -225,8 +226,9 @@ const nodes = {
   staff:   [25, 474, 160, 52, "IHH staff", ["in a browser"], ""],
   copilot: [25, 540, 160, 52, "AI assistants", ["Copilot, Claude Desktop"], ""],
   inbox:   [240, 100, 140, 100, "Watched inbox", ["fax · email · upload", "Kipu referrals"], "on", "webapp.py"],
-  guard:   [400, 110, 150, 80, "Safety check", ["file type, active PDF,", "hidden AI orders"], "on", "guard.py"],
-  reader:  [570, 100, 350, 100, "Packet reader", [], "on", "intake.py"],
+  guard:   [395, 100, 120, 100, "Safety check", ["file type,", "active PDF,", "AI orders"], "on", "guard.py"],
+  gate:    [530, 100, 145, 100, "Gating layer", ["Haiku 5.5 · ~$0.01", "checks both gates", "fail: flagged pages"], "on", "intake.py"],
+  reader:  [690, 100, 230, 100, "Packet reader", [], "on", "intake.py"],
   tracker: [240, 260, 190, 72, "2-hour tracker", ["owner · clock · chase ladder"], "on", "tracker.py"],
   decide:  [450, 260, 200, 72, "A person decides", ["only a clinician can say no"], "on", "auth.py"],
   handoff: [670, 260, 250, 72, "Drafts & alerts outbox", ["Kipu fields · census · emails"], "on", "drafts.py · notify.py"],
@@ -248,11 +250,13 @@ const edges = {
   e_fax:    [[[185,130],[240,130]]],
   e_email:  [[[185,186],[240,186]]],
   e_upload: [[[185,242],[310,242],[310,200]]],
-  e_ig:     [[[380,150],[400,150]]],
-  e_gr:     [[[550,150],[570,150]]],
+  e_ig:     [[[380,150],[395,150]]],
+  e_gr:     [[[515,150],[530,150]]],
+  e_gt:     [[[675,150],[690,150]]],
+  e_gc:     [[[602,100],[602,84],[975,84],[975,112],[990,112]], false, "every page, Haiku", [612,79]],
   e_rc:     [[[920,130],[990,130]], false, "page images", [926,122]],
-  e_cr:     [[[990,182],[920,182]], false, "checked JSON", [924,174]],
-  e_rt:     [[[640,200],[640,230],[335,230],[335,260]]],
+  e_cr:     [[[990,182],[920,182]], false, "JSON back", [926,174]],
+  e_rt:     [[[760,200],[760,230],[335,230],[335,260]]],
   e_th:     [[[410,260],[410,247],[795,247],[795,260]]],
   e_td:     [[[430,296],[450,296]]],
   e_dh:     [[[650,296],[670,296]]],
@@ -277,10 +281,10 @@ const steps = [
   { t: "Check", nodes: ["inbox","guard"], paths: [["e_ig"]],
     b: "Before anything reads the file, plain code checks it: the real file type, size, active PDF parts, and text that tries to give an AI orders. Anything odd puts the referral on a security hold for a person.",
     f: ["guard.py", "pages.py"] },
-  { t: "Gate", nodes: ["guard","reader","claude"], paths: [["e_gr","e_rc","e_cr"]],
+  { t: "Gate", nodes: ["guard","gate","claude"], paths: [["e_gr","e_gc"]],
     b: "The gating layer. Haiku, the cheapest model, sorts every page and checks the two things IHH can't work around: can the person take care of themselves, and are they calm and safe. If a page clearly fails one, only the flagged pages get the full read, and the referral goes straight to the clinical line with the page and the exact words. Haiku never says no: only the clinical line can, and a person can ask for the full read at any time. If nothing fails, every page goes on to the full read.",
     f: ["intake.py", "llm.py", "rules.py"] },
-  { t: "Read", nodes: ["reader","claude"], paths: [["e_rc","e_cr"]],
+  { t: "Read", nodes: ["gate","reader","claude"], paths: [["e_gt","e_rc","e_cr"]],
     b: "Claude gets flattened page images. Opus reads them, and Sonnet reads them again on its own. Code compares the numbers and requires quotes to match the transcript without changing words, numbers or units. An image pass checks cited evidence and critical-value lines. Missing reads, disagreements or unconfirmed values go to a person. This does not guarantee that every reading error is caught.",
     f: ["intake.py", "llm.py", "rules.py", "critical.py"] },
   { t: "Route", nodes: ["reader","tracker"], paths: [["e_rt"]],
@@ -337,13 +341,13 @@ for (const id in nodes) {
   sub.forEach((s, i) => { el("text", { x: x + 12, y: y + 38 + i * 15, class: "s" }, g).textContent = s; });
   if (id === "reader") {
     el("text", { x: x + 12, y: y + 38, class: "s" }, g).textContent = "a page and a quote for every fact";
-    const stages = [["Gate", "Haiku"], ["Read", "Opus"], ["Read 2", "Sonnet"], ["Rules", "Opus"], ["Verify", "Opus"], ["QC", "code"]];
+    const stages = [["Read", "Opus"], ["Read 2", "Sonnet"], ["Rules", "Opus"], ["Verify", "Opus"], ["QC", "code"]];
     stages.forEach(([s, who], i) => {
-      const cx = x + 12 + i * 55; // six chips fit the 350px box
+      const cx = x + 10 + i * 43; // five chips fit the 230px box, clear of the file name
       const c = el("g", { class: "chip" }, g);
-      el("rect", { x: cx, y: y + 50, width: 51, height: 34, rx: 8 }, c);
-      el("text", { x: cx + 25.5, y: y + 64, "text-anchor": "middle" }, c).textContent = s;
-      const t2 = el("text", { x: cx + 25.5, y: y + 78, "text-anchor": "middle", style: "font-weight:400;font-size:9.5px" }, c);
+      el("rect", { x: cx, y: y + 46, width: 41, height: 32, rx: 7 }, c);
+      el("text", { x: cx + 20.5, y: y + 60, "text-anchor": "middle", style: "font-size:10.5px" }, c).textContent = s;
+      const t2 = el("text", { x: cx + 20.5, y: y + 73, "text-anchor": "middle", style: "font-weight:400;font-size:9.5px" }, c);
       t2.textContent = who;
     });
   }
