@@ -92,6 +92,8 @@ button.primary { background: var(--brand); color: var(--bg); border-color: var(-
 .two { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 28px; align-items: start; }
 section { display: grid; gap: 12px; min-width: 0; }
 .tablebox { overflow-x: auto; }
+.cost { margin-top: 28px; }
+.cost p { color: var(--muted); max-width: 900px; }
 table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
 th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
@@ -182,6 +184,23 @@ td code { color: var(--brand); }
       <p>Ships as <code>ihh-care-bridge.exe</code> (no admin rights) or <code>docker compose up</code> on port 8780.</p>
     </aside>
   </div>
+
+  <section class="cost">
+    <h2>What a packet costs, with the gate</h2>
+    <p><strong>Estimate, not yet measured.</strong> Worked out from what the code sends: a typical 24-page packet, about 2,000 tokens per page image, at list prices (Haiku 5.5 $0.10 / $0.50, Sonnet 5.5 $2 / $10, Opus 5.5 $4 / $20 per million tokens in / out). Running <code>app/eval_packets.py</code> with a key replaces these with measured numbers; every review also shows its own cost.</p>
+    <div class="tablebox"><table>
+      <thead><tr><th>Step</th><th>Model</th><th>Gate passes: every page</th><th>Gate stops: flagged pages only (about 2)</th></tr></thead>
+      <tbody>
+        <tr><td>Gate: sort every page and check the two gates</td><td>Haiku 5.5</td><td>$0.01</td><td>$0.01</td></tr>
+        <tr><td>First read: typed page, facts, quotes</td><td>Opus 5.5</td><td>$0.85</td><td>$0.09</td></tr>
+        <tr><td>Second, independent read</td><td>Sonnet 5.5</td><td>$0.32</td><td>$0.03</td></tr>
+        <tr><td>Rule check (64 rules)</td><td>Opus 5.5</td><td>$0.30</td><td>$0.27</td></tr>
+        <tr><td>Quote and critical-value check</td><td>Opus 5.5</td><td>$0.17</td><td>$0.03</td></tr>
+        <tr><td><strong>Per packet</strong></td><td></td><td><strong>about $1.65</strong></td><td><strong>about $0.43</strong></td></tr>
+      </tbody>
+    </table></div>
+    <p>Blended, by how many packets the gate stops: <strong>10% stopped, about $1.53</strong> a packet; <strong>25%, about $1.35</strong>; <strong>40%, about $1.16</strong>. In the 10 practice patients, the gate stops 3. A stopped packet costs more if a person asks for every page to be read (about $1.65 more). Before the gate and the Sonnet second read, the same packet was about $2.00 with Opus for every read.</p>
+  </section>
 </div>
 
 <script>

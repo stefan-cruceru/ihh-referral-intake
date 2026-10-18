@@ -534,6 +534,15 @@ function renderDetail() {
           ${c.page ? `<div class="quote"><button class="btn sm ghost pg" data-page="${c.page}">${esc(t("page"))} ${c.page}</button><q>${esc(c.quote)}</q></div>` : ""}</div>`)
         .join("")}</div>`;
     }
+    const gl = rep.gate_layer;
+    if (gl) {
+      const pg = [...new Set(gl.hits.map((x) => x.page))];
+      const gn = [...new Set(gl.hits.map((x) => t("gate_" + x.gate)))].join(", ");
+      const msg = !gl.stopped ? t("gl_passed", { n: gl.pages_read })
+        : t(gl.practice ? "gl_practice" : "gl_stopped", { g: gn, p: `${t(pg.length > 1 ? "gl_pages" : "gl_page")} ${pg.join(", ")}`, k: gl.practice ? pg.length : gl.pages_read, n: gl.pages_total });
+      h += `<div class="panel"><h3>${esc(t("h_gate_layer"))}</h3><p>${esc(msg)}</p>
+        ${gl.stopped && !gl.practice ? `<button class="btn sm" id="full-read">${esc(t("gl_full"))}</button>` : ""}</div>`;
+    }
     h += `<p class="muted">${esc(t("gates_why"))}</p><div class="gates">`;
     for (const g of ["self_care", "behavior"]) {
       const gs = rep.gates[g];
@@ -686,6 +695,9 @@ function renderDetail() {
   $("#kipu-save").addEventListener("click", () => act("kipu_id", "", $("#kipu-id").value));
   $("#run-review")?.addEventListener("click", async () => {
     try { await post(`/api/cards/${encodeURIComponent(OPEN)}/review`); refreshOpen(); } catch (e) { toast(e.message === "no_key" ? t("need_key") : e.message); }
+  });
+  $("#full-read")?.addEventListener("click", async () => {
+    try { await post(`/api/cards/${encodeURIComponent(OPEN)}/review`, { full: true }); refreshOpen(); } catch (e) { toast(e.message === "no_key" ? t("need_key") : e.message); }
   });
   $$("[data-page]", $("#detail-body")).forEach((b) => b.addEventListener("click", () => showPage(b.dataset.page)));
   $$("[data-draft]").forEach((b) => b.addEventListener("click", () => { DRAFT_TAB = b.dataset.draft; renderDetail(); }));

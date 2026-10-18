@@ -2246,5 +2246,33 @@
  "rules_none": {
   "en": "No rules match. Try one short word.",
   "es": "Ninguna regla coincide. Pruebe con una palabra corta."
+ },
+ "h_gate_layer": {
+  "en": "Gate check first",
+  "es": "Primero, la revisión de entrada"
+ },
+ "gl_passed": {
+  "en": "A quick first look found nothing on the two checks below that stops this referral. All {n} pages got the full read.",
+  "es": "Una primera revisión rápida no encontró nada en las dos revisiones de abajo que detenga este referido. Las {n} páginas se leyeron completas."
+ },
+ "gl_stopped": {
+  "en": "A quick first look found a possible problem with \"{g}\" on {p}. To save cost, only {k} of {n} pages got the full read. The clinical line decides. The app never says no.",
+  "es": "Una primera revisión rápida encontró un posible problema con \"{g}\" en {p}. Para ahorrar, solo se leyeron completas {k} de {n} páginas. La línea clínica decide. La app nunca dice que no."
+ },
+ "gl_practice": {
+  "en": "Practice: in a real review, the quick first look would stop here for \"{g}\" on {p}. Only those {k} of {n} pages would get the full read, and the clinical line would decide.",
+  "es": "Práctica: en una revisión real, la primera revisión rápida se detendría aquí por \"{g}\" en {p}. Solo esas {k} de {n} páginas se leerían completas, y la línea clínica decidiría."
+ },
+ "gl_full": {
+  "en": "Read every page",
+  "es": "Leer todas las páginas"
+ },
+ "gl_page": {
+  "en": "page",
+  "es": "la página"
+ },
+ "gl_pages": {
+  "en": "pages",
+  "es": "las páginas"
  }
 }
